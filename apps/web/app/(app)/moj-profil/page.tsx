@@ -22,7 +22,7 @@ interface Profile {
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
 }
 
-export const DEFAULT_PROFILE: Profile = {
+const DEFAULT_PROFILE: Profile = {
   csImages: ["", "", "", ""],
   firstName: "Stefan", lastName: "Radović", initials: "SR", city: "Beograd, Srbija",
   openStatus: "OTVOREN ZA RETAINER", badge: "TOP 5%",
