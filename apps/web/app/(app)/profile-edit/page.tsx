@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "../../../lib/supabase";
 
 interface CaseStudy {
   industry: string; metric: string; metricLabel: string;
@@ -73,20 +74,71 @@ function Section({ label, color = "#A78BFA", children }: { label: string; color?
 export default function ProfileEdit() {
   const [p, setP] = useState<Profile>(DEFAULT);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
+  // Učitaj profil — prvo iz Supabase, zatim localStorage kao fallback
   useEffect(() => {
-    try {
-      const s = localStorage.getItem("pikmi-profile");
-      if (s) {
-        const loaded = JSON.parse(s);
-        // Merge with DEFAULT da osiguramo da sva polja postoje
-        setP({ ...DEFAULT, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
+    async function loadProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("profile_data, first_name, last_name")
+            .eq("user_id", user.id)
+            .single();
+          if (data?.profile_data && Object.keys(data.profile_data).length > 0) {
+            setP({ ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] });
+            return;
+          }
+          // Ako ima ime/prezime ali nema profile_data, popuni osnovno
+          if (data?.first_name) {
+            setP(prev => ({ ...prev, firstName: data.first_name, lastName: data.last_name ?? "" }));
+          }
+        }
+        // Fallback: localStorage
+        const s = localStorage.getItem("pikmi-profile");
+        if (s) {
+          const loaded = JSON.parse(s);
+          setP({ ...DEFAULT, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
+        }
+      } catch {
+        try {
+          const s = localStorage.getItem("pikmi-profile");
+          if (s) setP({ ...DEFAULT, ...JSON.parse(s) });
+        } catch {}
       }
-    } catch {}
+    }
+    loadProfile();
   }, []);
 
-  function save() {
-    localStorage.setItem("pikmi-profile", JSON.stringify(p));
+  async function save() {
+    setSaving(true);
+    // Sačuvaj u localStorage (brzo, za sidebar preview)
+    const dataToSave = { ...p, csImages: p.csImages }; // uključi slike
+    localStorage.setItem("pikmi-profile", JSON.stringify(dataToSave));
+
+    // Sačuvaj u Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Bez base64 slika u bazi (prevelike) — čuvaj ostalo
+        const { csImages, ...profileWithoutImages } = p;
+        await supabase
+          .from("profiles")
+          .upsert({
+            user_id: user.id,
+            first_name: p.firstName,
+            last_name: p.lastName,
+            email: user.email ?? "",
+            service_title: p.serviceTitle.split("\n")[0].trim(),
+            profile_data: profileWithoutImages,
+          }, { onConflict: "user_id" });
+      }
+    } catch (e) {
+      console.error("Supabase save error:", e);
+    }
+    setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -132,8 +184,8 @@ export default function ProfileEdit() {
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <Link href="/moj-profil" className="btn btn-ghost btn-sm">👁 Pogledaj profil</Link>
-          <button className="btn btn-primary" onClick={save}>
-            {saved ? "✓ Sačuvano!" : "💾 Sačuvaj"}
+          <button className="btn btn-primary" onClick={save} disabled={saving}>
+            {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj"}
           </button>
         </div>
       </div>
@@ -374,7 +426,7 @@ export default function ProfileEdit() {
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingBottom: 40 }}>
           <Link href="/moj-profil" className="btn btn-ghost">👁 Pogledaj profil</Link>
           <button className="btn btn-primary" onClick={save} style={{ minWidth: 160 }}>
-            {saved ? "✓ Sačuvano!" : "💾 Sačuvaj promjene"}
+            {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj promjene"}
           </button>
         </div>
       </div>
