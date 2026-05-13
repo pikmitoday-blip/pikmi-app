@@ -46,7 +46,6 @@ export default function RegisterPage() {
         first_name: firstName,
         last_name: lastName,
         email: email,
-        initials: firstName[0]?.toUpperCase() ?? "?",
       });
     }
 
