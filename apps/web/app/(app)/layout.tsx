@@ -35,18 +35,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("pikmi-theme") as "dark"|"light" | null;
     if (saved) { setTheme(saved); document.documentElement.dataset.theme = saved; }
-    try {
-      const p = localStorage.getItem("pikmi-profile");
-      if (p) {
-        const loaded = JSON.parse(p);
-        setProfile({
-          firstName: loaded.firstName ?? DEFAULT_SIDEBAR.firstName,
-          lastName: loaded.lastName ?? DEFAULT_SIDEBAR.lastName,
-          initials: loaded.initials ?? DEFAULT_SIDEBAR.initials,
-          serviceTitle: loaded.serviceTitle ? loaded.serviceTitle.split("\n")[0].trim() : DEFAULT_SIDEBAR.serviceTitle,
-        });
-      }
-    } catch {}
+
+    async function loadSidebarProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("first_name, last_name, profile_data")
+            .eq("user_id", user.id)
+            .single();
+          if (data) {
+            const pd = data.profile_data as Record<string, string> | null;
+            setProfile({
+              firstName: data.first_name || DEFAULT_SIDEBAR.firstName,
+              lastName: data.last_name || DEFAULT_SIDEBAR.lastName,
+              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? "") || DEFAULT_SIDEBAR.initials,
+              serviceTitle: pd?.serviceTitle ? (pd.serviceTitle as string).split("\n")[0].trim() : DEFAULT_SIDEBAR.serviceTitle,
+            });
+          }
+          return;
+        }
+      } catch {}
+    }
+    loadSidebarProfile();
   }, []);
 
   async function handleLogout() {
