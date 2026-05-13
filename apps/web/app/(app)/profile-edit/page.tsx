@@ -82,6 +82,7 @@ export default function ProfileEdit() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          // Korisnik je ulogovan — učitaj samo iz Supabase, ne iz localStorage
           const { data } = await supabase
             .from("profiles")
             .select("profile_data, first_name, last_name")
@@ -91,12 +92,13 @@ export default function ProfileEdit() {
             setP({ ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] });
             return;
           }
-          // Ako ima ime/prezime ali nema profile_data, popuni osnovno
+          // Novi korisnik — samo popuni ime/prezime iz profila, ostalo ostaje DEFAULT
           if (data?.first_name) {
-            setP(prev => ({ ...prev, firstName: data.first_name, lastName: data.last_name ?? "" }));
+            setP(prev => ({ ...prev, firstName: data.first_name, lastName: data.last_name ?? "", initials: (data.first_name[0] ?? "") + (data.last_name?.[0] ?? "") }));
           }
+          return; // Ne padaj na localStorage
         }
-        // Fallback: localStorage
+        // Nije ulogovan — localStorage fallback (ne bi trebalo da se desi zbog middlewarea)
         const s = localStorage.getItem("pikmi-profile");
         if (s) {
           const loaded = JSON.parse(s);
