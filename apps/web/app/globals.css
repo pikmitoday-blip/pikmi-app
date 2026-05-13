@@ -204,7 +204,9 @@ textarea.input { resize: vertical; min-height: 90px; }
   position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
   background: var(--surface); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; padding: 20px 12px; z-index: 50;
+  overflow-y: auto;
 }
+.sidebar-footer { flex-shrink: 0; }
 .sidebar-logo {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 12px; margin-bottom: 28px;
