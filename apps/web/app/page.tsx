@@ -17,8 +17,8 @@ export default function Home() {
           <li><a href="#pricing">Cene</a></li>
         </ul>
         <div className="nav-actions">
-          <Link href="/dashboard" className="btn btn-ghost btn-sm">Login</Link>
-          <Link href="/onboarding" className="btn btn-primary btn-sm">Get started</Link>
+          <Link href="/login" className="btn btn-ghost btn-sm">Login</Link>
+          <Link href="/register" className="btn btn-primary btn-sm">Get started</Link>
         </div>
       </nav>
 
@@ -37,7 +37,7 @@ export default function Home() {
             Personalizovani portfolio link za svakog klijenta. Vidi ko gleda, šta gleda i kada je spreman.
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Link href="/onboarding" className="btn btn-primary btn-lg">Kreiraj profil besplatno</Link>
+            <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno</Link>
             <a href="#how" className="btn btn-ghost btn-lg">▷ Kako funkcioniše</a>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="/onboarding" className="btn btn-ghost w-full" style={{ justifyContent: "center" }}>Počni besplatno</Link>
+            <Link href="/register" className="btn btn-ghost w-full" style={{ justifyContent: "center" }}>Počni besplatno</Link>
           </div>
           <div className="card glow" style={{ border: "1px solid rgba(124,58,237,0.35)", background: "rgba(124,58,237,0.08)" }}>
             <div className="flex items-center justify-between mb-3">

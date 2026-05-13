@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PikmiLogo from "../components/PikmiLogo";
+import { supabase } from "../../lib/supabase";
 
 const links = [
   { href: "/dashboard",    label: "Dashboard",    icon: "⊞" },
@@ -27,6 +28,7 @@ const DEFAULT_SIDEBAR: SidebarProfile = { firstName: "Marko", lastName: "Nikoli�
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const router = useRouter();
   const [theme, setTheme] = useState<"dark"|"light">("dark");
   const [profile, setProfile] = useState<SidebarProfile>(DEFAULT_SIDEBAR);
 
@@ -46,6 +48,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }
     } catch {}
   }, []);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -163,10 +170,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           <div className="sidebar-user">
             <div className="avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{profile.initials}</div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{profile.firstName} {profile.lastName}</div>
               <div style={{ fontSize: 11, color: "var(--text3)" }}>free plan</div>
             </div>
+            <button onClick={handleLogout} title="Odjavi se" style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text3)", fontSize: 16, padding: "4px",
+              borderRadius: 6, transition: "color 0.15s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}
+            >⏻</button>
           </div>
         </div>
       </aside>
