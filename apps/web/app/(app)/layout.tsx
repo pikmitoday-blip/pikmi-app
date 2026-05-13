@@ -199,6 +199,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span>{l.label}</span>
           </Link>
         ))}
+        <button
+          onClick={handleLogout}
+          className="mobile-nav-item"
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", padding: 0 }}
+        >
+          <div className="mobile-nav-icon">⏻</div>
+          <span>Odjava</span>
+        </button>
       </nav>
     </div>
   );
