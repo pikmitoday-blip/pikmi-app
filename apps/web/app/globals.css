@@ -386,9 +386,9 @@ textarea.input { resize: vertical; min-height: 90px; }
   .page-subtitle { font-size: 13px !important; }
 
   /* ── Grids ── */
-  .grid-4 { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
-  .grid-3 { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
-  .grid-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .grid-4 { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
+  .grid-3 { grid-template-columns: 1fr !important; gap: 10px !important; }
+  .grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
 
   /* ── Cards ── */
   .card { padding: 16px !important; }
@@ -398,7 +398,8 @@ textarea.input { resize: vertical; min-height: 90px; }
   .btn { font-size: 13px !important; padding: 10px 16px !important; }
 
   /* ── Table — horizontal scroll ── */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r); }
+  .table th, .table td { padding: 12px 10px !important; font-size: 13px !important; white-space: nowrap; }
 
   /* ── Mobile bottom nav ── */
   .mobile-nav {

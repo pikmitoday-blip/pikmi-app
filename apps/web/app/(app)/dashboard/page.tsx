@@ -96,6 +96,7 @@ export default function Dashboard() {
             <Link href="/pitch-link" className="btn btn-primary btn-sm">Kreiraj pitch link</Link>
           </div>
         ) : (
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
@@ -139,6 +140,7 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
