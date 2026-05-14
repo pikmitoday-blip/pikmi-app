@@ -10,6 +10,7 @@ interface CaseStudy {
 interface PricingTier { name: string; price: string; desc: string; green?: boolean; }
 interface Profile {
   csImages: string[];
+  avatarUrl: string;
   firstName: string; lastName: string; initials: string; city: string;
   openStatus: string; badge: string;
   metric1Value: string; metric1Label: string;
@@ -25,6 +26,7 @@ interface Profile {
 
 const DEFAULT: Profile = {
   csImages: ["", "", "", ""],
+  avatarUrl: "",
   firstName: "Stefan", lastName: "Radović", initials: "SR", city: "Beograd, Srbija",
   openStatus: "OTVOREN ZA RETAINER", badge: "TOP 5%",
   metric1Value: "€840k", metric1Label: "UPRAVLJANO AD SPEND",
@@ -76,6 +78,7 @@ export default function ProfileEdit() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Učitaj profil — prvo iz Supabase, zatim localStorage kao fallback
   useEffect(() => {
@@ -164,6 +167,27 @@ export default function ProfileEdit() {
     setP(prev => ({ ...prev, pricing: tiers }));
   }
 
+  async function uploadAvatar(file: File) {
+    setUploadingAvatar(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const ext = file.name.split(".").pop() ?? "bin";
+      const path = `${user.id}/avatar.${ext}`;
+      const { error } = await supabase.storage
+        .from("pikmi-uploads")
+        .upload(path, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: { publicUrl } } = supabase.storage
+        .from("pikmi-uploads")
+        .getPublicUrl(path);
+      setP(prev => ({ ...prev, avatarUrl: publicUrl }));
+    } catch (e) {
+      console.error("Avatar upload error:", e);
+    }
+    setUploadingAvatar(false);
+  }
+
   async function uploadImage(i: number, file: File) {
     setUploading(i);
     try {
@@ -212,6 +236,34 @@ export default function ProfileEdit() {
 
         {/* HERO */}
         <Section label="Hero — Ime, avatar i metrike">
+
+          {/* Avatar upload */}
+          <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 24, padding: "16px", background: "rgba(124,58,237,0.05)", borderRadius: 12, border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              {p.avatarUrl
+                ? <img src={p.avatarUrl} alt="avatar" style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--purple)" }} />
+                : <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#7C3AED,#3B82F6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: "#fff" }}>{p.initials || "?"}</div>
+              }
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Profilna slika</div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>JPG, PNG · max 2MB</div>
+              <label style={{ cursor: "pointer" }}>
+                <span className="btn btn-ghost btn-sm" style={{ pointerEvents: "none" }}>
+                  {uploadingAvatar ? "Uploading..." : "📷 Promeni sliku"}
+                </span>
+                <input type="file" accept="image/*" style={{ display: "none" }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); }} />
+              </label>
+              {p.avatarUrl && (
+                <button className="btn btn-ghost btn-sm" style={{ marginLeft: 8, color: "#F87171" }}
+                  onClick={() => setP(prev => ({ ...prev, avatarUrl: "" }))}>
+                  Ukloni
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
               <label className="label">Ime</label>

@@ -10,6 +10,7 @@ interface CaseStudy {
 interface PricingTier { name: string; price: string; desc: string; green?: boolean; }
 interface Profile {
   csImages: string[];
+  avatarUrl: string;
   firstName: string; lastName: string; initials: string; city: string;
   openStatus: string; badge: string;
   metric1Value: string; metric1Label: string;
@@ -25,6 +26,7 @@ interface Profile {
 
 const DEFAULT_PROFILE: Profile = {
   csImages: ["", "", "", ""],
+  avatarUrl: "",
   firstName: "Stefan", lastName: "Radović", initials: "SR", city: "Beograd, Srbija",
   openStatus: "OTVOREN ZA RETAINER", badge: "TOP 5%",
   metric1Value: "€840k", metric1Label: "UPRAVLJANO AD SPEND",
@@ -144,14 +146,17 @@ export default function MojProfil() {
 
             {/* Avatar */}
             <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <div style={{
-                width: 100, height: 100, borderRadius: "50%",
-                background: "linear-gradient(135deg,#1F57C3,#0D3B8C)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 36, fontWeight: 700, color: "#fff",
-                margin: "0 auto 16px",
-                boxShadow: "0 4px 16px rgba(31,87,195,0.25)",
-              }}>{p.initials}</div>
+              {p.avatarUrl
+                ? <img src={p.avatarUrl} alt="avatar" style={{ width: 100, height: 100, borderRadius: "50%", objectFit: "cover", margin: "0 auto 16px", display: "block", boxShadow: "0 4px 16px rgba(31,87,195,0.25)" }} />
+                : <div style={{
+                    width: 100, height: 100, borderRadius: "50%",
+                    background: "linear-gradient(135deg,#1F57C3,#0D3B8C)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 36, fontWeight: 700, color: "#fff",
+                    margin: "0 auto 16px",
+                    boxShadow: "0 4px 16px rgba(31,87,195,0.25)",
+                  }}>{p.initials}</div>
+              }
               <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>
                 {p.firstName} {p.lastName}
               </div>

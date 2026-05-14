@@ -1,6 +1,10 @@
 import "./globals.css";
 
-export const metadata = { title: "pikmi", description: "Tailored portfolios. Real connections." };
+export const metadata = {
+  title: "pikmi",
+  description: "Tailored portfolios. Real connections.",
+  icons: { icon: "/favicon.svg" },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

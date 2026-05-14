@@ -187,12 +187,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div style={{ fontSize: 11, color: "var(--text3)" }}>free plan</div>
             </div>
             <button onClick={handleLogout} title="Odjavi se" style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "var(--text3)", fontSize: 16, padding: "4px",
-              borderRadius: 6, transition: "color 0.15s",
+              background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.25)",
+              cursor: "pointer", color: "#F87171", fontSize: 14, padding: "6px 8px",
+              borderRadius: 8, transition: "all 0.15s", fontWeight: 600,
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#F87171")}
-            onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.25)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.5)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.12)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.25)";
+            }}
             >⏻</button>
           </div>
         </div>
