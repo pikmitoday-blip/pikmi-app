@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "pikmi <notifikacije@pikmi.today>",
+        from: "pikmi <onboarding@resend.dev>",
         to: ownerEmail,
         subject: `👁 Neko je otvorio tvoj pitch link — ${pitchLinkTitle}`,
         html: `
