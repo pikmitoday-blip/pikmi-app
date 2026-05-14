@@ -23,8 +23,8 @@ const mobileLinks = [
   { href: "/outreach",     label: "Outreach", icon: "✉️" },
 ];
 
-interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; }
-const DEFAULT_SIDEBAR: SidebarProfile = { firstName: "Marko", lastName: "Nikolić", initials: "M", serviceTitle: "Full-stack developer" };
+interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; }
+const DEFAULT_SIDEBAR: SidebarProfile = { firstName: "Marko", lastName: "Nikolić", initials: "M", serviceTitle: "Full-stack developer", avatarUrl: "" };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -52,6 +52,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               lastName: data.last_name || DEFAULT_SIDEBAR.lastName,
               initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? "") || DEFAULT_SIDEBAR.initials,
               serviceTitle: pd?.serviceTitle ? (pd.serviceTitle as string).split("\n")[0].trim() : DEFAULT_SIDEBAR.serviceTitle,
+              avatarUrl: (pd?.avatarUrl as string) || "",
             });
           }
           return;
@@ -112,13 +113,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Moj profil</div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, fontWeight: 800, color: "white",
-                boxShadow: "0 0 12px rgba(124,58,237,0.5)",
-              }}>{profile.initials}</div>
+              {profile.avatarUrl
+                ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0, boxShadow: "0 0 12px rgba(124,58,237,0.5)" }} />
+                : <div style={{
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                    background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 15, fontWeight: 800, color: "white",
+                    boxShadow: "0 0 12px rgba(124,58,237,0.5)",
+                  }}>{profile.initials}</div>
+              }
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", lineHeight: 1.2 }}>{profile.firstName} {profile.lastName}</div>
                 <div style={{ fontSize: 11, color: "#A78BFA", marginTop: 2 }}>{profile.serviceTitle}</div>
@@ -181,7 +185,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
 
           <div className="sidebar-user">
-            <div className="avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{profile.initials}</div>
+            {profile.avatarUrl
+              ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+              : <div className="avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{profile.initials}</div>
+            }
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{profile.firstName} {profile.lastName}</div>
               <div style={{ fontSize: 11, color: "var(--text3)" }}>free plan</div>
