@@ -145,7 +145,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid-3 mb-8" style={{ gap: 16 }}>
+      <div className="quick-actions-grid mb-8">
         {[
           { href: "/pitch-link",   icon: "🔗", title: "Kreiraj pitch link",   desc: "Personalizovani link za novog klijenta" },
           { href: "/profile-edit", icon: "✏️", title: "Uredi profil",          desc: "Ažuriraj projekte i opis" },

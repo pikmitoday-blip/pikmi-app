@@ -262,6 +262,7 @@ textarea.input { resize: vertical; min-height: 90px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
 .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+.quick-actions-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 
 /* === STEPS === */
 .steps { display: flex; align-items: center; gap: 0; margin-bottom: 36px; }
@@ -474,6 +475,9 @@ textarea.input { resize: vertical; min-height: 90px; }
   .edit-grid-2 { grid-template-columns: 1fr !important; }
   .edit-grid-4 { grid-template-columns: 1fr 1fr !important; }
   .edit-cs-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── Quick actions grid ── */
+  .quick-actions-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
 
   /* ── Landing page nav ── */
   .nav-top { padding: 0 16px !important; }
