@@ -75,6 +75,7 @@ export default function ProfileEdit() {
   const [p, setP] = useState<Profile>(DEFAULT);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<number | null>(null);
 
   // Učitaj profil — prvo iz Supabase, zatim localStorage kao fallback
   useEffect(() => {
@@ -124,8 +125,10 @@ export default function ProfileEdit() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Bez base64 slika u bazi (prevelike) — čuvaj ostalo
-        const { csImages, ...profileWithoutImages } = p;
+        // csImages sada sadrži URL-ove iz Storage (ne base64) — možemo čuvati
+        const csImagesClean = p.csImages.map(img =>
+          img.startsWith("data:") ? "" : img  // ukloni stare base64 slike
+        );
         await supabase
           .from("profiles")
           .upsert({
@@ -134,7 +137,7 @@ export default function ProfileEdit() {
             last_name: p.lastName,
             email: user.email ?? "",
             service_title: p.serviceTitle.split("\n")[0].trim(),
-            profile_data: profileWithoutImages,
+            profile_data: { ...p, csImages: csImagesClean },
           }, { onConflict: "user_id" });
       }
     } catch (e) {
@@ -161,14 +164,27 @@ export default function ProfileEdit() {
     setP(prev => ({ ...prev, pricing: tiers }));
   }
 
-  function uploadImage(i: number, file: File) {
-    const reader = new FileReader();
-    reader.onload = e => {
+  async function uploadImage(i: number, file: File) {
+    setUploading(i);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const ext = file.name.split(".").pop() ?? "bin";
+      const path = `${user.id}/project-${i}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("pikmi-uploads")
+        .upload(path, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: { publicUrl } } = supabase.storage
+        .from("pikmi-uploads")
+        .getPublicUrl(path);
       const imgs = [...p.csImages];
-      imgs[i] = e.target?.result as string;
+      imgs[i] = publicUrl;
       setP(prev => ({ ...prev, csImages: imgs }));
-    };
-    reader.readAsDataURL(file);
+    } catch (e) {
+      console.error("Upload error:", e);
+    }
+    setUploading(null);
   }
 
   function removeImage(i: number) {
@@ -288,7 +304,11 @@ export default function ProfileEdit() {
                   onMouseEnter={e => { if (!p.csImages[i]) (e.currentTarget as HTMLElement).style.background = "rgba(124,58,237,0.06)"; }}
                   onMouseLeave={e => { if (!p.csImages[i]) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"; }}
                   >
-                    {p.csImages[i] ? (
+                    {uploading === i ? (
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 12, color: "var(--text3)" }}>Uploadovanje...</div>
+                      </div>
+                    ) : p.csImages[i] ? (
                       <>
                         <img src={p.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         <div style={{
@@ -299,7 +319,7 @@ export default function ProfileEdit() {
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "0"}
                         >
-                          <span style={{ color: "white", fontSize: 12, fontWeight: 600 }}>Zamijeni sliku</span>
+                          <span style={{ color: "white", fontSize: 12, fontWeight: 600 }}>Zamijeni fajl</span>
                         </div>
                       </>
                     ) : (
