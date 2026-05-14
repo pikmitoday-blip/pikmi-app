@@ -9,29 +9,40 @@ function CallbackHandler() {
 
   useEffect(() => {
     async function handle() {
+      const next = searchParams.get("next") ?? "/dashboard";
       const code = searchParams.get("code");
 
+      // PKCE flow
       if (code) {
-        // PKCE flow — zamijeni code za sesiju
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
-          router.replace("/reset-password");
+          router.replace(next);
           return;
         }
       }
 
-      // Fallback: slušaj auth event (implicit flow)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+      // Implicit flow — Supabase automatski parsira #access_token iz hash fragmenta
+      // Čekamo auth state event
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
           subscription.unsubscribe();
           router.replace("/reset-password");
+        } else if (event === "SIGNED_IN" && session) {
+          subscription.unsubscribe();
+          router.replace(next);
         }
       });
 
-      setTimeout(() => {
+      // Timeout fallback
+      const timeout = setTimeout(() => {
         subscription.unsubscribe();
-        router.replace("/login?error=expired");
-      }, 5000);
+        router.replace("/login");
+      }, 6000);
+
+      return () => {
+        subscription.unsubscribe();
+        clearTimeout(timeout);
+      };
     }
 
     handle();
