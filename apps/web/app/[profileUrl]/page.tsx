@@ -47,7 +47,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       // 1. Provjeri da li slug odgovara pitch linku
       const { data: pitchLink } = await supabase
         .from("pitch_links")
-        .select("id, user_id, is_active")
+        .select("id, user_id, is_active, views")
         .eq("slug", slug)
         .single();
 
@@ -58,9 +58,10 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         setPitchLinkId(pitchLink.id);
 
         // Broji pregled
-        await supabase.from("pitch_links").update({ views: pitchLink.id }).eq("id", pitchLink.id);
-        await supabase.rpc("increment_views", { link_id: pitchLink.id }).catch(() => {});
-        await supabase.from("link_views").insert({ pitch_link_id: pitchLink.id }).catch(() => {});
+        try {
+          await supabase.from("link_views").insert({ pitch_link_id: pitchLink.id });
+          await supabase.from("pitch_links").update({ views: (pitchLink as any).views + 1 }).eq("id", pitchLink.id);
+        } catch {}
       } else {
         // 2. Provjeri da li slug odgovara profile_url
         const { data: profileByUrl } = await supabase
