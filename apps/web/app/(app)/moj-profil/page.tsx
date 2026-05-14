@@ -69,6 +69,7 @@ function SectionLabel({ text, color = "#6B6B6B" }: { text: string; color?: strin
 export default function MojProfil() {
   const [p, setP] = useState<Profile>(DEFAULT_PROFILE);
   const [profileUrl, setProfileUrl] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -92,7 +93,19 @@ export default function MojProfil() {
               caseStudies: pd.caseStudies ?? DEFAULT_PROFILE.caseStudies,
               pricing: pd.pricing ?? DEFAULT_PROFILE.pricing,
             });
-            if (data.profile_url) setProfileUrl(data.profile_url);
+            if (data.profile_url) {
+              setProfileUrl(data.profile_url);
+              setPreviewUrl(`/${data.profile_url}`);
+            } else {
+              // Fallback: prvi aktivni pitch link
+              const { data: links } = await supabase
+                .from("pitch_links")
+                .select("slug")
+                .eq("user_id", user.id)
+                .eq("is_active", true)
+                .limit(1);
+              if (links?.[0]) setPreviewUrl(`/${links[0].slug}`);
+            }
             return;
           }
         }
@@ -119,8 +132,8 @@ export default function MojProfil() {
           <p className="page-subtitle">Ovako te vide klijenti — tvoj javni pikmi profil</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          {profileUrl && (
-            <Link href={`/${profileUrl}`} target="_blank" className="btn btn-ghost btn-sm">👁 Pogledaj profil ↗</Link>
+          {previewUrl && (
+            <Link href={previewUrl} target="_blank" className="btn btn-ghost btn-sm">👁 Pogledaj profil ↗</Link>
           )}
           <Link href="/profile-edit" className="btn btn-primary">✏️ Uredi profil</Link>
         </div>
