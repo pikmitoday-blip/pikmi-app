@@ -1,25 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
+// Samo preusmjeravamo na client-side stranicu koja obrađuje token
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = searchParams.get("next") ?? "/reset-password";
 
   if (code) {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
+    // PKCE flow — proslijedi code na client stranicu
+    return NextResponse.redirect(`${origin}/auth/confirm?code=${code}&next=${next}`);
   }
 
-  // Ako nema code ili je greška — idi na login
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  // Implicit flow — hash fragment obrađuje client stranica
+  return NextResponse.redirect(`${origin}/auth/confirm?next=${next}`);
 }
