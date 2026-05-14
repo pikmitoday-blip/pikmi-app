@@ -65,27 +65,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Dohvati ili kreiraj session_id za ovaj uređaj
-        let sessionId = localStorage.getItem("pikmi-session-id");
+        // Provjeri da li postoji STARI session_id u localStorage (prije nego što kreiramo novi)
+        const existingSessionId = localStorage.getItem("pikmi-session-id");
+        let sessionId = existingSessionId;
+
         if (!sessionId) {
+          // Prva prijava na ovom uređaju — kreiraj novi ID
           sessionId = crypto.randomUUID();
           localStorage.setItem("pikmi-session-id", sessionId);
-        }
+        } else {
+          // Ima stari ID — provjeri da li još postoji u bazi
+          const { data: existing } = await supabase
+            .from("user_sessions")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("session_id", sessionId)
+            .maybeSingle();
 
-        // Provjeri da li ova sesija još postoji u bazi (mogla je biti obrisana)
-        const { data: existing } = await supabase
-          .from("user_sessions")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("session_id", sessionId)
-          .maybeSingle();
-
-        // Ako sesija ne postoji a localStorage je imao session_id — znači da je drugi uređaj istisnuo ovaj
-        if (!existing && localStorage.getItem("pikmi-session-id")) {
-          await supabase.auth.signOut();
-          localStorage.removeItem("pikmi-session-id");
-          router.push("/login?reason=limit");
-          return;
+          // Stari ID postoji u localStorage ali ne u bazi → uređaj je istisnuo ovaj
+          if (!existing) {
+            await supabase.auth.signOut();
+            localStorage.removeItem("pikmi-session-id");
+            router.push("/login?reason=limit");
+            return;
+          }
         }
 
         // Upsert ove sesije (osvježi last_active)
@@ -116,6 +119,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function handleLogout() {
+    try {
+      const sessionId = localStorage.getItem("pikmi-session-id");
+      if (sessionId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("user_sessions")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("session_id", sessionId);
+        }
+        localStorage.removeItem("pikmi-session-id");
+      }
+    } catch {}
     await supabase.auth.signOut();
     router.push("/login");
   }
