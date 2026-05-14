@@ -11,6 +11,7 @@ interface CaseStudy {
 interface PricingTier { name: string; price: string; desc: string; green?: boolean; }
 interface Profile {
   csImages: string[];
+  avatarUrl: string;
   firstName: string; lastName: string; initials: string; city: string;
   openStatus: string; badge: string;
   metric1Value: string; metric1Label: string;
@@ -160,13 +161,16 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         {/* Sidebar */}
         <div className="profile-sidebar" style={{ background: "#fff", borderRight: "1px solid #E4EBE4", padding: "32px 28px", position: "sticky", top: 52, minHeight: "calc(100vh - 52px)" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{
-              width: 100, height: 100, borderRadius: "50%",
-              background: "linear-gradient(135deg,#1F57C3,#0D3B8C)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 36, fontWeight: 700, color: "#fff",
-              margin: "0 auto 16px", boxShadow: "0 4px 16px rgba(31,87,195,0.25)",
-            }}>{p.initials || (p.firstName?.[0] ?? "?")}</div>
+            {p.avatarUrl
+              ? <img src={p.avatarUrl} alt="avatar" style={{ width: 100, height: 100, borderRadius: "50%", objectFit: "cover", margin: "0 auto 16px", display: "block", boxShadow: "0 4px 16px rgba(31,87,195,0.25)" }} />
+              : <div style={{
+                  width: 100, height: 100, borderRadius: "50%",
+                  background: "linear-gradient(135deg,#1F57C3,#0D3B8C)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 36, fontWeight: 700, color: "#fff",
+                  margin: "0 auto 16px", boxShadow: "0 4px 16px rgba(31,87,195,0.25)",
+                }}>{p.initials || (p.firstName?.[0] ?? "?")}</div>
+            }
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
             {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
             {p.ctaBtn1 && (
