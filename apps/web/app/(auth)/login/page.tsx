@@ -1,15 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sessionWarning, setSessionWarning] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("reason") === "limit") {
+      setSessionWarning(true);
+    }
+  }, [searchParams]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -31,9 +39,19 @@ export default function LoginPage() {
   return (
     <div className="card" style={{ padding: "40px 36px" }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Dobrodošao nazad 👋</h1>
-      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 32 }}>
+      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: sessionWarning ? 16 : 32 }}>
         Uloguj se da pristupiš svom profilu
       </p>
+
+      {sessionWarning && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 20,
+          background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)",
+          color: "#FCD34D", fontSize: 13,
+        }}>
+          📱 Prijavljen si na previše uređaja (max 3). Ovaj uređaj je odjavljen. Prijavi se ponovo.
+        </div>
+      )}
 
       <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div>

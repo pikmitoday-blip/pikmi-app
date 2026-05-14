@@ -59,7 +59,60 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }
       } catch {}
     }
+
+    async function manageSession() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Dohvati ili kreiraj session_id za ovaj uređaj
+        let sessionId = localStorage.getItem("pikmi-session-id");
+        if (!sessionId) {
+          sessionId = crypto.randomUUID();
+          localStorage.setItem("pikmi-session-id", sessionId);
+        }
+
+        // Provjeri da li ova sesija još postoji u bazi (mogla je biti obrisana)
+        const { data: existing } = await supabase
+          .from("user_sessions")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("session_id", sessionId)
+          .maybeSingle();
+
+        // Ako sesija ne postoji a localStorage je imao session_id — znači da je drugi uređaj istisnuo ovaj
+        if (!existing && localStorage.getItem("pikmi-session-id")) {
+          await supabase.auth.signOut();
+          localStorage.removeItem("pikmi-session-id");
+          router.push("/login?reason=limit");
+          return;
+        }
+
+        // Upsert ove sesije (osvježi last_active)
+        await supabase.from("user_sessions").upsert({
+          user_id: user.id,
+          session_id: sessionId,
+          device_info: navigator.userAgent.substring(0, 250),
+          last_active: new Date().toISOString(),
+        }, { onConflict: "user_id,session_id" });
+
+        // Dohvati sve sesije, sortiraj po najnovijim
+        const { data: sessions } = await supabase
+          .from("user_sessions")
+          .select("id, session_id, last_active")
+          .eq("user_id", user.id)
+          .order("last_active", { ascending: false });
+
+        // Ako ima više od 3, obriši najstarije
+        if (sessions && sessions.length > 3) {
+          const toDelete = sessions.slice(3).map(s => s.id);
+          await supabase.from("user_sessions").delete().in("id", toDelete);
+        }
+      } catch {}
+    }
+
     loadSidebarProfile();
+    manageSession();
   }, []);
 
   async function handleLogout() {
