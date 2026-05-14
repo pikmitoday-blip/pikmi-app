@@ -68,6 +68,7 @@ function SectionLabel({ text, color = "#6B6B6B" }: { text: string; color?: strin
 
 export default function MojProfil() {
   const [p, setP] = useState<Profile>(DEFAULT_PROFILE);
+  const [profileUrl, setProfileUrl] = useState<string>("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -76,7 +77,7 @@ export default function MojProfil() {
         if (user) {
           const { data } = await supabase
             .from("profiles")
-            .select("first_name, last_name, profile_data")
+            .select("first_name, last_name, profile_data, profile_url")
             .eq("user_id", user.id)
             .single();
           if (data) {
@@ -91,6 +92,7 @@ export default function MojProfil() {
               caseStudies: pd.caseStudies ?? DEFAULT_PROFILE.caseStudies,
               pricing: pd.pricing ?? DEFAULT_PROFILE.pricing,
             });
+            if (data.profile_url) setProfileUrl(data.profile_url);
             return;
           }
         }
@@ -116,7 +118,12 @@ export default function MojProfil() {
           <h1 className="page-title">Moj profil</h1>
           <p className="page-subtitle">Ovako te vide klijenti — tvoj javni pikmi profil</p>
         </div>
-        <Link href="/profile-edit" className="btn btn-primary">✏️ Uredi profil</Link>
+        <div style={{ display: "flex", gap: 10 }}>
+          {profileUrl && (
+            <Link href={`/${profileUrl}`} target="_blank" className="btn btn-ghost btn-sm">👁 Pogledaj profil ↗</Link>
+          )}
+          <Link href="/profile-edit" className="btn btn-primary">✏️ Uredi profil</Link>
+        </div>
       </div>
 
       {/* Upwork-style wrapper */}
