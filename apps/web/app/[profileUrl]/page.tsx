@@ -88,6 +88,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         // Korisnik postoji ali nema profile_data — prikaži osnovno
         setProfile({
           csImages: ["", "", "", ""],
+          avatarUrl: "",
           firstName: profileData.first_name || "",
           lastName: profileData.last_name || "",
           initials: (profileData.first_name?.[0] ?? "") + (profileData.last_name?.[0] ?? ""),
