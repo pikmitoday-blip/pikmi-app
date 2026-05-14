@@ -25,6 +25,25 @@ export default function RegisterPage() {
       return;
     }
 
+    // Provjeri device trial (lokalna zaštita od abuse)
+    let deviceId = localStorage.getItem("pikmi-device-id");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+    }
+
+    const { data: existingTrial } = await supabase
+      .from("device_trials")
+      .select("used_at")
+      .eq("device_id", deviceId)
+      .maybeSingle();
+
+    if (existingTrial) {
+      setError("Na ovom uređaju je već iskorišćen besplatni trial. Kupi Pro plan da nastaviš.");
+      setLoading(false);
+      return;
+    }
+
+    // Registracija
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -34,19 +53,32 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError(error.message === "User already registered"
+        ? "Email je već registrovan. Prijavi se ili resetuj lozinku."
+        : error.message);
       setLoading(false);
       return;
     }
 
-    // Kreiraj profil u bazi
     if (data.user) {
+      const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Kreiraj profil sa trial periodom
       await supabase.from("profiles").insert({
         user_id: data.user.id,
         first_name: firstName,
         last_name: lastName,
         email: email,
+        plan: "free",
+        trial_ends_at: trialEndsAt,
       });
+
+      // Zabilježi device kao iskorišćen za trial
+      localStorage.setItem("pikmi-device-id", deviceId);
+      await supabase.from("device_trials").insert({ device_id: deviceId });
+
+      // Sačuvaj trial info lokalno
+      localStorage.setItem("pikmi-trial-ends", trialEndsAt);
     }
 
     setSuccess(true);
@@ -58,9 +90,16 @@ export default function RegisterPage() {
       <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
         <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Nalog je kreiran!</h2>
-        <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 28, lineHeight: 1.6 }}>
-          Proveri email (<strong>{email}</strong>) i klikni na link za potvrdu. Nakon potvrde možeš se prijaviti.
+        <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8, lineHeight: 1.6 }}>
+          Proveri email (<strong>{email}</strong>) i klikni na link za potvrdu.
         </p>
+        <div style={{
+          padding: "12px 16px", borderRadius: 10, marginBottom: 24,
+          background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.25)",
+          fontSize: 13, color: "#A78BFA", lineHeight: 1.6,
+        }}>
+          🎁 Tvoj <strong>7-dnevni besplatni trial</strong> počinje od danas — imaš pristup svim funkcijama!
+        </div>
         <Link href="/login" className="btn btn-primary" style={{ justifyContent: "center", display: "flex" }}>
           Idi na prijavu →
         </Link>
@@ -71,9 +110,16 @@ export default function RegisterPage() {
   return (
     <div className="card" style={{ padding: "40px 36px" }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Kreiraj pikmi profil ✨</h1>
-      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 32 }}>
+      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8 }}>
         Besplatno. Bez kreditne kartice.
       </p>
+      <div style={{
+        padding: "10px 14px", borderRadius: 8, marginBottom: 24,
+        background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)",
+        fontSize: 13, color: "#A78BFA",
+      }}>
+        🎁 7 dana besplatnog triala — sve funkcije uključene
+      </div>
 
       <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
