@@ -9,6 +9,7 @@ const links = [
   { href: "/dashboard",    label: "Dashboard",    icon: "⊞" },
   { href: "/moj-profil",   label: "Moj profil",   icon: "👤" },
   { href: "/pitch-link",   label: "Pitch linkovi", icon: "🔗" },
+  { href: "/analytics",    label: "Analitika",    icon: "📊" },
   { href: "/profile-edit", label: "Uredi profil",  icon: "✏️" },
   { href: "/outreach",     label: "Outreach kit",  icon: "✉️" },
   { href: "/billing",      label: "Naplata",       icon: "💳" },
@@ -19,7 +20,7 @@ const mobileLinks = [
   { href: "/dashboard",    label: "Home",    icon: "⊞" },
   { href: "/moj-profil",   label: "Profil",  icon: "👤" },
   { href: "/pitch-link",   label: "Linkovi", icon: "🔗" },
-  { href: "/profile-edit", label: "Uredi",   icon: "✏️" },
+  { href: "/analytics",    label: "Analitika", icon: "📊" },
   { href: "/outreach",     label: "Outreach", icon: "✉️" },
 ];
 

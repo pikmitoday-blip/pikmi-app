@@ -48,7 +48,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       // 1. Provjeri da li slug odgovara pitch linku
       const { data: pitchLink } = await supabase
         .from("pitch_links")
-        .select("id, user_id, is_active, views")
+        .select("id, user_id, is_active, views, title")
         .eq("slug", slug)
         .single();
 
@@ -60,8 +60,28 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
         // Broji pregled
         try {
-          await supabase.from("link_views").insert({ pitch_link_id: pitchLink.id });
+          const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+          const referrer = document.referrer || null;
+
+          await supabase.from("link_views").insert({
+            pitch_link_id: pitchLink.id,
+            viewed_at: new Date().toISOString(),
+            device,
+            referrer,
+          });
           await supabase.from("pitch_links").update({ views: (pitchLink as any).views + 1 }).eq("id", pitchLink.id);
+
+          // Pošalji email notifikaciju vlasniku
+          fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pitchLinkId: pitchLink.id,
+              pitchLinkTitle: pitchLink.title || slug,
+              ownerUserId: pitchLink.user_id,
+              slug,
+            }),
+          }).catch(() => {});
         } catch {}
       } else {
         // 2. Provjeri da li slug odgovara profile_url

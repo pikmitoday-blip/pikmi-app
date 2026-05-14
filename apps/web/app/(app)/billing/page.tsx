@@ -14,6 +14,7 @@ function BillingContent() {
   const [profile, setProfile] = useState<BillingProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
 
@@ -38,6 +39,21 @@ function BillingContent() {
     }
     load();
   }, []);
+
+  async function handlePortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch {
+      setPortalLoading(false);
+    }
+  }
 
   async function handleSubscribe() {
     setCheckoutLoading(true);
@@ -184,8 +200,16 @@ function BillingContent() {
           </ul>
 
           {isPro ? (
-            <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>
-              ✓ Tvoj trenutni plan
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ Tvoj trenutni plan</div>
+              <button
+                className="btn btn-sm"
+                style={{ justifyContent: "center", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text2)" }}
+                onClick={handlePortal}
+                disabled={portalLoading}
+              >
+                {portalLoading ? "Učitavanje..." : "⚙️ Upravljaj pretplatom"}
+              </button>
             </div>
           ) : (
             <button

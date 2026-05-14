@@ -102,6 +102,12 @@ function LoginForm() {
           </div>
         )}
 
+        <div style={{ textAlign: "right", marginTop: -8 }}>
+          <Link href="/forgot-password" style={{ fontSize: 13, color: "#A78BFA", fontWeight: 500 }}>
+            Zaboravili ste lozinku?
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
