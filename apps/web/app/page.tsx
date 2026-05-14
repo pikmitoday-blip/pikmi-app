@@ -36,7 +36,7 @@ export default function Home() {
           <p style={{ fontSize: 18, color: "var(--text2)", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.6 }}>
             Personalizovani portfolio link za svakog klijenta. Vidi ko gleda, šta gleda i kada je spreman.
           </p>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3 hero-btns">
             <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno</Link>
             <a href="#how" className="btn btn-ghost btn-lg">▷ Kako funkcioniše</a>
           </div>
@@ -89,7 +89,7 @@ export default function Home() {
       <section id="features" style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 56 }}>
           <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Features</div>
-          <h2 style={{ fontSize: 40, fontWeight: 800 }}>Sve što ti treba da zatvoriš posao</h2>
+          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800 }}>Sve što ti treba da zatvoriš posao</h2>
         </div>
         <div className="grid-3">
           {[
@@ -115,7 +115,7 @@ export default function Home() {
       <section id="how" style={{ background: "var(--surface)", padding: "80px 24px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
           <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Kako funkcioniše</div>
-          <h2 style={{ fontSize: 40, fontWeight: 800, marginBottom: 56 }}>3 koraka do prvog klijenta</h2>
+          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800, marginBottom: 56 }}>3 koraka do prvog klijenta</h2>
           <div className="grid-3" style={{ gap: 32, textAlign: "left" }}>
             {[
               { n: "01", title: "Kreiraj profil", desc: "Popuni onboarding za 5 minuta. Dodaj projekte, opis i boje koje odgovaraju tebi." },
@@ -136,7 +136,7 @@ export default function Home() {
       <section id="pricing" style={{ maxWidth: 800, margin: "0 auto", padding: "80px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Cene</div>
-          <h2 style={{ fontSize: 40, fontWeight: 800 }}>Jednostavne cene</h2>
+          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800 }}>Jednostavne cene</h2>
         </div>
         <div className="grid-2" style={{ gap: 24 }}>
           <div className="card">
@@ -174,7 +174,7 @@ export default function Home() {
       {/* CTA */}
       <section style={{ background: "var(--surface)", padding: "80px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Spreman da zatvoriš<br /><span className="grad-text">prvi deal?</span></h2>
+          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Spreman da zatvoriš<br /><span className="grad-text">prvi deal?</span></h2>
           <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 36, lineHeight: 1.6 }}>
             Kreiraj pikmi profil za 5 minuta i pošalji prvi personalizovani pitch link još danas.
           </p>

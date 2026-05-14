@@ -474,4 +474,18 @@ textarea.input { resize: vertical; min-height: 90px; }
   .edit-grid-2 { grid-template-columns: 1fr !important; }
   .edit-grid-4 { grid-template-columns: 1fr 1fr !important; }
   .edit-cs-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── Landing page nav ── */
+  .nav-top { padding: 0 16px !important; }
+  .nav-links { display: none !important; }
+
+  /* ── Landing page hero buttons ── */
+  .hero-btns { flex-direction: column !important; align-items: stretch !important; }
+  .hero-btns .btn { justify-content: center !important; text-align: center !important; }
+
+  /* ── Landing page footer ── */
+  footer { flex-direction: column !important; gap: 16px !important; padding: 24px 16px !important; text-align: center !important; }
+
+  /* ── Landing page sections ── */
+  .landing-section-title { font-size: 28px !important; }
 }
