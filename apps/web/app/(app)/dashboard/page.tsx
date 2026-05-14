@@ -101,9 +101,9 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th>Klijent</th>
-                <th>Link</th>
+                <th className="hide-mobile">Link</th>
                 <th>Pregledi</th>
-                <th>Kreirano</th>
+                <th className="hide-mobile">Kreirano</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -118,7 +118,7 @@ export default function Dashboard() {
                       <span style={{ color: "var(--text)", fontWeight: 500 }}>{l.title}</span>
                     </div>
                   </td>
-                  <td>
+                  <td className="hide-mobile">
                     <a href={getLinkUrl(l.slug)} target="_blank" rel="noreferrer"
                       style={{ color: "var(--purple)", fontSize: 13, textDecoration: "none" }}>
                       /{l.slug} ↗
@@ -129,7 +129,7 @@ export default function Dashboard() {
                       {(l.views || 0) >= 3 && "🔥 "}{l.views || 0}
                     </span>
                   </td>
-                  <td style={{ color: "var(--text3)", fontSize: 13 }}>{timeAgo(l.created_at)} ago</td>
+                  <td className="hide-mobile" style={{ color: "var(--text3)", fontSize: 13 }}>{timeAgo(l.created_at)} ago</td>
                   <td>
                     <span className={`badge ${l.is_active ? "badge-green" : ""}`}
                       style={!l.is_active ? { background: "rgba(255,255,255,0.05)", color: "var(--text3)" } : {}}>

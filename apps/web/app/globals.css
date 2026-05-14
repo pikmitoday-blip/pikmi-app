@@ -397,9 +397,10 @@ textarea.input { resize: vertical; min-height: 90px; }
   /* ── Buttons ── */
   .btn { font-size: 13px !important; padding: 10px 16px !important; }
 
-  /* ── Table — horizontal scroll ── */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r); }
-  .table th, .table td { padding: 12px 10px !important; font-size: 13px !important; white-space: nowrap; }
+  /* ── Table — hide less important columns on mobile ── */
+  .table th, .table td { padding: 12px 10px !important; font-size: 13px !important; }
+  .hide-mobile { display: none !important; }
+  .table-wrap { overflow-x: hidden; }
 
   /* ── Mobile bottom nav ── */
   .mobile-nav {
