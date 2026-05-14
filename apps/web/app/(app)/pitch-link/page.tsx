@@ -1,12 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../../../lib/supabase";
+
+interface PitchLink {
+  id: string;
+  user_id: string;
+  title: string;
+  slug: string;
+  template: string;
+  views: number;
+  is_active: boolean;
+  created_at: string;
+}
 
 export default function PitchLink() {
-  const [form, setForm] = useState({ userId: "1", clientName: "", slug: "", message: "", filters: "" });
+  const [form, setForm] = useState({ clientName: "", slug: "", message: "", filters: "" });
   const [status, setStatus] = useState<"idle"|"loading"|"ok"|"err">("idle");
   const [errMsg, setErrMsg] = useState("");
-  const [links, setLinks] = useState<any[]>([]);
+  const [links, setLinks] = useState<PitchLink[]>([]);
   const [copied, setCopied] = useState<string|null>(null);
+  const [loadingLinks, setLoadingLinks] = useState(true);
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
 
@@ -14,32 +27,79 @@ export default function PitchLink() {
     return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   }
 
+  useEffect(() => {
+    loadLinks();
+  }, []);
+
+  async function loadLinks() {
+    setLoadingLinks(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("pitch_links")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (data) setLinks(data);
+    } catch {}
+    setLoadingLinks(false);
+  }
+
   async function create() {
     if (!form.clientName || !form.slug) return;
     setStatus("loading");
     setErrMsg("");
     try {
-      const r = await fetch("http://localhost:4000/api/pitch-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const base = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-        setLinks(prev => [{ ...form, id: Date.now(), url: `${base}/${data.slug || form.slug}` }, ...prev]);
-        setForm({ userId: "1", clientName: "", slug: "", message: "", filters: "" });
-        setStatus("ok");
-        setTimeout(() => setStatus("idle"), 2000);
-      } else {
-        const body = await r.json().catch(() => ({}));
-        setErrMsg(body.error || "Greška na serveru.");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Nisi ulogovan.");
+
+      const { data, error } = await supabase
+        .from("pitch_links")
+        .insert({
+          user_id: user.id,
+          title: form.clientName,
+          slug: form.slug,
+          template: form.message || "",
+          is_active: true,
+          views: 0,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === "23505") {
+          setErrMsg("Slug već postoji. Odaberi drugi URL.");
+        } else {
+          setErrMsg(error.message);
+        }
         setStatus("err");
+        return;
       }
-    } catch {
-      setErrMsg("API server nije dostupan. Provjeri da li radi na portu 4000.");
+
+      if (data) setLinks(prev => [data, ...prev]);
+      setForm({ clientName: "", slug: "", message: "", filters: "" });
+      setStatus("ok");
+      setTimeout(() => setStatus("idle"), 2000);
+    } catch (e: any) {
+      setErrMsg(e.message || "Greška pri kreiranju linka.");
       setStatus("err");
     }
+  }
+
+  async function toggleActive(id: string, current: boolean) {
+    await supabase.from("pitch_links").update({ is_active: !current }).eq("id", id);
+    setLinks(prev => prev.map(l => l.id === id ? { ...l, is_active: !current } : l));
+  }
+
+  async function deleteLink(id: string) {
+    await supabase.from("pitch_links").delete().eq("id", id);
+    setLinks(prev => prev.filter(l => l.id !== id));
+  }
+
+  function getLinkUrl(slug: string) {
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    return `${base}/${slug}`;
   }
 
   function copy(text: string, key: string) {
@@ -98,7 +158,11 @@ export default function PitchLink() {
         {/* Links list */}
         <div>
           <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>Kreirani linkovi</h2>
-          {links.length === 0 ? (
+          {loadingLinks ? (
+            <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+              <div style={{ color: "var(--text2)", fontSize: 14 }}>Učitavanje...</div>
+            </div>
+          ) : links.length === 0 ? (
             <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>🔗</div>
               <div style={{ color: "var(--text2)", fontSize: 14 }}>Još nema kreiranih linkova.<br />Kreiraj prvi gore.</div>
@@ -109,22 +173,29 @@ export default function PitchLink() {
                 <div key={l.id} className="card card-hover">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="avatar" style={{ width: 32, height: 32, fontSize: 12 }}>{l.clientName[0]}</div>
+                      <div className="avatar" style={{ width: 32, height: 32, fontSize: 12 }}>{l.title[0]}</div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 600 }}>{l.clientName}</div>
-                        <div style={{ fontSize: 12, color: "var(--text3)" }}>{l.url}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>{l.title}</div>
+                        <div style={{ fontSize: 12, color: "var(--text3)" }}>{getLinkUrl(l.slug)}</div>
                       </div>
                     </div>
-                    <span className="badge badge-green">Aktivan</span>
+                    <span className={`badge ${l.is_active ? "badge-green" : ""}`} style={!l.is_active ? { background: "rgba(255,255,255,0.05)", color: "var(--text3)" } : {}}>
+                      {l.is_active ? "Aktivan" : "Neaktivan"}
+                    </span>
                   </div>
-                  {l.message && (
-                    <p style={{ fontSize: 13, color: "var(--text2)", marginBottom: 12, lineHeight: 1.5 }}>{l.message.slice(0, 80)}{l.message.length > 80 ? "..." : ""}</p>
-                  )}
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
+                    👁 {l.views} pregleda
+                  </div>
                   <div className="flex gap-2">
-                    <button className="btn btn-ghost btn-sm" onClick={() => copy(l.url, l.id)}>
-                      {copied === String(l.id) ? "✓ Kopirano!" : "📋 Kopiraj link"}
+                    <button className="btn btn-ghost btn-sm" onClick={() => copy(getLinkUrl(l.slug), l.id)}>
+                      {copied === l.id ? "✓ Kopirano!" : "📋 Kopiraj link"}
                     </button>
-                    <button className="btn btn-ghost btn-sm">📊 Statistika</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => toggleActive(l.id, l.is_active)}>
+                      {l.is_active ? "⏸ Deaktiviraj" : "▶ Aktiviraj"}
+                    </button>
+                    <button className="btn btn-ghost btn-sm" style={{ color: "#F87171" }} onClick={() => deleteLink(l.id)}>
+                      🗑
+                    </button>
                   </div>
                 </div>
               ))}
