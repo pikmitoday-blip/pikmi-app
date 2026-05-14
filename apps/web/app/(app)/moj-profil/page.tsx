@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "../../../lib/supabase";
 
 interface CaseStudy {
   industry: string; metric: string; metricLabel: string;
@@ -67,13 +68,41 @@ export default function MojProfil() {
   const [p, setP] = useState<Profile>(DEFAULT_PROFILE);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("pikmi-profile");
-      if (saved) {
-        const loaded = JSON.parse(saved);
-        setP({ ...DEFAULT_PROFILE, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
-      }
-    } catch {}
+    async function loadProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("first_name, last_name, profile_data")
+            .eq("user_id", user.id)
+            .single();
+          if (data) {
+            const pd = (data.profile_data as Record<string, any>) || {};
+            setP({
+              ...DEFAULT_PROFILE,
+              ...pd,
+              firstName: data.first_name || DEFAULT_PROFILE.firstName,
+              lastName: data.last_name || DEFAULT_PROFILE.lastName,
+              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? "") || DEFAULT_PROFILE.initials,
+              csImages: pd.csImages ?? ["", "", "", ""],
+              caseStudies: pd.caseStudies ?? DEFAULT_PROFILE.caseStudies,
+              pricing: pd.pricing ?? DEFAULT_PROFILE.pricing,
+            });
+            return;
+          }
+        }
+      } catch {}
+      // fallback na localStorage
+      try {
+        const saved = localStorage.getItem("pikmi-profile");
+        if (saved) {
+          const loaded = JSON.parse(saved);
+          setP({ ...DEFAULT_PROFILE, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
+        }
+      } catch {}
+    }
+    loadProfile();
   }, []);
 
   const stackTags = p.stack.split(",").map(s => s.trim()).filter(Boolean);
