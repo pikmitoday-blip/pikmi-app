@@ -23,6 +23,7 @@ interface Profile {
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
+  calLink: string; pdfUrl: string;
 }
 
 function Divider() {
@@ -195,14 +196,26 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
             {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
             {p.ctaBtn1 && (
-              <button style={{ width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8 }}>
+              <a
+                href={p.calLink || undefined}
+                target={p.calLink ? "_blank" : undefined}
+                rel="noopener noreferrer"
+                onClick={!p.calLink ? (e) => e.preventDefault() : undefined}
+                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: p.calLink ? "pointer" : "default", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center", textDecoration: "none" }}
+              >
                 {p.ctaBtn1}
-              </button>
+              </a>
             )}
             {p.ctaBtn2 && (
-              <button style={{ width: "100%", padding: "11px", background: "transparent", color: "#1F57C3", border: "1.5px solid #1F57C3", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              <a
+                href={p.pdfUrl || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={!p.pdfUrl ? (e) => e.preventDefault() : undefined}
+                style={{ display: "block", width: "100%", padding: "11px", background: "transparent", color: "#1F57C3", border: "1.5px solid #1F57C3", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: p.pdfUrl ? "pointer" : "default", textAlign: "center", textDecoration: "none" }}
+              >
                 {p.ctaBtn2}
-              </button>
+              </a>
             )}
           </div>
 
@@ -334,8 +347,28 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 {p.ctaTitle} <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em>?
               </h3>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {p.ctaBtn1 && <button style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{p.ctaBtn1}</button>}
-                {p.ctaBtn2 && <button style={{ padding: "14px 28px", background: "transparent", color: "#fff", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{p.ctaBtn2}</button>}
+                {p.ctaBtn1 && (
+                  <a
+                    href={p.calLink || undefined}
+                    target={p.calLink ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    onClick={!p.calLink ? (e) => e.preventDefault() : undefined}
+                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: p.calLink ? "pointer" : "default", textDecoration: "none" }}
+                  >
+                    {p.ctaBtn1}
+                  </a>
+                )}
+                {p.ctaBtn2 && (
+                  <a
+                    href={p.pdfUrl || undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={!p.pdfUrl ? (e) => e.preventDefault() : undefined}
+                    style={{ padding: "14px 28px", background: "transparent", color: "#fff", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: p.pdfUrl ? "pointer" : "default", textDecoration: "none" }}
+                  >
+                    {p.ctaBtn2}
+                  </a>
+                )}
               </div>
             </div>
           )}
