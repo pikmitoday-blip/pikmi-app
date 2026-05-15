@@ -14,7 +14,28 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     async function checkSession() {
-      // Provjeri odmah — Supabase možda već ima sesiju iz hasha
+      // 1. Ručno parsiramo hash jer createBrowserClient ne obrađuje automatski
+      const hash = window.location.hash;
+      if (hash && hash.includes("access_token")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (!error) {
+            // Ukloni hash iz URL-a
+            window.history.replaceState(null, "", window.location.pathname);
+            setReady(true);
+            return;
+          }
+        }
+      }
+
+      // 2. Provjeri da li već postoji sesija
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -24,26 +45,8 @@ function ResetPasswordForm() {
         return;
       }
 
-      // Čekamo na PASSWORD_RECOVERY event
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event) => {
-        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-          subscription.unsubscribe();
-          setReady(true);
-        }
-      });
-
-      // Timeout — ako nema sessiona nakon 8s, idi na forgot-password
-      const timeout = setTimeout(() => {
-        subscription.unsubscribe();
-        router.replace("/forgot-password");
-      }, 8000);
-
-      return () => {
-        subscription.unsubscribe();
-        clearTimeout(timeout);
-      };
+      // 3. Nema sesije — link je nevažeći ili istekao
+      router.replace("/forgot-password?expired=1");
     }
 
     checkSession();
@@ -89,10 +92,7 @@ function ResetPasswordForm() {
 
   if (!ready) {
     return (
-      <div
-        className="card"
-        style={{ padding: "40px 36px", textAlign: "center" }}
-      >
+      <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
         <div style={{ fontSize: 36, marginBottom: 16 }}>⏳</div>
         <p style={{ fontSize: 14, color: "var(--text2)" }}>
           Verifikacija u toku...
@@ -106,9 +106,7 @@ function ResetPasswordForm() {
       <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
         Nova lozinka 🔐
       </h1>
-      <p
-        style={{ fontSize: 14, color: "var(--text2)", marginBottom: 32 }}
-      >
+      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 32 }}>
         Unesi novu lozinku za tvoj pikmi nalog.
       </p>
 
@@ -117,15 +115,7 @@ function ResetPasswordForm() {
         style={{ display: "flex", flexDirection: "column", gap: 16 }}
       >
         <div>
-          <label
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--text2)",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
+          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>
             Nova lozinka
           </label>
           <input
@@ -135,28 +125,14 @@ function ResetPasswordForm() {
             required
             placeholder="••••••••  (min. 6 karaktera)"
             style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 10,
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              color: "var(--text)",
-              fontSize: 14,
-              outline: "none",
-              boxSizing: "border-box",
+              width: "100%", padding: "10px 14px", borderRadius: 10,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--text)", fontSize: 14, outline: "none", boxSizing: "border-box",
             }}
           />
         </div>
         <div>
-          <label
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--text2)",
-              display: "block",
-              marginBottom: 6,
-            }}
-          >
+          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>
             Potvrdi lozinku
           </label>
           <input
@@ -166,30 +142,19 @@ function ResetPasswordForm() {
             required
             placeholder="••••••••"
             style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 10,
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              color: "var(--text)",
-              fontSize: 14,
-              outline: "none",
-              boxSizing: "border-box",
+              width: "100%", padding: "10px 14px", borderRadius: 10,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--text)", fontSize: 14, outline: "none", boxSizing: "border-box",
             }}
           />
         </div>
 
         {error && (
-          <div
-            style={{
-              padding: "10px 14px",
-              borderRadius: 8,
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.3)",
-              color: "#F87171",
-              fontSize: 13,
-            }}
-          >
+          <div style={{
+            padding: "10px 14px", borderRadius: 8,
+            background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+            color: "#F87171", fontSize: 13,
+          }}>
             ⚠️ {error}
           </div>
         )}
@@ -198,12 +163,7 @@ function ResetPasswordForm() {
           type="submit"
           disabled={loading}
           className="btn btn-primary"
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            marginTop: 4,
-            opacity: loading ? 0.7 : 1,
-          }}
+          style={{ width: "100%", justifyContent: "center", marginTop: 4, opacity: loading ? 0.7 : 1 }}
         >
           {loading ? "Čuvanje..." : "Sačuvaj novu lozinku →"}
         </button>
@@ -214,16 +174,11 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <div
-          className="card"
-          style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}
-        >
-          Učitavanje...
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>
+        Učitavanje...
+      </div>
+    }>
       <ResetPasswordForm />
     </Suspense>
   );
