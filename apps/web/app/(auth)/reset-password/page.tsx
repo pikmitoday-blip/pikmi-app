@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
 function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -14,7 +15,18 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     async function checkSession() {
-      // 1. Ručno parsiramo hash jer createBrowserClient ne obrađuje automatski
+      // 1. PKCE flow — ?code= u URL-u
+      const code = searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) {
+          window.history.replaceState(null, "", "/reset-password");
+          setReady(true);
+          return;
+        }
+      }
+
+      // 2. Implicit flow — #access_token= u hash-u
       const hash = window.location.hash;
       if (hash && hash.includes("access_token")) {
         const params = new URLSearchParams(hash.substring(1));
@@ -27,15 +39,14 @@ function ResetPasswordForm() {
             refresh_token: refreshToken,
           });
           if (!error) {
-            // Ukloni hash iz URL-a
-            window.history.replaceState(null, "", window.location.pathname);
+            window.history.replaceState(null, "", "/reset-password");
             setReady(true);
             return;
           }
         }
       }
 
-      // 2. Provjeri da li već postoji sesija
+      // 3. Provjeri postojeću sesiju
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -45,7 +56,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      // 3. Nema sesije — link je nevažeći ili istekao
+      // 4. Nema sesije — link je nevažeći ili istekao
       router.replace("/forgot-password?expired=1");
     }
 
