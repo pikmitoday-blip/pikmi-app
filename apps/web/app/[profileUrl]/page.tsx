@@ -120,6 +120,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           detailCapacity: "", detailResponse: "", detailMinBudget: "", detailLanguages: "",
           testimonialQuote: "", testimonialName: "", testimonialTitle: "",
           ctaTitle: "", ctaHighlight: "", ctaBtn1: "", ctaBtn2: "",
+          calLink: "", pdfUrl: "",
         });
       }
 
