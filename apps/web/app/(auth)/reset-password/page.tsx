@@ -5,34 +5,36 @@ import { supabase } from "../../../lib/supabase";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-  const [debugUrl, setDebugUrl] = useState("");
+  const [status, setStatus] = useState<"loading" | "ready" | "expired" | "done">("loading");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    const fullUrl = window.location.href;
-    setDebugUrl(fullUrl);
-
     async function checkSession() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
       const hash = window.location.hash;
 
-      // PKCE flow
+      // Provjeri error u hash-u (npr. otp_expired)
+      if (hash && hash.includes("error=")) {
+        setStatus("expired");
+        return;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+
+      // PKCE flow — ?code=
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
           window.history.replaceState(null, "", "/reset-password");
-          setReady(true);
+          setStatus("ready");
           return;
         }
       }
 
-      // Implicit flow
+      // Implicit flow — #access_token=
       if (hash && hash.includes("access_token")) {
         const params = new URLSearchParams(hash.substring(1));
         const accessToken = params.get("access_token");
@@ -45,7 +47,7 @@ export default function ResetPasswordPage() {
           });
           if (!error) {
             window.history.replaceState(null, "", "/reset-password");
-            setReady(true);
+            setStatus("ready");
             return;
           }
         }
@@ -54,12 +56,11 @@ export default function ResetPasswordPage() {
       // Postojeća sesija
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setReady(true);
+        setStatus("ready");
         return;
       }
 
-      // Nema ništa — prikaži grešku bez redirecta (debug)
-      setError("NO_SESSION");
+      setStatus("expired");
     }
 
     checkSession();
@@ -73,10 +74,10 @@ export default function ResetPasswordPage() {
     setError("");
     const { error } = await supabase.auth.updateUser({ password });
     if (error) { setError(error.message); setLoading(false); }
-    else { setDone(true); setTimeout(() => router.push("/dashboard"), 2000); }
+    else { setStatus("done"); setTimeout(() => router.push("/dashboard"), 2000); }
   }
 
-  if (done) {
+  if (status === "done") {
     return (
       <main className="auth-page">
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
@@ -88,26 +89,19 @@ export default function ResetPasswordPage() {
     );
   }
 
-  if (error === "NO_SESSION") {
+  if (status === "expired") {
     return (
       <main className="auth-page">
-        <div className="card" style={{ padding: "40px 36px" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, color: "#F87171" }}>
-            ⚠️ Debug — nema sesije
-          </h2>
-          <p style={{ fontSize: 12, color: "var(--text2)", marginBottom: 8 }}>
-            URL koji je stranica primila:
+        <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>⏰</div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>Link je istekao</h2>
+          <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 24 }}>
+            Reset link važi samo 1 sat. Pošalji novi link i odmah klikni.
           </p>
-          <div style={{
-            background: "#111", border: "1px solid #333", borderRadius: 8,
-            padding: 12, fontSize: 11, color: "#aaa", wordBreak: "break-all"
-          }}>
-            {debugUrl}
-          </div>
           <button
             onClick={() => router.push("/forgot-password")}
             className="btn btn-primary"
-            style={{ width: "100%", justifyContent: "center", marginTop: 24 }}
+            style={{ width: "100%", justifyContent: "center" }}
           >
             ← Pošalji novi link
           </button>
@@ -116,7 +110,7 @@ export default function ResetPasswordPage() {
     );
   }
 
-  if (!ready) {
+  if (status === "loading") {
     return (
       <main className="auth-page">
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
@@ -155,7 +149,7 @@ export default function ResetPasswordPage() {
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, outline: "none", boxSizing: "border-box" }}
             />
           </div>
-          {error && error !== "NO_SESSION" && (
+          {error && (
             <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#F87171", fontSize: 13 }}>
               ⚠️ {error}
             </div>
