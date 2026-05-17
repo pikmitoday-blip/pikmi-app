@@ -15,6 +15,19 @@ interface PitchLink {
 export default function Dashboard() {
   const [links, setLinks] = useState<PitchLink[]>([]);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("pikmi-theme") as "dark" | "light" | null;
+    if (saved) setTheme(saved);
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("pikmi-theme", next);
+  }
 
   useEffect(() => {
     loadDashboard();
@@ -142,6 +155,34 @@ export default function Dashboard() {
           </table>
           </div>
         )}
+      </div>
+
+      {/* Theme toggle — samo mobilni */}
+      <div className="mobile-only" style={{ marginBottom: 20 }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 18px", borderRadius: 12, border: "1px solid var(--border)",
+            background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
+            fontSize: 14, color: "var(--text2)", transition: "all 0.15s",
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>
+            {theme === "dark" ? "🌙 Tamna tema" : "☀️ Svetla tema"}
+          </span>
+          <div style={{
+            width: 42, height: 24, borderRadius: 100,
+            background: theme === "light" ? "var(--purple)" : "var(--border)",
+            position: "relative", transition: "background 0.2s", flexShrink: 0,
+          }}>
+            <div style={{
+              position: "absolute", top: 3, left: theme === "light" ? 21 : 3,
+              width: 18, height: 18, borderRadius: "50%", background: "white",
+              transition: "left 0.2s",
+            }} />
+          </div>
+        </button>
       </div>
 
       {/* Quick actions */}

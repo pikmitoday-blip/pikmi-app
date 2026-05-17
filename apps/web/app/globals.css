@@ -382,9 +382,10 @@ textarea.input { resize: vertical; min-height: 90px; }
    MOBILE RESPONSIVE
    ============================================ */
 
-/* Desktop: hide mobile nav */
+/* Desktop: hide mobile nav and mobile-only elements */
 @media (min-width: 769px) {
   .mobile-nav { display: none !important; }
+  .mobile-only { display: none !important; }
 }
 
 @media (max-width: 768px) {
