@@ -6,7 +6,7 @@ import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
 
 const links = [
-  { href: "/dashboard",    label: "Dashboard",    icon: "⊞" },
+  { href: "/dashboard",    label: "Dashboard",    icon: "🏠" },
   { href: "/moj-profil",   label: "Moj profil",   icon: "👤" },
   { href: "/pitch-link",   label: "Pitch linkovi", icon: "🔗" },
   { href: "/analytics",    label: "Analitika",    icon: "📊" },
@@ -17,7 +17,7 @@ const links = [
 
 // Samo 5 ključnih linkova u mobile bottom navu
 const mobileLinks = [
-  { href: "/dashboard",    label: "Home",    icon: "⊞" },
+  { href: "/dashboard",    label: "Home",    icon: "🏠" },
   { href: "/moj-profil",   label: "Profil",  icon: "👤" },
   { href: "/pitch-link",   label: "Linkovi", icon: "🔗" },
   { href: "/analytics",    label: "Analitika", icon: "📊" },
