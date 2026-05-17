@@ -156,11 +156,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const p = profile;
   const stackTags = p.stack ? p.stack.split(",").map(s => s.trim()).filter(Boolean) : [];
 
-  // Gmail compose link sa email-om freelancera
-  const contactHref = freelancerEmail
-    ? `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`)}`
-    : undefined;
-
   return (
     <div style={{ background: "#F7F7F5", minHeight: "100vh", fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
       {/* Mini nav */}
@@ -205,14 +200,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             }
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
             {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
-            {p.ctaBtn1 && (
-              <button
-                onClick={() => setShowContactModal(true)}
-                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center" }}
-              >
-                {p.ctaBtn1}
-              </button>
-            )}
+            <button
+              onClick={() => setShowContactModal(true)}
+              style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center" }}
+            >
+              {p.ctaBtn1 || "Zakaži strategy poziv"}
+            </button>
             {p.ctaBtn2 && (
               <a
                 href={p.pdfUrl || undefined}
@@ -347,21 +340,18 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </div>
           )}
 
-          {p.ctaTitle && (
-            <div style={{ borderRadius: 12, padding: "32px", background: "linear-gradient(135deg, #1F57C3 0%, #0D3B8C 100%)" }}>
+          <div style={{ borderRadius: 12, padding: "32px", background: "linear-gradient(135deg, #1F57C3 0%, #0D3B8C 100%)" }}>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", marginBottom: 10 }}>07 — KONTAKT</div>
               <h3 style={{ margin: "0 0 20px", fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
-                {p.ctaTitle} <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em>?
+                {p.ctaTitle || "Spreman za saradnju"}{p.ctaHighlight ? <> <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em></> : null}?
               </h3>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {p.ctaBtn1 && (
-                  <button
-                    onClick={() => setShowContactModal(true)}
-                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-                  >
-                    {p.ctaBtn1}
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowContactModal(true)}
+                  style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                >
+                  {p.ctaBtn1 || "Zakaži strategy poziv"}
+                </button>
                 {p.ctaBtn2 && (
                   <a
                     href={p.pdfUrl || undefined}
@@ -374,8 +364,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   </a>
                 )}
               </div>
-            </div>
-          )}
+          </div>
 
         </div>
       </div>
