@@ -157,8 +157,25 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Theme toggle — samo mobilni */}
-      <div className="mobile-only" style={{ marginBottom: 20 }}>
+      {/* Quick actions */}
+      <div className="quick-actions-grid mb-8">
+        {[
+          { href: "/pitch-link",   icon: "🔗", title: "Kreiraj pitch link",   desc: "Personalizovani link za novog klijenta" },
+          { href: "/profile-edit", icon: "✏️", title: "Uredi profil",          desc: "Ažuriraj projekte i opis" },
+          { href: "/outreach",     icon: "✉️", title: "Outreach kit",          desc: "Cold DM i email šabloni" },
+        ].map(a => (
+          <Link key={a.href} href={a.href} className="card card-hover flex gap-3 items-start" style={{ textDecoration: "none" }}>
+            <div style={{ fontSize: 24 }}>{a.icon}</div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{a.title}</div>
+              <div style={{ fontSize: 13, color: "var(--text3)" }}>{a.desc}</div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Theme toggle — samo mobilni, ispod quick actions */}
+      <div className="mobile-only" style={{ marginBottom: 8 }}>
         <button
           onClick={toggleTheme}
           style={{
@@ -183,23 +200,6 @@ export default function Dashboard() {
             }} />
           </div>
         </button>
-      </div>
-
-      {/* Quick actions */}
-      <div className="quick-actions-grid mb-8">
-        {[
-          { href: "/pitch-link",   icon: "🔗", title: "Kreiraj pitch link",   desc: "Personalizovani link za novog klijenta" },
-          { href: "/profile-edit", icon: "✏️", title: "Uredi profil",          desc: "Ažuriraj projekte i opis" },
-          { href: "/outreach",     icon: "✉️", title: "Outreach kit",          desc: "Cold DM i email šabloni" },
-        ].map(a => (
-          <Link key={a.href} href={a.href} className="card card-hover flex gap-3 items-start" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: 24 }}>{a.icon}</div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{a.title}</div>
-              <div style={{ fontSize: 13, color: "var(--text3)" }}>{a.desc}</div>
-            </div>
-          </Link>
-        ))}
       </div>
     </div>
   );
