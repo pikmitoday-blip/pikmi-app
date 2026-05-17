@@ -295,6 +295,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         ))}
         <button
+          onClick={toggleTheme}
+          className="mobile-nav-item"
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", padding: 0 }}
+        >
+          <div className="mobile-nav-icon">{theme === "dark" ? "☀️" : "🌙"}</div>
+          <span>{theme === "dark" ? "Svetla" : "Tamna"}</span>
+        </button>
+        <button
           onClick={handleLogout}
           className="mobile-nav-item"
           style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", padding: 0 }}
