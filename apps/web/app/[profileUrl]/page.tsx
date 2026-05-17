@@ -42,6 +42,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [loading, setLoading] = useState(true);
   const [pitchLinkId, setPitchLinkId] = useState<string | null>(null);
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
+  const [showContactModal, setShowContactModal] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -205,15 +206,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
             {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
             {p.ctaBtn1 && (
-              <a
-                href={contactHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={!contactHref ? (e) => e.preventDefault() : undefined}
-                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: contactHref ? "pointer" : "default", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center", textDecoration: "none" }}
+              <button
+                onClick={() => setShowContactModal(true)}
+                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center" }}
               >
                 {p.ctaBtn1}
-              </a>
+              </button>
             )}
             {p.ctaBtn2 && (
               <a
@@ -357,15 +355,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               </h3>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {p.ctaBtn1 && (
-                  <a
-                    href={contactHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={!contactHref ? (e) => e.preventDefault() : undefined}
-                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: contactHref ? "pointer" : "default", textDecoration: "none" }}
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                   >
                     {p.ctaBtn1}
-                  </a>
+                  </button>
                 )}
                 {p.ctaBtn2 && (
                   <a
@@ -384,6 +379,83 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
         </div>
       </div>
+
+      {/* ── Kontakt modal ── */}
+      {showContactModal && (
+        <div
+          onClick={() => setShowContactModal(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 16, padding: "32px 28px",
+              width: "100%", maxWidth: 420,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1E1E1E" }}>
+                Zakaži poziv ✉️
+              </h3>
+              <button
+                onClick={() => setShowContactModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#999", lineHeight: 1 }}
+              >×</button>
+            </div>
+
+            {/* Recipient */}
+            <div style={{ background: "#F7F7F5", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
+              <div style={{ fontSize: 11, color: "#999", letterSpacing: "0.5px", marginBottom: 4 }}>ŠALJEŠ NA</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#1E1E1E" }}>{freelancerEmail}</div>
+            </div>
+
+            {/* Objašnjenje */}
+            <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.6, marginBottom: 20 }}>
+              Odaberi Gmail nalog sa kojeg želiš da se javiš. Možeš koristiti lični ili poslovni nalog.
+            </p>
+
+            {/* Account opcije */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 8 }}>
+              {[
+                { label: "Otvoriti sa 1. nalogom", index: 0 },
+                { label: "Otvoriti sa 2. nalogom", index: 1 },
+                { label: "Otvoriti sa 3. nalogom", index: 2 },
+              ].map(({ label, index }) => (
+                <a
+                  key={index}
+                  href={`https://mail.google.com/mail/u/${index}/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowContactModal(false)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "13px 16px", borderRadius: 10,
+                    border: "1.5px solid #E4EBE4", textDecoration: "none",
+                    color: "#1E1E1E", fontSize: 14, fontWeight: 500,
+                    transition: "all 0.15s", background: "#fff",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = "#1F57C3")}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = "#E4EBE4")}
+                >
+                  <span style={{ fontSize: 18 }}>📧</span>
+                  {label}
+                </a>
+              ))}
+            </div>
+
+            <p style={{ fontSize: 11, color: "#ADADAD", textAlign: "center", marginTop: 12 }}>
+              Gmail otvara naloge po redoslijedu prijave (1. = prvi prijavljeni)
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
