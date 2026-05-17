@@ -22,7 +22,7 @@ interface Profile {
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
-  calLink: string; pdfUrl: string;
+  pdfUrl: string;
 }
 
 const DEFAULT: Profile = {
@@ -53,7 +53,7 @@ const DEFAULT: Profile = {
   testimonialName: "Ana Lukić", testimonialTitle: "CEO, Lumea Beauty",
   ctaTitle: "Spreman da skaliraš", ctaHighlight: "profitabilno",
   ctaBtn1: "Zakaži strategy poziv →", ctaBtn2: "Preuzmi case study (PDF)",
-  calLink: "", pdfUrl: "",
+  pdfUrl: "",
 };
 
 const CS_GRADIENTS = [
@@ -490,10 +490,6 @@ export default function ProfileEdit() {
             <div className="field" style={{ marginBottom: 0 }}>
               <label className="label">Dugme 1 (plavo) — tekst</label>
               <input className="input" value={p.ctaBtn1} onChange={e => set("ctaBtn1", e.target.value)} placeholder="Zakaži strategy poziv →" />
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Dugme 1 — Calendly / Cal.com link</label>
-              <input className="input" value={p.calLink} onChange={e => set("calLink", e.target.value)} placeholder="https://calendly.com/tvoj-profil" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
               <label className="label">Dugme 2 (outline) — tekst</label>

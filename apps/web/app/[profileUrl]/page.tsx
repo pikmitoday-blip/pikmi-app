@@ -23,7 +23,7 @@ interface Profile {
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
-  calLink: string; pdfUrl: string;
+  pdfUrl: string;
 }
 
 function Divider() {
@@ -123,7 +123,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           detailCapacity: "", detailResponse: "", detailMinBudget: "", detailLanguages: "",
           testimonialQuote: "", testimonialName: "", testimonialTitle: "",
           ctaTitle: "", ctaHighlight: "", ctaBtn1: "", ctaBtn2: "",
-          calLink: "", pdfUrl: "",
+          pdfUrl: "",
         });
       }
 
@@ -156,15 +156,9 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const stackTags = p.stack ? p.stack.split(",").map(s => s.trim()).filter(Boolean) : [];
 
   // Gmail compose link sa email-om freelancera
-  function getContactHref() {
-    if (p.calLink) return p.calLink;
-    if (freelancerEmail) {
-      const subject = encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`);
-      return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${subject}`;
-    }
-    return undefined;
-  }
-  const contactHref = getContactHref();
+  const contactHref = freelancerEmail
+    ? `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`)}`
+    : undefined;
 
   return (
     <div style={{ background: "#F7F7F5", minHeight: "100vh", fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
