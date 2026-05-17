@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PikmiLogo from "./components/PikmiLogo";
+import CheckoutButton from "./components/CheckoutButton";
 
 export default function Home() {
   return (
@@ -166,7 +167,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="/billing" className="btn btn-primary w-full" style={{ justifyContent: "center" }}>Pretplati se na Pro</Link>
+            <CheckoutButton />
           </div>
         </div>
       </section>
