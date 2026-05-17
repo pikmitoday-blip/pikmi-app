@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   const totalLinks = links.length;
   const totalOpens = links.reduce((sum, l) => sum + (l.views || 0), 0);
-  const hotLeads  = links.filter(l => (l.views || 0) >= 3).length;
+  const hotLeads  = links.filter(l => (l.views || 0) >= 2).length;
 
   function getLinkUrl(slug: string) {
     const base = typeof window !== "undefined" ? window.location.origin : "https://pikmi.today";
@@ -138,8 +138,8 @@ export default function Dashboard() {
                     </a>
                   </td>
                   <td>
-                    <span style={{ fontWeight: 600, color: (l.views || 0) >= 3 ? "#F472B6" : "var(--text)" }}>
-                      {(l.views || 0) >= 3 && "🔥 "}{l.views || 0}
+                    <span style={{ fontWeight: 600, color: (l.views || 0) >= 2 ? "#F472B6" : "var(--text)" }}>
+                      {(l.views || 0) >= 2 && "🔥 "}{l.views || 0}
                     </span>
                   </td>
                   <td className="hide-mobile" style={{ color: "var(--text3)", fontSize: 13 }}>{timeAgo(l.created_at)} ago</td>
