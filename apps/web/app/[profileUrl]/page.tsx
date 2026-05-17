@@ -41,6 +41,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [pitchLinkId, setPitchLinkId] = useState<string | null>(null);
+  const [freelancerEmail, setFreelancerEmail] = useState<string>("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -99,9 +100,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       // 3. Učitaj profile_data
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("profile_data, first_name, last_name")
+        .select("profile_data, first_name, last_name, email")
         .eq("user_id", userId)
         .single();
+
+      if (profileData?.email) setFreelancerEmail(profileData.email);
 
       if (profileData?.profile_data && Object.keys(profileData.profile_data).length > 0) {
         setProfile(profileData.profile_data as Profile);
@@ -152,6 +155,17 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const p = profile;
   const stackTags = p.stack ? p.stack.split(",").map(s => s.trim()).filter(Boolean) : [];
 
+  // Gmail compose link sa email-om freelancera
+  function getContactHref() {
+    if (p.calLink) return p.calLink;
+    if (freelancerEmail) {
+      const subject = encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`);
+      return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${subject}`;
+    }
+    return undefined;
+  }
+  const contactHref = getContactHref();
+
   return (
     <div style={{ background: "#F7F7F5", minHeight: "100vh", fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
       {/* Mini nav */}
@@ -198,11 +212,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
             {p.ctaBtn1 && (
               <a
-                href={p.calLink || undefined}
-                target={p.calLink ? "_blank" : undefined}
+                href={contactHref}
+                target="_blank"
                 rel="noopener noreferrer"
-                onClick={!p.calLink ? (e) => e.preventDefault() : undefined}
-                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: p.calLink ? "pointer" : "default", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center", textDecoration: "none" }}
+                onClick={!contactHref ? (e) => e.preventDefault() : undefined}
+                style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: contactHref ? "pointer" : "default", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center", textDecoration: "none" }}
               >
                 {p.ctaBtn1}
               </a>
@@ -350,11 +364,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {p.ctaBtn1 && (
                   <a
-                    href={p.calLink || undefined}
-                    target={p.calLink ? "_blank" : undefined}
+                    href={contactHref}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    onClick={!p.calLink ? (e) => e.preventDefault() : undefined}
-                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: p.calLink ? "pointer" : "default", textDecoration: "none" }}
+                    onClick={!contactHref ? (e) => e.preventDefault() : undefined}
+                    style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: contactHref ? "pointer" : "default", textDecoration: "none" }}
                   >
                     {p.ctaBtn1}
                   </a>
