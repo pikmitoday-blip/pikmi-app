@@ -147,10 +147,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <Link href="/" className="sidebar-logo">
+        <div className="sidebar-logo" style={{ cursor: "default" }}>
           <PikmiLogo size={30} />
           pikmi
-        </Link>
+        </div>
 
         <div className="sidebar-section">Navigacija</div>
         <nav className="sidebar-nav">
