@@ -3,6 +3,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 
+interface ProfileRow {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  plan: string;
+  created_at: string;
+}
+
 interface Stats {
   totalUsers: number;
   proUsers: number;
@@ -12,26 +20,34 @@ interface Stats {
   newUsersWeek: number;
 }
 
-interface RecentUser {
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  plan: string;
-  created_at: string;
+// Generisanje posljednjih N mjeseci kao "YYYY-MM" stringova
+function lastNMonths(n: number): { value: string; label: string }[] {
+  const result = [];
+  const now = new Date();
+  for (let i = 0; i < n; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("sr-RS", { month: "long", year: "numeric" });
+    result.push({ value, label });
+  }
+  return result;
 }
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
+  const [recentUsers, setRecentUsers] = useState<ProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [revenueMonth, setRevenueMonth] = useState<string>("all");
+
+  const months = lastNMonths(12);
 
   useEffect(() => {
     async function load() {
       try {
-        const [profilesRes, linksRes, viewsRes] = await Promise.all([
-          supabase.from("profiles").select("user_id, plan, created_at"),
+        const [profilesRes, linksRes] = await Promise.all([
+          supabase.from("profiles").select("user_id, first_name, last_name, plan, created_at"),
           supabase.from("pitch_links").select("id, views"),
-          supabase.from("link_views").select("id", { count: "exact", head: true }),
         ]);
 
         const profiles = profilesRes.data ?? [];
@@ -40,6 +56,7 @@ export default function AdminOverview() {
         const todayStr = now.toISOString().slice(0, 10);
         const weekAgo  = new Date(now.getTime() - 7 * 86400000).toISOString();
 
+        setAllProfiles(profiles);
         setStats({
           totalUsers:    profiles.length,
           proUsers:      profiles.filter(p => p.plan === "pro").length,
@@ -49,17 +66,29 @@ export default function AdminOverview() {
           newUsersWeek:  profiles.filter(p => p.created_at >= weekAgo).length,
         });
 
-        const { data: recent } = await supabase
-          .from("profiles")
-          .select("user_id, first_name, last_name, plan, created_at")
-          .order("created_at", { ascending: false })
-          .limit(8);
-        setRecentUsers(recent ?? []);
+        setRecentUsers(
+          [...profiles].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
+        );
       } catch {}
       setLoading(false);
     }
     load();
   }, []);
+
+  // Prihod za odabrani mjesec
+  const filteredProUsers = revenueMonth === "all"
+    ? allProfiles.filter(p => p.plan === "pro")
+    : allProfiles.filter(p => p.plan === "pro" && p.created_at?.slice(0, 7) === revenueMonth);
+
+  const revenueAmount = filteredProUsers.length * 990;
+
+  // Bar chart — novi Pro po mjesecu (zadnjih 6)
+  const chartMonths = lastNMonths(6).reverse();
+  const chartData = chartMonths.map(m => ({
+    label: m.label.split(" ")[0].slice(0, 3), // kratki naziv
+    count: allProfiles.filter(p => p.plan === "pro" && p.created_at?.slice(0, 7) === m.value).length,
+  }));
+  const chartMax = Math.max(...chartData.map(c => c.count), 1);
 
   function timeAgo(d: string) {
     const diff = Date.now() - new Date(d).getTime();
@@ -110,22 +139,69 @@ export default function AdminOverview() {
       {stats && (
         <div style={{
           background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)",
-          borderRadius: 12, padding: "20px 24px", marginBottom: 32,
-          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
+          borderRadius: 12, padding: "24px", marginBottom: 32,
         }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#A78BFA", fontWeight: 600, letterSpacing: "0.06em", marginBottom: 4 }}>PROCIJENJENI PRIHOD / MJESEC</div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: "#fff" }}>
-              {(stats.proUsers * 990).toLocaleString("sr-RS")} din
+          {/* Header + filter */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+            <div style={{ fontSize: 12, color: "#A78BFA", fontWeight: 700, letterSpacing: "0.06em" }}>
+              PROCIJENJENI PRIHOD / MJESEC
             </div>
-            <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
-              {stats.proUsers} × 990 din — Na osnovu aktivnih Pro pretplata
+            <select
+              value={revenueMonth}
+              onChange={e => setRevenueMonth(e.target.value)}
+              style={{
+                background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.35)",
+                borderRadius: 8, padding: "6px 12px", color: "#A78BFA",
+                fontSize: 12, fontWeight: 600, cursor: "pointer", outline: "none",
+                fontFamily: "inherit",
+              }}
+            >
+              <option value="all">Ukupno (svi aktivni)</option>
+              {months.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Iznos + konverzija */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
+            <div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+                {revenueAmount.toLocaleString("sr-RS")} <span style={{ fontSize: 20, fontWeight: 600, color: "#A78BFA" }}>din</span>
+              </div>
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
+                {filteredProUsers.length} Pro korisnik{filteredProUsers.length === 1 ? "" : filteredProUsers.length < 5 ? "a" : "a"} × 990 din
+                {revenueMonth !== "all" && (
+                  <span style={{ marginLeft: 8, color: "#A78BFA" }}>
+                    — {months.find(m => m.value === revenueMonth)?.label}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Konverzija</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#A78BFA" }}>
+                {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : "0.0"}%
+              </div>
             </div>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 4 }}>Konverzija</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#A78BFA" }}>
-              {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : "0.0"}%
+
+          {/* Mini bar chart — novi Pro po mjesecu */}
+          <div>
+            <div style={{ fontSize: 11, color: "#4B5563", fontWeight: 600, letterSpacing: "0.05em", marginBottom: 10 }}>NOVI PRO KORISNICI PO MJESECU</div>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 60 }}>
+              {chartData.map((c, i) => (
+                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  <div style={{ fontSize: 10, color: "#A78BFA", fontWeight: 600 }}>{c.count > 0 ? c.count : ""}</div>
+                  <div style={{
+                    width: "100%", borderRadius: 4,
+                    background: c.count > 0 ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.05)",
+                    height: `${Math.max((c.count / chartMax) * 40, c.count > 0 ? 6 : 3)}px`,
+                    transition: "height 0.3s",
+                  }} />
+                  <div style={{ fontSize: 9, color: "#4B5563", textAlign: "center" }}>{c.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
