@@ -172,12 +172,6 @@ function BillingContent() {
           background: "rgba(124,58,237,0.06)",
           position: "relative",
         }}>
-          <div style={{
-            position: "absolute", top: -12, right: 16,
-            background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
-            color: "white", fontSize: 11, fontWeight: 700,
-            padding: "4px 12px", borderRadius: 100, letterSpacing: "0.05em",
-          }}>POPULARNO</div>
           <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pro</div>
           <div style={{ fontSize: 38, fontWeight: 900, marginBottom: 4 }}>
             990 din<span style={{ fontSize: 15, fontWeight: 500, color: "var(--text2)" }}>/mes</span>
