@@ -23,9 +23,6 @@ export default function PitchLink() {
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
 
-  function autoSlug(name: string) {
-    return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-  }
 
   useEffect(() => {
     loadLinks();
@@ -123,7 +120,7 @@ export default function PitchLink() {
           <div className="field">
             <label className="label">Ime klijenta *</label>
             <input className="input" value={form.clientName} placeholder="Npr. Coca-Cola d.o.o."
-              onChange={e => { set("clientName", e.target.value); if (!form.slug) set("slug", autoSlug(e.target.value)); }} />
+              onChange={e => set("clientName", e.target.value)} />
           </div>
           <div className="field">
             <label className="label">Slug (URL) *</label>
