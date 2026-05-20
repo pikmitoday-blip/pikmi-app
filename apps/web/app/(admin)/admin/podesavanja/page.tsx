@@ -17,14 +17,6 @@ export default function AdminPodesavanja() {
     showToast("Kopirano!");
   }
 
-  const envVars = [
-    { key: "NEXT_PUBLIC_ADMIN_EMAIL",    desc: "Email adresa admina (odvojen zarezom za više admina)", value: process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "nije postavljen" },
-    { key: "NEXT_PUBLIC_SUPABASE_URL",   desc: "Supabase project URL",                                  value: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "nije postavljen" },
-    { key: "STRIPE_SECRET_KEY",          desc: "Stripe tajni ključ (server-only)",                       value: "••••••••••••••••••••••" },
-    { key: "STRIPE_WEBHOOK_SECRET",      desc: "Stripe webhook tajni ključ",                             value: "••••••••••••••••••••••" },
-    { key: "RESEND_API_KEY",             desc: "Resend API ključ za email notifikacije",                  value: "••••••••••••••••••••••" },
-  ];
-
   const sections = [
     {
       title: "Admin pristup",
@@ -49,38 +41,6 @@ export default function AdminPodesavanja() {
               <li>Redeploy projekt da promjena stupi na snagu</li>
             </ol>
           </div>
-        </div>
-      ),
-    },
-    {
-      title: "Environment varijable",
-      content: (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <p style={{ fontSize: 12, color: "#4B5563", marginBottom: 8, lineHeight: 1.6 }}>
-            Pregled ključnih varijabli. Tajne vrijednosti su skrivene. Sve promjene se vrše u Vercel dashboard-u.
-          </p>
-          {envVars.map(v => (
-            <div key={v.key} style={{
-              padding: "12px 16px", borderRadius: 8,
-              background: "#0D0D12", border: "1px solid rgba(255,255,255,0.06)",
-              display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12,
-            }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                  <code style={{ fontSize: 12, color: "#A78BFA" }}>{v.key}</code>
-                  <button onClick={() => copyToClipboard(v.key)} style={{
-                    padding: "1px 6px", borderRadius: 4, cursor: "pointer", fontSize: 10,
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)",
-                    color: "#4B5563",
-                  }}>copy</button>
-                </div>
-                <div style={{ fontSize: 11, color: "#4B5563" }}>{v.desc}</div>
-              </div>
-              <div style={{ fontSize: 12, color: v.value.includes("nije") ? "#F87171" : "#4ADE80", flexShrink: 0, fontWeight: v.value.includes("nije") ? 600 : 400 }}>
-                {v.value.includes("nije") ? "⚠️ " : ""}{v.value.length > 30 ? v.value.slice(0, 30) + "..." : v.value}
-              </div>
-            </div>
-          ))}
         </div>
       ),
     },
