@@ -6,6 +6,7 @@ interface User {
   user_id: string;
   first_name: string;
   last_name: string;
+  email: string | null;
   plan: string;
   created_at: string;
   profile_url: string | null;
@@ -28,7 +29,7 @@ export default function AdminKorisnici() {
     try {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, first_name, last_name, plan, created_at, profile_url, stripe_subscription_id")
+        .select("user_id, first_name, last_name, email, plan, created_at, profile_url, stripe_subscription_id")
         .order("created_at", { ascending: false });
 
       const { data: links } = await supabase
@@ -80,7 +81,7 @@ export default function AdminKorisnici() {
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase();
-    const matchSearch = !q || `${u.first_name} ${u.last_name}`.toLowerCase().includes(q) || (u.profile_url ?? "").includes(q);
+    const matchSearch = !q || `${u.first_name} ${u.last_name}`.toLowerCase().includes(q) || (u.profile_url ?? "").includes(q) || (u.email ?? "").toLowerCase().includes(q);
     const matchPlan = planFilter === "sve" || u.plan === planFilter;
     return matchSearch && matchPlan;
   });
@@ -184,9 +185,15 @@ export default function AdminKorisnici() {
                         <div style={{ fontSize: 13, fontWeight: 500, color: "#E5E7EB" }}>
                           {u.first_name} {u.last_name}
                         </div>
+                        {u.email && (
+                          <a href={`mailto:${u.email}`}
+                            style={{ fontSize: 11, color: "#6B7280", textDecoration: "none", display: "block" }}>
+                            {u.email}
+                          </a>
+                        )}
                         {u.profile_url && (
                           <a href={`/${u.profile_url}`} target="_blank" rel="noreferrer"
-                            style={{ fontSize: 11, color: "#4B5563", textDecoration: "none" }}>
+                            style={{ fontSize: 11, color: "#4B5563", textDecoration: "none", display: "block" }}>
                             /{u.profile_url} ↗
                           </a>
                         )}
