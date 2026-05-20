@@ -89,6 +89,7 @@ export default function ProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [profileUrl, setProfileUrl] = useState<string>("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -97,9 +98,10 @@ export default function ProfileEdit() {
         if (user) {
           const { data } = await supabase
             .from("profiles")
-            .select("profile_data, first_name, last_name")
+            .select("profile_data, first_name, last_name, profile_url")
             .eq("user_id", user.id)
             .single();
+          if (data?.profile_url) setProfileUrl(data.profile_url);
           if (data?.profile_data && Object.keys(data.profile_data).length > 0) {
             const updated = { ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] };
             setP(updated);
@@ -234,7 +236,7 @@ export default function ProfileEdit() {
           <p className="page-subtitle">Popuni sve sekcije — klikom na "Sačuvaj" ažurira se tvoj profil</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/moj-profil" className="btn btn-ghost btn-sm">👁 Pogledaj profil</Link>
+          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">👁 Pogledaj profil</a>
           <button className="btn btn-primary" onClick={save} disabled={saving}>
             {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj"}
           </button>
@@ -511,7 +513,7 @@ export default function ProfileEdit() {
 
         {/* Save */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingBottom: 40 }}>
-          <Link href="/moj-profil" className="btn btn-ghost">👁 Pogledaj profil</Link>
+          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost">👁 Pogledaj profil</a>
           <button className="btn btn-primary" onClick={save} style={{ minWidth: 160 }}>
             {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj promjene"}
           </button>
