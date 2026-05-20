@@ -61,42 +61,43 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         userId = pitchLink.user_id;
         setPitchLinkId(pitchLink.id);
 
-        // Provjeri da li je posjetilac vlasnik linka (odvojeno od brojanja)
-        let isOwner = false;
+        // Dohvati access token ako je korisnik ulogovan — server će provjeriti da li je vlasnik
+        let viewerToken: string | null = null;
         try {
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          isOwner = currentUser?.id === pitchLink.user_id;
+          const { data: { session } } = await supabase.auth.getSession();
+          viewerToken = session?.access_token ?? null;
         } catch {}
 
-        // Broji pregled samo ako posjetilac NIJE vlasnik linka
-        if (!isOwner) {
-          const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
-          const referrer = document.referrer || "";
+        const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+        const referrer = document.referrer || "";
 
-          // Koristi server-side API (zaobilazi RLS) za anonimne posjetioce
-          fetch("/api/track-view", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              pitchLinkId: pitchLink.id,
-              currentViews: (pitchLink as any).views ?? 0,
-              device,
-              referrer,
-            }),
-          }).catch(() => {});
-
-          // Pošalji email notifikaciju vlasniku
-          fetch("/api/notify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              pitchLinkId: pitchLink.id,
-              pitchLinkTitle: pitchLink.title || slug,
-              ownerUserId: pitchLink.user_id,
-              slug,
-            }),
-          }).catch(() => {});
-        }
+        // Server-side API provjeri vlasništvo i broji pregled
+        fetch("/api/track-view", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pitchLinkId: pitchLink.id,
+            ownerUserId: pitchLink.user_id,
+            currentViews: (pitchLink as any).views ?? 0,
+            device,
+            referrer,
+            viewerToken,
+          }),
+        }).then(res => res.json()).then(data => {
+          // Pošalji notifikaciju samo ako je pregled stvarno brojao
+          if (data.ok && !data.skipped) {
+            fetch("/api/notify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                pitchLinkId: pitchLink.id,
+                pitchLinkTitle: pitchLink.title || slug,
+                ownerUserId: pitchLink.user_id,
+                slug,
+              }),
+            }).catch(() => {});
+          }
+        }).catch(() => {});
       } else {
         // 2. Provjeri da li slug odgovara profile_url
         const { data: profileByUrl } = await supabase

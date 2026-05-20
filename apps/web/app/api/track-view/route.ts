@@ -5,13 +5,24 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const { pitchLinkId, currentViews, device, referrer } = await req.json();
+    const { pitchLinkId, ownerUserId, currentViews, device, referrer, viewerToken } = await req.json();
     if (!pitchLinkId) return NextResponse.json({ ok: false });
 
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+
+    // Ako je viewer poslao access token, provjeri da li je vlasnik linka
+    if (viewerToken && ownerUserId) {
+      try {
+        const { data: { user: viewer } } = await supabaseAdmin.auth.getUser(viewerToken);
+        if (viewer?.id === ownerUserId) {
+          // Vlasnik gleda sopstveni link — ne broji pregled
+          return NextResponse.json({ ok: true, skipped: true });
+        }
+      } catch {}
+    }
 
     await supabaseAdmin.from("link_views").insert({
       pitch_link_id: pitchLinkId,
