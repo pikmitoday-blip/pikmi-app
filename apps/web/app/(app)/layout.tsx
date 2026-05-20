@@ -25,13 +25,21 @@ const mobileLinks = [
 ];
 
 interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; }
-const DEFAULT_SIDEBAR: SidebarProfile = { firstName: "Marko", lastName: "Nikolić", initials: "M", serviceTitle: "Full-stack developer", avatarUrl: "" };
+const EMPTY_SIDEBAR: SidebarProfile = { firstName: "", lastName: "", initials: "", serviceTitle: "", avatarUrl: "" };
+
+function getCachedSidebar(): SidebarProfile {
+  try {
+    const c = sessionStorage.getItem("pikmi-sidebar");
+    if (c) return JSON.parse(c);
+  } catch {}
+  return EMPTY_SIDEBAR;
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
   const [theme, setTheme] = useState<"dark"|"light">("dark");
-  const [profile, setProfile] = useState<SidebarProfile>(DEFAULT_SIDEBAR);
+  const [profile, setProfile] = useState<SidebarProfile>(getCachedSidebar);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -51,13 +59,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             .single();
           if (data) {
             const pd = data.profile_data as Record<string, string> | null;
-            setProfile({
-              firstName: data.first_name || DEFAULT_SIDEBAR.firstName,
-              lastName: data.last_name || DEFAULT_SIDEBAR.lastName,
-              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? "") || DEFAULT_SIDEBAR.initials,
-              serviceTitle: pd?.serviceTitle ? (pd.serviceTitle as string).split("\n")[0].trim() : DEFAULT_SIDEBAR.serviceTitle,
+            const updated: SidebarProfile = {
+              firstName: data.first_name || "",
+              lastName: data.last_name || "",
+              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? ""),
+              serviceTitle: pd?.serviceTitle ? (pd.serviceTitle as string).split("\n")[0].trim() : "",
               avatarUrl: (pd?.avatarUrl as string) || "",
-            });
+            };
+            setProfile(updated);
+            try { sessionStorage.setItem("pikmi-sidebar", JSON.stringify(updated)); } catch {}
           }
           return;
         }
@@ -136,9 +146,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("pikmi-session-id");
       }
     } catch {}
-    // Resetuj temu na dark pri odjavljivanju
+    // Resetuj temu i obrisi cache pri odjavljivanju
     localStorage.removeItem("pikmi-theme");
     document.documentElement.dataset.theme = "dark";
+    try { sessionStorage.clear(); } catch {}
     await supabase.auth.signOut();
     router.push("/login");
   }

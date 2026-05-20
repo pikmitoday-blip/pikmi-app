@@ -66,10 +66,19 @@ function SectionLabel({ text, color = "#6B6B6B" }: { text: string; color?: strin
   );
 }
 
+function getCachedProfile(): Profile | null {
+  try {
+    const c = sessionStorage.getItem("pikmi-moj-profil");
+    if (c) return JSON.parse(c);
+  } catch {}
+  return null;
+}
+
 export default function MojProfil() {
-  const [p, setP] = useState<Profile>(DEFAULT_PROFILE);
+  const [p, setP] = useState<Profile | null>(() => getCachedProfile());
   const [profileUrl, setProfileUrl] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [loading, setLoading] = useState(!getCachedProfile());
 
   useEffect(() => {
     async function loadProfile() {
@@ -83,21 +92,22 @@ export default function MojProfil() {
             .single();
           if (data) {
             const pd = (data.profile_data as Record<string, any>) || {};
-            setP({
+            const updated: Profile = {
               ...DEFAULT_PROFILE,
               ...pd,
-              firstName: data.first_name || DEFAULT_PROFILE.firstName,
-              lastName: data.last_name || DEFAULT_PROFILE.lastName,
-              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? "") || DEFAULT_PROFILE.initials,
+              firstName: data.first_name || "",
+              lastName: data.last_name || "",
+              initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? ""),
               csImages: pd.csImages ?? ["", "", "", ""],
               caseStudies: pd.caseStudies ?? DEFAULT_PROFILE.caseStudies,
               pricing: pd.pricing ?? DEFAULT_PROFILE.pricing,
-            });
+            };
+            setP(updated);
+            try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
             if (data.profile_url) {
               setProfileUrl(data.profile_url);
               setPreviewUrl(`/${data.profile_url}`);
             } else {
-              // Fallback: prvi aktivni pitch link
               const { data: links } = await supabase
                 .from("pitch_links")
                 .select("slug")
@@ -106,21 +116,27 @@ export default function MojProfil() {
                 .limit(1);
               if (links?.[0]) setPreviewUrl(`/${links[0].slug}`);
             }
+            setLoading(false);
             return;
           }
         }
       } catch {}
-      // fallback na localStorage
-      try {
-        const saved = localStorage.getItem("pikmi-profile");
-        if (saved) {
-          const loaded = JSON.parse(saved);
-          setP({ ...DEFAULT_PROFILE, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
-        }
-      } catch {}
+      setLoading(false);
     }
     loadProfile();
   }, []);
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
+      <div style={{ color: "var(--text3)", fontSize: 14 }}>Učitavanje profila...</div>
+    </div>
+  );
+
+  if (!p) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
+      <div style={{ color: "var(--text3)", fontSize: 14 }}>Profil nije pronađen.</div>
+    </div>
+  );
 
   const stackTags = p.stack.split(",").map(s => s.trim()).filter(Boolean);
 

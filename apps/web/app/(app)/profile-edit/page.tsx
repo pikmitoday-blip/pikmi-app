@@ -75,47 +75,48 @@ function Section({ label, color = "#A78BFA", children }: { label: string; color?
   );
 }
 
+function getCachedEdit(): Profile | null {
+  try {
+    const c = sessionStorage.getItem("pikmi-profile-edit");
+    if (c) return JSON.parse(c);
+  } catch {}
+  return null;
+}
+
 export default function ProfileEdit() {
-  const [p, setP] = useState<Profile>(DEFAULT);
+  const [p, setP] = useState<Profile>(() => getCachedEdit() ?? DEFAULT);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Učitaj profil — prvo iz Supabase, zatim localStorage kao fallback
   useEffect(() => {
     async function loadProfile() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Korisnik je ulogovan — učitaj samo iz Supabase, ne iz localStorage
           const { data } = await supabase
             .from("profiles")
             .select("profile_data, first_name, last_name")
             .eq("user_id", user.id)
             .single();
           if (data?.profile_data && Object.keys(data.profile_data).length > 0) {
-            setP({ ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] });
+            const updated = { ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] };
+            setP(updated);
+            try { sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(updated)); } catch {}
             return;
           }
-          // Novi korisnik — samo popuni ime/prezime iz profila, ostalo ostaje DEFAULT
           if (data?.first_name) {
             setP(prev => ({ ...prev, firstName: data.first_name, lastName: data.last_name ?? "", initials: (data.first_name[0] ?? "") + (data.last_name?.[0] ?? "") }));
           }
-          return; // Ne padaj na localStorage
+          return;
         }
-        // Nije ulogovan — localStorage fallback (ne bi trebalo da se desi zbog middlewarea)
         const s = localStorage.getItem("pikmi-profile");
         if (s) {
           const loaded = JSON.parse(s);
           setP({ ...DEFAULT, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
         }
-      } catch {
-        try {
-          const s = localStorage.getItem("pikmi-profile");
-          if (s) setP({ ...DEFAULT, ...JSON.parse(s) });
-        } catch {}
-      }
+      } catch {}
     }
     loadProfile();
   }, []);
@@ -125,6 +126,12 @@ export default function ProfileEdit() {
     // Sačuvaj u localStorage (brzo, za sidebar preview)
     const dataToSave = { ...p, csImages: p.csImages }; // uključi slike
     localStorage.setItem("pikmi-profile", JSON.stringify(dataToSave));
+    // Ažuriraj sessionStorage cache
+    try {
+      sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(dataToSave));
+      sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(dataToSave));
+      sessionStorage.removeItem("pikmi-sidebar"); // sidebar će refreshovati ime/avatar
+    } catch {}
 
     // Sačuvaj u Supabase
     try {
