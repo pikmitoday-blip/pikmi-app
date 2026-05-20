@@ -246,7 +246,7 @@ export default function MojProfil() {
 
             {/* Footer */}
             <div style={{ textAlign: "center", fontSize: 11, color: "#ADADAD" }}>
-              Profil na <span style={{ color: "#1F57C3", fontWeight: 600 }}>pikmi.app</span>
+              Profil na <a href="https://www.pikmi.today/" target="_blank" rel="noopener noreferrer" style={{ color: "#1F57C3", fontWeight: 600, textDecoration: "none" }}>pikmi.today</a>
             </div>
           </div>
 
