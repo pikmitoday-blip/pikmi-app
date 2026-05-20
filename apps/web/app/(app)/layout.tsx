@@ -278,6 +278,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             }}
             >⏻</button>
           </div>
+
+          {/* Policy linkovi */}
+          <div style={{ display: "flex", gap: 10, paddingTop: 10, justifyContent: "center" }}>
+            <a href="/uslovi" target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: "var(--text3)", textDecoration: "none" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--text2)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}>
+              Uslovi
+            </a>
+            <span style={{ fontSize: 11, color: "var(--text3)" }}>·</span>
+            <a href="/privatnost" target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: "var(--text3)", textDecoration: "none" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--text2)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}>
+              Privatnost
+            </a>
+          </div>
         </div>
       </aside>
       <main className="main-content">{children}</main>
