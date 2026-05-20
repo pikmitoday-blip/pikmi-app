@@ -61,13 +61,6 @@ function getCachedProfile(): Profile | null {
 function Divider() {
   return <div style={{ height: "0.5px", background: "#E4EBE4", margin: "24px 0" }} />;
 }
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <div style={{ fontSize: 11, fontWeight: 600, color: "#6B6B6B", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 16 }}>
-      {text}
-    </div>
-  );
-}
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 12px", borderRadius: 8, fontSize: 13,
@@ -201,21 +194,29 @@ export default function MojProfil() {
     setUploading(null);
   }
 
-  // Pencil button
-  function PencilBtn({ section }: { section: string }) {
+  // Pencil button — inline uz section header
+  function SectionHeader({ label, section, light = false }: { label: string; section: string; light?: boolean }) {
     return (
-      <button
-        onClick={() => startEdit(section)}
-        title="Uredi sekciju"
-        style={{
-          position: "absolute", top: 14, right: 14,
-          background: "none", border: "1px solid #E4EBE4",
-          borderRadius: 8, cursor: "pointer", padding: "5px 9px",
-          fontSize: 13, color: "#6B6B6B", transition: "all 0.15s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = "#F0F4FF"; e.currentTarget.style.borderColor = "#1F57C3"; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "#E4EBE4"; }}
-      >✏️</button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: light ? "rgba(255,255,255,0.5)" : "#6B6B6B", letterSpacing: "1.2px", textTransform: "uppercase" }}>
+          {label}
+        </div>
+        <button
+          onClick={() => startEdit(section)}
+          style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "4px 10px", borderRadius: 6, cursor: "pointer",
+            fontSize: 11, fontWeight: 700, border: "none",
+            background: light ? "rgba(255,255,255,0.2)" : "#EEF2FF",
+            color: light ? "#fff" : "#1F57C3",
+            transition: "all 0.15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.35)" : "#DBEAFE"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.2)" : "#EEF2FF"; }}
+        >
+          ✏️ Uredi
+        </button>
+      </div>
     );
   }
 
@@ -252,7 +253,6 @@ export default function MojProfil() {
   );
 
   const stackTags = p.stack.split(",").map(s => s.trim()).filter(Boolean);
-  const d = draft ?? p;
 
   return (
     <div>
@@ -276,12 +276,11 @@ export default function MojProfil() {
 
           {/* ── SIDEBAR ── */}
           <div className="profile-sidebar" style={{ background: "#fff", borderRight: "1px solid #E4EBE4", padding: "32px 28px", position: "sticky", top: 0 }}>
-            <div style={{ position: "relative" }}>
-              <PencilBtn section="sidebar" />
-
+            <div>
               {editSection === "sidebar" && draft ? (
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1E1E1E", marginBottom: 16 }}>Uredi bočnu traku</div>
+                  <SectionHeader label="Bočna traka" section="sidebar" />
+
 
                   {/* Avatar */}
                   <label style={labelStyle}>Profilna slika</label>
@@ -334,6 +333,9 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
+                  <div style={{ marginBottom: 12 }}>
+                    <SectionHeader label="Informacije" section="sidebar" />
+                  </div>
                   <div style={{ textAlign: "center", marginBottom: 24 }}>
                     {p.avatarUrl
                       ? <img src={p.avatarUrl} alt="avatar" style={{ width: 100, height: 100, borderRadius: "50%", objectFit: "cover", margin: "0 auto 16px", display: "block", boxShadow: "0 4px 16px rgba(31,87,195,0.25)" }} />
@@ -395,11 +397,10 @@ export default function MojProfil() {
           <div className="profile-main" style={{ padding: "32px 40px" }}>
 
             {/* 01 — Šta radim */}
-            <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              <PencilBtn section="service" />
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "service" && draft ? (
                 <div>
-                  <SectionLabel text="01 — Šta radim" />
+                  <SectionHeader label="01 — Šta radim" section="service" />
                   <label style={labelStyle}>Naslov usluge</label>
                   <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Npr. Meta i TikTok Ads za e-commerce brendove." />
                   <label style={labelStyle}>Opis usluge</label>
@@ -408,7 +409,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionLabel text="01 — Šta radim" />
+                  <SectionHeader label="01 — Šta radim" section="service" />
                   <h2 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 700, color: "#1E1E1E", lineHeight: 1.25, letterSpacing: "-0.3px", whiteSpace: "pre-line" }}>{p.serviceTitle}</h2>
                   <p style={{ margin: 0, fontSize: 15, color: "#3C3C3C", lineHeight: 1.8 }}>{p.serviceDesc}</p>
                 </>
@@ -416,11 +417,10 @@ export default function MojProfil() {
             </div>
 
             {/* 02 — Portfolio */}
-            <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              <PencilBtn section="portfolio" />
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "portfolio" && draft ? (
                 <div>
-                  <SectionLabel text="02 — Rezultati / Portfolio" />
+                  <SectionHeader label="02 — Rezultati / Portfolio" section="portfolio" />
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                     {[0, 1, 2, 3].map(i => (
                       <div key={i}>
@@ -453,7 +453,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionLabel text="02 — Rezultati / Portfolio" />
+                  <SectionHeader label="02 — Rezultati / Portfolio" section="portfolio" />
                   <div className="profile-cs-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                     {[0, 1, 2, 3].map(i => (
                       <div key={i} style={{ aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: p.csImages[i] ? "1px solid #E4EBE4" : "1.5px dashed #D0D0C8", background: p.csImages[i] ? "transparent" : "#F7F7F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -473,10 +473,9 @@ export default function MojProfil() {
 
             {/* 03 — Paketi */}
             <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              <PencilBtn section="pricing" />
               {editSection === "pricing" && draft ? (
                 <div>
-                  <SectionLabel text="03 — Paketi i cijene" />
+                  <SectionHeader label="03 — Paketi i cijene" section="pricing" />
                   {draft.pricing.map((tier, i) => (
                     <div key={i} style={{ padding: "16px", background: "#F7F9FF", borderRadius: 10, marginBottom: 12, border: "1px solid #E0E6FF" }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10 }}>PAKET {i + 1}</div>
@@ -496,7 +495,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionLabel text="03 — Paketi i cijene" />
+                  <SectionHeader label="03 — Paketi i cijene" section="pricing" />
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {p.pricing.map((tier, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 0", borderBottom: i < p.pricing.length - 1 ? "1px solid #F0F0EB" : "none" }}>
@@ -513,18 +512,17 @@ export default function MojProfil() {
             </div>
 
             {/* 04 — Stack */}
-            <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              <PencilBtn section="stack" />
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "stack" && draft ? (
                 <div>
-                  <SectionLabel text="04 — Stack / Vještine" />
+                  <SectionHeader label="04 — Stack / Vještine" section="stack" />
                   <label style={labelStyle}>Alati i vještine (razdvoji zarezom)</label>
                   <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Meta Ads, TikTok Ads, Klaviyo, GA4..." />
                   <EditActions />
                 </div>
               ) : (
                 <>
-                  <SectionLabel text="04 — Stack / Vještine" />
+                  <SectionHeader label="04 — Stack / Vještine" section="stack" />
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {stackTags.map((tag, i) => (
                       <span key={i} style={{ fontSize: 13, padding: "7px 16px", borderRadius: 20, background: "#F0F4FF", color: "#1F57C3", border: "1px solid #D0DCFF", fontWeight: 500 }}>{tag}</span>
@@ -535,11 +533,10 @@ export default function MojProfil() {
             </div>
 
             {/* 06 — Testimonial */}
-            <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              <PencilBtn section="testimonial" />
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "testimonial" && draft ? (
                 <div>
-                  <SectionLabel text="06 — Recenzija klijenta" />
+                  <SectionHeader label="06 — Recenzija klijenta" section="testimonial" />
                   <label style={labelStyle}>Citat klijenta</label>
                   <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder="Npr. Stefan je za 6 meseci skalirao naš ad spend 4×..." />
                   <label style={labelStyle}>Ime klijenta</label>
@@ -550,7 +547,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionLabel text="06 — Recenzija klijenta" />
+                  <SectionHeader label="06 — Recenzija klijenta" section="testimonial" />
                   <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
                     {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#14A800", fontSize: 16 }}>★</span>)}
                     <span style={{ fontSize: 13, color: "#6B6B6B", marginLeft: 6, alignSelf: "center" }}>5.0 / 5.0</span>
@@ -571,18 +568,9 @@ export default function MojProfil() {
 
             {/* 07 — CTA */}
             <div style={{ position: "relative", borderRadius: 12, padding: "32px", background: "linear-gradient(135deg, #1F57C3 0%, #0D3B8C 100%)" }}>
-              {/* Pencil na CTA sekciji — bijela varijanta */}
-              <button
-                onClick={() => startEdit("cta")}
-                title="Uredi sekciju"
-                style={{ position: "absolute", top: 14, right: 14, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, cursor: "pointer", padding: "5px 9px", fontSize: 13, color: "#fff", transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.25)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; }}
-              >✏️</button>
-
               {editSection === "cta" && draft ? (
                 <div style={{ background: "#fff", borderRadius: 10, padding: 20 }}>
-                  <SectionLabel text="07 — CTA / Kontakt" />
+                  <SectionHeader label="07 — CTA / Kontakt" section="cta" />
                   <label style={labelStyle}>Naslov CTA</label>
                   <input style={inputStyle} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Spreman da skaliraš" />
                   <label style={labelStyle}>Istaknuta riječ (italic, plava)</label>
@@ -595,6 +583,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
+                  <SectionHeader label="07 — KONTAKT" section="cta" light={true} />
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", marginBottom: 10 }}>07 — KONTAKT</div>
                   <h3 style={{ margin: "0 0 20px", fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                     {p.ctaTitle} <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em>?
