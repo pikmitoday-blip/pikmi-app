@@ -26,6 +26,168 @@ interface Profile {
   pdfUrl: string;
 }
 
+function getEmailProvider(email: string): { name: string; icon: string; getUrl: (to: string, subject: string, idx?: number) => string; supportsSwitch: boolean } | null {
+  const domain = email.split("@")[1]?.toLowerCase() ?? "";
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    return {
+      name: "Gmail", icon: "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico",
+      getUrl: (to, subject, idx = 0) => `https://mail.google.com/mail/u/${idx}/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}`,
+      supportsSwitch: true,
+    };
+  }
+  if (["outlook.com","hotmail.com","live.com","msn.com"].includes(domain)) {
+    return {
+      name: "Outlook", icon: "https://outlook.live.com/favicon.ico",
+      getUrl: (to, subject) => `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}`,
+      supportsSwitch: false,
+    };
+  }
+  if (domain === "yahoo.com" || domain === "ymail.com") {
+    return {
+      name: "Yahoo Mail", icon: "https://mail.yahoo.com/favicon.ico",
+      getUrl: (to, subject) => `https://compose.mail.yahoo.com/?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}`,
+      supportsSwitch: false,
+    };
+  }
+  // Nepoznat provajder — defaultni mailto
+  return null;
+}
+
+function ContactModal({ freelancerEmail, freelancerName, senderEmail, setSenderEmail, onClose }: {
+  freelancerEmail: string;
+  freelancerName: string;
+  senderEmail: string;
+  setSenderEmail: (v: string) => void;
+  onClose: () => void;
+}) {
+  const subject = `Strategy poziv — ${freelancerName}`;
+  const provider = senderEmail.includes("@") ? getEmailProvider(senderEmail) : null;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "#fff", borderRadius: 16, padding: "32px 28px",
+          width: "100%", maxWidth: 440,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1E1E1E" }}>Zakaži poziv ✉️</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#999", lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Primalac */}
+        <div style={{ background: "#F7F7F5", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "#999", letterSpacing: "0.5px", marginBottom: 4 }}>ŠALJEŠ NA</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "#1E1E1E" }}>{freelancerEmail}</div>
+        </div>
+
+        {/* Unos pošiljaočevog emaila */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "#6B6B6B", letterSpacing: "0.5px", display: "block", marginBottom: 8 }}>
+            TVOJ EMAIL (SA KOJEG ŠALJEŠ)
+          </label>
+          <input
+            type="email"
+            value={senderEmail}
+            onChange={e => setSenderEmail(e.target.value)}
+            placeholder="npr. poslovni@firma.com"
+            style={{
+              width: "100%", padding: "12px 14px", borderRadius: 10, fontSize: 14,
+              border: "1.5px solid #E4EBE4", outline: "none", boxSizing: "border-box",
+              color: "#1E1E1E", background: "#fff", fontFamily: "inherit",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={e => (e.currentTarget.style.borderColor = "#1F57C3")}
+            onBlur={e => (e.currentTarget.style.borderColor = "#E4EBE4")}
+          />
+          {senderEmail && !isValidEmail && (
+            <p style={{ fontSize: 12, color: "#EF4444", marginTop: 6 }}>Unesi ispravan email</p>
+          )}
+        </div>
+
+        {/* Dugmad za slanje */}
+        {!isValidEmail ? (
+          /* Nije unesen validan email — pokaži uputstvo */
+          <div style={{ textAlign: "center", padding: "16px 0", color: "#ADADAD", fontSize: 13 }}>
+            Upiši email iznad da vidiš opcije za slanje
+          </div>
+        ) : provider?.supportsSwitch ? (
+          /* Gmail — bira nalog po indeksu */
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { label: "Otvori sa 1. Gmail nalogom", index: 0 },
+              { label: "Otvori sa 2. Gmail nalogom", index: 1 },
+              { label: "Otvori sa 3. Gmail nalogom", index: 2 },
+            ].map(({ label, index }) => (
+              <a
+                key={index}
+                href={provider.getUrl(freelancerEmail, subject, index)}
+                target="_blank" rel="noopener noreferrer"
+                onClick={onClose}
+                style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "13px 16px", borderRadius: 10,
+                  border: "1.5px solid #E4EBE4", textDecoration: "none",
+                  color: "#1E1E1E", fontSize: 14, fontWeight: 500,
+                  transition: "border-color 0.15s", background: "#fff",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = "#1F57C3")}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = "#E4EBE4")}
+              >
+                <img src={provider.icon} alt="" style={{ width: 18, height: 18 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                {label}
+              </a>
+            ))}
+            <p style={{ fontSize: 11, color: "#ADADAD", textAlign: "center", marginTop: 4 }}>
+              Gmail otvara naloge po redoslijedu prijave (1. = prvi prijavljeni)
+            </p>
+          </div>
+        ) : provider ? (
+          /* Outlook / Yahoo — direktan link */
+          <a
+            href={provider.getUrl(freelancerEmail, subject)}
+            target="_blank" rel="noopener noreferrer"
+            onClick={onClose}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              padding: "14px 20px", borderRadius: 10, textDecoration: "none",
+              background: "#1F57C3", color: "#fff", fontSize: 15, fontWeight: 600,
+            }}
+          >
+            <img src={provider.icon} alt="" style={{ width: 18, height: 18, filter: "brightness(10)" }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+            Otvori {provider.name}
+          </a>
+        ) : (
+          /* Nepoznat provajder — mailto fallback */
+          <a
+            href={`mailto:${freelancerEmail}?subject=${encodeURIComponent(subject)}`}
+            onClick={onClose}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              padding: "14px 20px", borderRadius: 10, textDecoration: "none",
+              background: "#1F57C3", color: "#fff", fontSize: 15, fontWeight: 600,
+            }}
+          >
+            ✉️ Otvori email klijent
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Divider() {
   return <div style={{ height: "0.5px", background: "#E4EBE4", margin: "24px 0" }} />;
 }
@@ -43,6 +205,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [pitchLinkId, setPitchLinkId] = useState<string | null>(null);
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
   const [showContactModal, setShowContactModal] = useState(false);
+  const [senderEmail, setSenderEmail] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -382,79 +545,13 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
       {/* ── Kontakt modal ── */}
       {showContactModal && (
-        <div
-          onClick={() => setShowContactModal(false)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 1000,
-            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 20,
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: "#fff", borderRadius: 16, padding: "32px 28px",
-              width: "100%", maxWidth: 420,
-              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-            }}
-          >
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1E1E1E" }}>
-                Zakaži poziv ✉️
-              </h3>
-              <button
-                onClick={() => setShowContactModal(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#999", lineHeight: 1 }}
-              >×</button>
-            </div>
-
-            {/* Recipient */}
-            <div style={{ background: "#F7F7F5", borderRadius: 10, padding: "12px 16px", marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: "#999", letterSpacing: "0.5px", marginBottom: 4 }}>ŠALJEŠ NA</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#1E1E1E" }}>{freelancerEmail}</div>
-            </div>
-
-            {/* Objašnjenje */}
-            <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.6, marginBottom: 20 }}>
-              Odaberi Gmail nalog sa kojeg želiš da se javiš. Možeš koristiti lični ili poslovni nalog.
-            </p>
-
-            {/* Account opcije */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 8 }}>
-              {[
-                { label: "Otvoriti sa 1. nalogom", index: 0 },
-                { label: "Otvoriti sa 2. nalogom", index: 1 },
-                { label: "Otvoriti sa 3. nalogom", index: 2 },
-              ].map(({ label, index }) => (
-                <a
-                  key={index}
-                  href={`https://mail.google.com/mail/u/${index}/?view=cm&to=${encodeURIComponent(freelancerEmail)}&su=${encodeURIComponent(`Strategy poziv — ${p.firstName} ${p.lastName}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setShowContactModal(false)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "13px 16px", borderRadius: 10,
-                    border: "1.5px solid #E4EBE4", textDecoration: "none",
-                    color: "#1E1E1E", fontSize: 14, fontWeight: 500,
-                    transition: "all 0.15s", background: "#fff",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "#1F57C3")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "#E4EBE4")}
-                >
-                  <span style={{ fontSize: 18 }}>📧</span>
-                  {label}
-                </a>
-              ))}
-            </div>
-
-            <p style={{ fontSize: 11, color: "#ADADAD", textAlign: "center", marginTop: 12 }}>
-              Gmail otvara naloge po redoslijedu prijave (1. = prvi prijavljeni)
-            </p>
-          </div>
-        </div>
+        <ContactModal
+          freelancerEmail={freelancerEmail}
+          freelancerName={`${p.firstName} ${p.lastName}`}
+          senderEmail={senderEmail}
+          setSenderEmail={setSenderEmail}
+          onClose={() => setShowContactModal(false)}
+        />
       )}
     </div>
   );
