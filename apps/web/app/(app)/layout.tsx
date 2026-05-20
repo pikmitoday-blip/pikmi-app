@@ -32,6 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [theme, setTheme] = useState<"dark"|"light">("dark");
   const [profile, setProfile] = useState<SidebarProfile>(DEFAULT_SIDEBAR);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("pikmi-theme") as "dark"|"light" | null;
@@ -41,6 +42,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "").split(",").map(e => e.trim().toLowerCase());
+          if (adminEmails.includes(user.email?.toLowerCase() ?? "")) setIsAdmin(true);
           const { data } = await supabase
             .from("profiles")
             .select("first_name, last_name, profile_data")
@@ -161,6 +164,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
+
+        {/* Admin link — vidljiv samo adminima */}
+        {isAdmin && (
+          <Link href="/admin" style={{ textDecoration: "none", display: "block", margin: "4px 4px 0" }}>
+            <div style={{
+              padding: "10px 14px", borderRadius: 10,
+              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+              display: "flex", alignItems: "center", gap: 8,
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.35)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)";
+            }}>
+              <span style={{ fontSize: 14 }}>⚡</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#F87171" }}>Admin panel</span>
+              <span style={{ marginLeft: "auto", fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(239,68,68,0.15)", color: "#F87171", fontWeight: 700, letterSpacing: "0.05em" }}>ADMIN</span>
+            </div>
+          </Link>
+        )}
 
         {/* Profile preview card */}
         <Link href="/profile-edit" style={{ textDecoration: "none", display: "block", margin: "8px 0 4px" }}>
