@@ -61,12 +61,16 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         userId = pitchLink.user_id;
         setPitchLinkId(pitchLink.id);
 
-        // Broji pregled samo ako posjetilac NIJE vlasnik linka
+        // Provjeri da li je posjetilac vlasnik linka (odvojeno od brojanja)
+        let isOwner = false;
         try {
           const { data: { user: currentUser } } = await supabase.auth.getUser();
-          const isOwner = currentUser?.id === pitchLink.user_id;
+          isOwner = currentUser?.id === pitchLink.user_id;
+        } catch {}
 
-          if (!isOwner) {
+        // Broji pregled samo ako posjetilac NIJE vlasnik linka
+        if (!isOwner) {
+          try {
             const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
             const referrer = document.referrer || null;
 
@@ -89,8 +93,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 slug,
               }),
             }).catch(() => {});
-          }
-        } catch {}
+          } catch {}
+        }
       } else {
         // 2. Provjeri da li slug odgovara profile_url
         const { data: profileByUrl } = await supabase
