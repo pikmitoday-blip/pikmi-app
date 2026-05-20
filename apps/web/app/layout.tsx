@@ -14,6 +14,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://api.fontshare.com" />
       </head>
       <body>
+        {/* Postavi temu prije rendera da spriječi flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var t = localStorage.getItem('pikmi-theme');
+            document.documentElement.dataset.theme = (t === 'light') ? 'light' : 'dark';
+          })();
+        `}} />
         <AuthHashHandler />
         {children}
       </body>

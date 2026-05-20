@@ -136,6 +136,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("pikmi-session-id");
       }
     } catch {}
+    // Resetuj temu na dark pri odjavljivanju
+    localStorage.removeItem("pikmi-theme");
+    document.documentElement.dataset.theme = "dark";
     await supabase.auth.signOut();
     router.push("/login");
   }
