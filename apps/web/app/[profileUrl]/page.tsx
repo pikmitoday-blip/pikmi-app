@@ -61,30 +61,35 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         userId = pitchLink.user_id;
         setPitchLinkId(pitchLink.id);
 
-        // Broji pregled
+        // Broji pregled samo ako posjetilac NIJE vlasnik linka
         try {
-          const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
-          const referrer = document.referrer || null;
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          const isOwner = currentUser?.id === pitchLink.user_id;
 
-          await supabase.from("link_views").insert({
-            pitch_link_id: pitchLink.id,
-            viewed_at: new Date().toISOString(),
-            device,
-            referrer,
-          });
-          await supabase.from("pitch_links").update({ views: (pitchLink as any).views + 1 }).eq("id", pitchLink.id);
+          if (!isOwner) {
+            const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+            const referrer = document.referrer || null;
 
-          // Pošalji email notifikaciju vlasniku
-          fetch("/api/notify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              pitchLinkId: pitchLink.id,
-              pitchLinkTitle: pitchLink.title || slug,
-              ownerUserId: pitchLink.user_id,
-              slug,
-            }),
-          }).catch(() => {});
+            await supabase.from("link_views").insert({
+              pitch_link_id: pitchLink.id,
+              viewed_at: new Date().toISOString(),
+              device,
+              referrer,
+            });
+            await supabase.from("pitch_links").update({ views: (pitchLink as any).views + 1 }).eq("id", pitchLink.id);
+
+            // Pošalji email notifikaciju vlasniku
+            fetch("/api/notify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                pitchLinkId: pitchLink.id,
+                pitchLinkTitle: pitchLink.title || slug,
+                ownerUserId: pitchLink.user_id,
+                slug,
+              }),
+            }).catch(() => {});
+          }
         } catch {}
       } else {
         // 2. Provjeri da li slug odgovara profile_url
