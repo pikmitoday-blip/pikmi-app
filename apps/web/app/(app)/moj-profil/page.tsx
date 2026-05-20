@@ -142,21 +142,6 @@ export default function MojProfil() {
       {/* Upwork-style wrapper */}
       <div className="profile-upwork-wrapper" style={{ background: "#F7F7F5", borderRadius: 16, overflow: "hidden", border: "1px solid #E4EBE4", marginBottom: 48, fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
 
-        {/* Top bar */}
-        <div className="profile-topbar" style={{ background: "#fff", borderBottom: "1px solid #E4EBE4", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#14A800" }} />
-            <span style={{ fontSize: 13, color: "#1E1E1E", fontWeight: 500 }}>{p.openStatus}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ padding: "4px 12px", background: "#FFEEE0", color: "#D97706", fontSize: 11, fontWeight: 700, borderRadius: 4, border: "1px solid #FCD9A0" }}>
-              ★ TOP RATED
-            </div>
-            <div style={{ padding: "4px 12px", background: "#E8F5E3", color: "#14A800", fontSize: 11, fontWeight: 700, borderRadius: 4, border: "1px solid #B8E6A8" }}>
-              {p.badge}
-            </div>
-          </div>
-        </div>
 
         {/* Main layout: sidebar + content */}
         <div className="profile-layout" style={{ display: "grid", gridTemplateColumns: "300px 1fr", alignItems: "start" }}>
@@ -180,9 +165,26 @@ export default function MojProfil() {
               <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>
                 {p.firstName} {p.lastName}
               </div>
-              <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>
+              <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 8 }}>
                 📍 {p.city}
               </div>
+
+              {/* Status + badge centrirano */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 20, background: "#F0FAF0", border: "1px solid #B8E6A8" }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#14A800", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "#14A800", fontWeight: 600 }}>{p.openStatus}</span>
+                </div>
+                <div style={{ padding: "5px 10px", background: "#FFEEE0", color: "#D97706", fontSize: 11, fontWeight: 700, borderRadius: 20, border: "1px solid #FCD9A0" }}>
+                  ★ TOP RATED
+                </div>
+                {p.badge && (
+                  <div style={{ padding: "5px 10px", background: "#E8F5E3", color: "#14A800", fontSize: 11, fontWeight: 700, borderRadius: 20, border: "1px solid #B8E6A8" }}>
+                    {p.badge}
+                  </div>
+                )}
+              </div>
+
               <button style={{
                 width: "100%", padding: "12px", background: "#1F57C3",
                 color: "#fff", border: "none", borderRadius: 8,
