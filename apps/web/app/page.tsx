@@ -191,8 +191,8 @@ export default function Home() {
         </div>
         <div style={{ fontSize: 13, color: "var(--text3)" }}>© 2026 pikmi. Sva prava zadržana.</div>
         <div className="flex gap-4" style={{ fontSize: 13, color: "var(--text3)" }}>
-          <a href="#" style={{ color: "var(--text3)" }}>Uslovi</a>
-          <a href="#" style={{ color: "var(--text3)" }}>Privatnost</a>
+          <Link href="/uslovi" style={{ color: "var(--text3)", textDecoration: "none" }}>Uslovi korišćenja</Link>
+          <Link href="/privatnost" style={{ color: "var(--text3)", textDecoration: "none" }}>Politika privatnosti</Link>
         </div>
       </footer>
 
