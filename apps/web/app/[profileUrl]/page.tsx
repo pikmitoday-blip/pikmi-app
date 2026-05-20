@@ -167,21 +167,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         <Link href="/register" className="btn btn-primary btn-sm">Kreiraj tvoj profil</Link>
       </div>
 
-      {/* Top bar */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #E4EBE4", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#14A800" }} />
-          <span style={{ fontSize: 13, color: "#1E1E1E", fontWeight: 500 }}>{p.openStatus || "DOSTUPAN ZA PROJEKTE"}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {p.badge && (
-            <div style={{ padding: "4px 12px", background: "#E8F5E3", color: "#14A800", fontSize: 11, fontWeight: 700, borderRadius: 4, border: "1px solid #B8E6A8" }}>
-              {p.badge}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Main layout */}
       <div className="profile-layout" style={{ display: "grid", gridTemplateColumns: "300px 1fr", maxWidth: 1100, margin: "0 auto", alignItems: "start" }}>
 
@@ -199,7 +184,21 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 }}>{p.initials || (p.firstName?.[0] ?? "?")}</div>
             }
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
-            {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>📍 {p.city}</div>}
+            {p.city && <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 8 }}>📍 {p.city}</div>}
+
+            {/* Status + badge — centrirano u sidebar */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 20, background: "#F0FAF0", border: "1px solid #B8E6A8" }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#14A800", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: "#14A800", fontWeight: 600 }}>{p.openStatus || "DOSTUPAN ZA PROJEKTE"}</span>
+              </div>
+              {p.badge && (
+                <div style={{ padding: "5px 10px", background: "#E8F5E3", color: "#14A800", fontSize: 11, fontWeight: 700, borderRadius: 20, border: "1px solid #B8E6A8" }}>
+                  {p.badge}
+                </div>
+              )}
+            </div>
+
             <button
               onClick={() => setShowContactModal(true)}
               style={{ display: "block", width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)", marginBottom: 8, textAlign: "center" }}
