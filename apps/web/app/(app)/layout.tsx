@@ -324,7 +324,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </aside>
-      <main className="main-content">{children}</main>
+      <main className="main-content">
+        {children}
+        {/* Policy linkovi — samo mobilna verzija, na dnu sadržaja */}
+        <div className="mobile-only" style={{ textAlign: "center", padding: "8px 0 24px", display: "flex", justifyContent: "center", gap: 16 }}>
+          <a href="/uslovi" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
+            Uslovi korišćenja
+          </a>
+          <span style={{ fontSize: 12, color: "var(--text3)" }}>·</span>
+          <a href="/privatnost" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
+            Politika privatnosti
+          </a>
+        </div>
+      </main>
 
       {/* ── Mobile bottom nav ── */}
       <nav className="mobile-nav">
