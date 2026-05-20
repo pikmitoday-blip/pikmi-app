@@ -70,30 +70,32 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
         // Broji pregled samo ako posjetilac NIJE vlasnik linka
         if (!isOwner) {
-          try {
-            const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
-            const referrer = document.referrer || null;
+          const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+          const referrer = document.referrer || "";
 
-            await supabase.from("link_views").insert({
-              pitch_link_id: pitchLink.id,
-              viewed_at: new Date().toISOString(),
+          // Koristi server-side API (zaobilazi RLS) za anonimne posjetioce
+          fetch("/api/track-view", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pitchLinkId: pitchLink.id,
+              currentViews: (pitchLink as any).views ?? 0,
               device,
               referrer,
-            });
-            await supabase.from("pitch_links").update({ views: (pitchLink as any).views + 1 }).eq("id", pitchLink.id);
+            }),
+          }).catch(() => {});
 
-            // Pošalji email notifikaciju vlasniku
-            fetch("/api/notify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                pitchLinkId: pitchLink.id,
-                pitchLinkTitle: pitchLink.title || slug,
-                ownerUserId: pitchLink.user_id,
-                slug,
-              }),
-            }).catch(() => {});
-          } catch {}
+          // Pošalji email notifikaciju vlasniku
+          fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pitchLinkId: pitchLink.id,
+              pitchLinkTitle: pitchLink.title || slug,
+              ownerUserId: pitchLink.user_id,
+              slug,
+            }),
+          }).catch(() => {});
         }
       } else {
         // 2. Provjeri da li slug odgovara profile_url
