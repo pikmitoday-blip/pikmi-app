@@ -40,6 +40,19 @@ function BillingContent() {
   const cancelledMsg = searchParams.get("cancelled") === "1";
   const paymentUpdatedMsg = searchParams.get("payment_updated") === "1";
 
+  // Resetuj loading state kad se stranica restorira iz bfcache (browser back dugme)
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setPortalLoading(false);
+        setCheckoutLoading(false);
+        setCancelLoading(false);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -87,8 +100,13 @@ function BillingContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        // Ne resetuj loading — stranica se odlazi
+      } else {
+        setPortalLoading(false);
+      }
     } catch {
       setPortalLoading(false);
     }
