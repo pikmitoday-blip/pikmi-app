@@ -257,6 +257,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 pitchLinkTitle: pitchLink.title || slug,
                 ownerUserId: pitchLink.user_id,
                 slug,
+                device,
+                referrer,
               }),
             }).catch(() => {});
           }
