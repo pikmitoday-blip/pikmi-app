@@ -4,19 +4,33 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
+const REMEMBER_KEY = "pikmi-remember";
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sessionWarning, setSessionWarning] = useState(false);
 
+  // Učitaj zapamćene podatke pri prvom renderu
   useEffect(() => {
     if (searchParams.get("reason") === "limit") {
       setSessionWarning(true);
     }
+
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        const { email: savedEmail, password: savedPassword } = JSON.parse(saved);
+        if (savedEmail) setEmail(savedEmail);
+        if (savedPassword) setPassword(savedPassword);
+        setRememberMe(true);
+      }
+    } catch {}
   }, [searchParams]);
 
   async function handleLogin(e: React.FormEvent) {
@@ -32,6 +46,12 @@ function LoginForm() {
         : error.message);
       setLoading(false);
     } else {
+      // Zapamti ili zaboravi podatke
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, password }));
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
       router.push("/dashboard");
     }
   }
@@ -64,6 +84,7 @@ function LoginForm() {
             onChange={e => setEmail(e.target.value)}
             required
             placeholder="tvoj@email.com"
+            autoComplete="email"
             style={{
               width: "100%", padding: "10px 14px", borderRadius: 10,
               background: "var(--surface)", border: "1px solid var(--border)",
@@ -83,6 +104,7 @@ function LoginForm() {
             onChange={e => setPassword(e.target.value)}
             required
             placeholder="••••••••"
+            autoComplete="current-password"
             style={{
               width: "100%", padding: "10px 14px", borderRadius: 10,
               background: "var(--surface)", border: "1px solid var(--border)",
@@ -102,7 +124,28 @@ function LoginForm() {
           </div>
         )}
 
-        <div style={{ textAlign: "right", marginTop: -8 }}>
+        {/* Zapamti me + Zaboravili ste lozinku */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: -4 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", userSelect: "none" }}>
+            <div
+              onClick={() => setRememberMe(v => !v)}
+              style={{
+                width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                border: rememberMe ? "none" : "1.5px solid var(--border)",
+                background: rememberMe ? "var(--purple, #7C3AED)" : "var(--surface)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.15s",
+              }}
+            >
+              {rememberMe && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <span style={{ fontSize: 13, color: "var(--text2)", fontWeight: 500 }}>Zapamti me</span>
+          </label>
+
           <Link href="/forgot-password" style={{ fontSize: 13, color: "#A78BFA", fontWeight: 500 }}>
             Zaboravili ste lozinku?
           </Link>
