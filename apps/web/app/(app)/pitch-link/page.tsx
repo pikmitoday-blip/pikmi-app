@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 interface PitchLink {
   id: string;
@@ -14,6 +15,7 @@ interface PitchLink {
 }
 
 export default function PitchLink() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ clientName: "", slug: "", message: "", filters: "" });
   const [status, setStatus] = useState<"idle"|"loading"|"ok"|"err">("idle");
   const [errMsg, setErrMsg] = useState("");
@@ -66,7 +68,7 @@ export default function PitchLink() {
 
       if (error) {
         if (error.code === "23505") {
-          setErrMsg("Slug već postoji. Odaberi drugi URL.");
+          setErrMsg(t("links_slug_exists"));
         } else {
           setErrMsg(error.message);
         }
@@ -108,22 +110,22 @@ export default function PitchLink() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Pitch linkovi</h1>
-        <p className="page-subtitle">Kreiraj personalizovane linkove za svakog klijenta</p>
+        <h1 className="page-title">{t("links_page_title")}</h1>
+        <p className="page-subtitle">{t("links_page_sub")}</p>
       </div>
 
       <div className="grid-2" style={{ gap: 32, alignItems: "start" }}>
         {/* Form */}
         <div className="card">
-          <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 24 }}>Novi pitch link</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 24 }}>{t("links_new_title")}</h2>
 
           <div className="field">
-            <label className="label">Ime klijenta *</label>
-            <input className="input" value={form.clientName} placeholder="Npr. Coca-Cola d.o.o."
+            <label className="label">{t("links_client_label")}</label>
+            <input className="input" value={form.clientName} placeholder={t("links_client_ph")}
               onChange={e => set("clientName", e.target.value)} />
           </div>
           <div className="field">
-            <label className="label">Slug (URL) *</label>
+            <label className="label">{t("links_slug_label")}</label>
             <div className="flex items-center">
               <span style={{ padding: "11px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRight: "none", borderRadius: "var(--r) 0 0 var(--r)", fontSize: 13, color: "var(--text3)", whiteSpace: "nowrap" }}>
                 pikmi.app/
@@ -134,35 +136,35 @@ export default function PitchLink() {
             </div>
           </div>
           <div className="field">
-            <label className="label">Personalizovana poruka</label>
-            <textarea className="input" value={form.message} placeholder="Zdravo! Pripremio sam selekciju projekata posebno za vas..."
+            <label className="label">{t("links_msg_label")}</label>
+            <textarea className="input" value={form.message} placeholder={t("links_msg_ph")}
               onChange={e => set("message", e.target.value)} />
           </div>
           <div className="field">
-            <label className="label">Filter projekata (opciono)</label>
-            <input className="input" value={form.filters} placeholder="Npr. branding, web dizajn"
+            <label className="label">{t("links_filter_label")}</label>
+            <input className="input" value={form.filters} placeholder={t("links_filter_ph")}
               onChange={e => set("filters", e.target.value)} />
           </div>
 
           <button className="btn btn-primary w-full" style={{ justifyContent: "center", marginTop: 8 }}
             onClick={create} disabled={status === "loading" || !form.clientName || !form.slug}>
-            {status === "loading" ? "Kreiranje..." : "✦ Kreiraj pitch link"}
+            {status === "loading" ? t("links_creating") : t("links_create_btn")}
           </button>
-          {status === "ok"  && <div className="success-msg">✓ Link kreiran i spreman za slanje!</div>}
+          {status === "ok"  && <div className="success-msg">{t("links_created_ok")}</div>}
           {status === "err" && <div className="error-msg">⚠ {errMsg}</div>}
         </div>
 
         {/* Links list */}
         <div>
-          <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>Kreirani linkovi</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>{t("links_created_list")}</h2>
           {loadingLinks ? (
             <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
-              <div style={{ color: "var(--text2)", fontSize: 14 }}>Učitavanje...</div>
+              <div style={{ color: "var(--text2)", fontSize: 14 }}>{t("loading")}</div>
             </div>
           ) : links.length === 0 ? (
             <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>🔗</div>
-              <div style={{ color: "var(--text2)", fontSize: 14 }}>Još nema kreiranih linkova.<br />Kreiraj prvi gore.</div>
+              <div style={{ color: "var(--text2)", fontSize: 14 }}>{t("links_no_links").split("\n").map((s, i) => <span key={i}>{s}{i === 0 && <br/>}</span>)}</div>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -177,18 +179,18 @@ export default function PitchLink() {
                       </div>
                     </div>
                     <span className={`badge ${l.is_active ? "badge-green" : ""}`} style={!l.is_active ? { background: "rgba(255,255,255,0.05)", color: "var(--text3)" } : {}}>
-                      {l.is_active ? "Aktivan" : "Neaktivan"}
+                      {l.is_active ? t("links_active") : t("links_inactive")}
                     </span>
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
-                    👁 {l.views} pregleda
+                    👁 {l.views} {t("links_views_count")}
                   </div>
                   <div className="flex gap-2">
                     <button className="btn btn-ghost btn-sm" onClick={() => copy(getLinkUrl(l.slug), l.id)}>
-                      {copied === l.id ? "✓ Kopirano!" : "📋 Kopiraj link"}
+                      {copied === l.id ? t("links_copied_btn") : t("links_copy_btn")}
                     </button>
                     <button className="btn btn-ghost btn-sm" onClick={() => toggleActive(l.id, l.is_active)}>
-                      {l.is_active ? "⏸ Deaktiviraj" : "▶ Aktiviraj"}
+                      {l.is_active ? t("links_deactivate") : t("links_activate")}
                     </button>
                     <button className="btn btn-ghost btn-sm" style={{ color: "#F87171" }} onClick={() => deleteLink(l.id)}>
                       🗑

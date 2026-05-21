@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 interface LinkStat {
   id: string;
@@ -25,14 +26,10 @@ interface DayStat { date: string; label: string; count: number; }
 
 type Timeline = "7" | "30" | "90" | "all";
 
-const TIMELINES: { value: Timeline; label: string }[] = [
-  { value: "7",   label: "7 dana" },
-  { value: "30",  label: "30 dana" },
-  { value: "90",  label: "90 dana" },
-  { value: "all", label: "Sve" },
-];
+// TIMELINES labels are set dynamically with t() inside the component
 
 export default function Analytics() {
+  const { t } = useLanguage();
   const [links, setLinks] = useState<LinkStat[]>([]);
   const [views, setViews] = useState<ViewRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,11 +74,18 @@ export default function Analytics() {
     setLoading(false);
   }
 
+  const TIMELINES: { value: Timeline; label: string }[] = [
+    { value: "7",   label: t("analytics_timeline_7") },
+    { value: "30",  label: t("analytics_timeline_30") },
+    { value: "90",  label: t("analytics_timeline_90") },
+    { value: "all", label: t("analytics_timeline_all") },
+  ];
+
   // Filtriraj po timeline
-  function getTimelineStart(t: Timeline): Date | null {
-    if (t === "all") return null;
+  function getTimelineStart(tl: Timeline): Date | null {
+    if (tl === "all") return null;
     const d = new Date();
-    d.setDate(d.getDate() - parseInt(t) + 1);
+    d.setDate(d.getDate() - parseInt(tl) + 1);
     d.setHours(0, 0, 0, 0);
     return d;
   }
@@ -152,12 +156,13 @@ export default function Analytics() {
   const chartData = buildChartData();
   const maxBar = Math.max(...chartData.map(d => d.count), 1);
 
-  const chartTitle = {
-    "7":   "Pregledi — zadnjih 7 dana",
-    "30":  "Pregledi — zadnjih 30 dana",
-    "90":  "Pregledi — zadnjih 90 dana (po sedmicama)",
-    "all": "Pregledi — po mjesecima",
-  }[timeline];
+  const chartTitleMap: Record<Timeline, string> = {
+    "7":   `${t("analytics_total_views")} — ${t("analytics_timeline_7")}`,
+    "30":  `${t("analytics_total_views")} — ${t("analytics_timeline_30")}`,
+    "90":  `${t("analytics_total_views")} — ${t("analytics_timeline_90")}`,
+    "all": `${t("analytics_total_views")}`,
+  };
+  const chartTitle = chartTitleMap[timeline];
 
   function timeAgo(dateStr: string) {
     if (!dateStr) return "—";
@@ -170,14 +175,14 @@ export default function Analytics() {
     return `${Math.floor(hrs / 24)}d`;
   }
 
-  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>Učitavanje...</div>;
+  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>{t("loading")}</div>;
 
   return (
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Analitika</h1>
-          <p className="page-subtitle">Prati ko i kada otvara tvoje pitch linkove</p>
+          <h1 className="page-title">{t("nav_analytics")}</h1>
+          <p className="page-subtitle">{t("analytics_page_sub")}</p>
         </div>
       </div>
 
@@ -189,7 +194,7 @@ export default function Analytics() {
             onClick={() => setSelectedLink("all")}
             className={`btn btn-sm ${selectedLink === "all" ? "btn-primary" : "btn-ghost"}`}
           >
-            Svi linkovi
+            {t("analytics_all_links")}
           </button>
           {links.map(l => (
             <button
@@ -207,18 +212,18 @@ export default function Analytics() {
           display: "flex", gap: 2, background: "var(--surface)",
           border: "1px solid var(--border)", borderRadius: 10, padding: 3,
         }}>
-          {TIMELINES.map(t => (
+          {TIMELINES.map(tl => (
             <button
-              key={t.value}
-              onClick={() => setTimeline(t.value)}
+              key={tl.value}
+              onClick={() => setTimeline(tl.value)}
               style={{
                 padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
-                background: timeline === t.value ? "var(--purple)" : "transparent",
-                color: timeline === t.value ? "white" : "var(--text3)",
+                background: timeline === tl.value ? "var(--purple)" : "transparent",
+                color: timeline === tl.value ? "white" : "var(--text3)",
               }}
             >
-              {t.label}
+              {tl.label}
             </button>
           ))}
         </div>
@@ -227,10 +232,10 @@ export default function Analytics() {
       {/* Stats */}
       <div className="grid-4 mb-8">
         {[
-          { label: "Ukupno pregleda", value: totalViews, icon: "👁", color: "rgba(124,58,237,0.15)" },
-          { label: "Aktivnih dana", value: uniqueDays, icon: "📅", color: "rgba(59,130,246,0.15)" },
-          { label: "Mobilni", value: mobileViews, icon: "📱", color: "rgba(236,72,153,0.15)" },
-          { label: "Desktop", value: desktopViews, icon: "🖥", color: "rgba(34,197,94,0.15)" },
+          { label: t("analytics_total_views"), value: totalViews, icon: "👁", color: "rgba(124,58,237,0.15)" },
+          { label: t("analytics_best_day"),   value: uniqueDays, icon: "📅", color: "rgba(59,130,246,0.15)" },
+          { label: "Mobile",                  value: mobileViews, icon: "📱", color: "rgba(236,72,153,0.15)" },
+          { label: "Desktop",                 value: desktopViews, icon: "🖥", color: "rgba(34,197,94,0.15)" },
         ].map(s => (
           <div key={s.label} className="stat-card">
             <div className="stat-icon" style={{ background: s.color }}>{s.icon}</div>
@@ -269,18 +274,18 @@ export default function Analytics() {
       {/* Tabela pregleda */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h2 style={{ fontSize: 16, fontWeight: 700 }}>Nedavni pregledi</h2>
-          <span style={{ fontSize: 13, color: "var(--text3)" }}>{filteredViews.length} ukupno</span>
+          <h2 style={{ fontSize: 16, fontWeight: 700 }}>{t("analytics_recent")}</h2>
+          <span style={{ fontSize: 13, color: "var(--text3)" }}>{filteredViews.length} {t("analytics_total_views").toLowerCase()}</span>
         </div>
 
         {filteredViews.length === 0 ? (
           <div style={{ padding: "40px 0", textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
             <div style={{ color: "var(--text2)", fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
-              Još nema pregleda
+              {t("analytics_no_views")}
             </div>
             <p style={{ color: "var(--text3)", fontSize: 13 }}>
-              Pošalji pitch link klijentu da počneš da pratiš aktivnost.
+              {t("analytics_no_data")}
             </p>
           </div>
         ) : (
@@ -289,9 +294,9 @@ export default function Analytics() {
               <thead>
                 <tr>
                   <th>Pitch link</th>
-                  <th className="hide-mobile">Uređaj</th>
-                  <th className="hide-mobile">Referrer</th>
-                  <th>Kada</th>
+                  <th className="hide-mobile">{t("analytics_device")}</th>
+                  <th className="hide-mobile">{t("analytics_source")}</th>
+                  <th>{t("analytics_time")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,12 +314,12 @@ export default function Analytics() {
                     </td>
                     <td className="hide-mobile">
                       <span style={{ fontSize: 13, color: "var(--text2)" }}>
-                        {v.device === "mobile" ? "📱 Mobil" : v.device === "desktop" ? "🖥 Desktop" : "—"}
+                        {v.device === "mobile" ? "📱 Mobile" : v.device === "desktop" ? "🖥 Desktop" : "—"}
                       </span>
                     </td>
                     <td className="hide-mobile">
                       <span style={{ fontSize: 12, color: "var(--text3)" }}>
-                        {v.referrer ? (() => { try { return new URL(v.referrer).hostname; } catch { return v.referrer; } })() : "Direktno"}
+                        {v.referrer ? (() => { try { return new URL(v.referrer).hostname; } catch { return v.referrer; } })() : "Direct"}
                       </span>
                     </td>
                     <td style={{ color: "var(--text3)", fontSize: 13 }}>

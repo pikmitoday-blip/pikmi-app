@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 type PlanStatus = "loading" | "pro" | "trial" | "expired";
 
@@ -319,6 +320,7 @@ I'd love to organize a shoot for {kompanija}. 📸`,
 };
 
 export default function Outreach() {
+  const { t } = useLanguage();
   const [planStatus, setPlanStatus] = useState<PlanStatus>("loading");
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [profession, setProfession] = useState("Web dizajner");
@@ -392,9 +394,9 @@ export default function Outreach() {
   }
 
   const tabs = [
-    { key: "dm" as const, label: "Cold DM", icon: "💬" },
-    { key: "email" as const, label: "Cold Email", icon: "✉️" },
-    { key: "followup" as const, label: "Follow-up", icon: "🔁" },
+    { key: "dm" as const, label: t("outreach_cold_dm"), icon: "💬" },
+    { key: "email" as const, label: t("outreach_cold_email"), icon: "✉️" },
+    { key: "followup" as const, label: t("outreach_follow_up"), icon: "🔁" },
   ];
 
   const isLocked = planStatus === "expired";
@@ -402,8 +404,8 @@ export default function Outreach() {
   return (
     <div style={{ position: "relative" }}>
       <div className="page-header">
-        <h1 className="page-title">Outreach kit</h1>
-        <p className="page-subtitle">Šabloni za cold DM, email i follow-up prilagođeni tvojoj profesiji</p>
+        <h1 className="page-title">{t("nav_outreach")}</h1>
+        <p className="page-subtitle">{t("outreach_page_sub")}</p>
       </div>
 
       {/* Trial banner */}
@@ -440,10 +442,10 @@ export default function Outreach() {
           }}>
             <div style={{ fontSize: 52, marginBottom: 16 }}>🔒</div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>
-              Outreach kit je zaključan
+              {t("outreach_locked_title")}
             </h2>
             <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8, lineHeight: 1.6 }}>
-              Tvoj besplatni trial je istekao. Pretplati se na <strong style={{ color: "#A78BFA" }}>Pro plan</strong> da pristupiš svim šablonima za cold DM, email i follow-up.
+              {t("outreach_locked_desc")}
             </p>
             <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 28, lineHeight: 1.6 }}>
               ✦ Cold DM šabloni za 6 profesija<br />
@@ -454,12 +456,12 @@ export default function Outreach() {
             <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
               990 din<span style={{ fontSize: 14, fontWeight: 500, color: "var(--text2)" }}>/mesec</span>
             </div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 24 }}>Otkaži u bilo kom trenutku</div>
+            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 24 }}>{t("cancel_anytime")}</div>
             <Link href="/billing" className="btn btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-              Pretplati se na Pro →
+              {t("outreach_upgrade_btn")}
             </Link>
             <Link href="/dashboard" style={{ display: "block", marginTop: 14, fontSize: 13, color: "var(--text3)" }}>
-              Nazad na dashboard
+              ← {t("nav_dashboard")}
             </Link>
           </div>
         </div>
@@ -471,9 +473,9 @@ export default function Outreach() {
           {/* Sidebar filters */}
           <div className="flex flex-col gap-4">
             <div className="card">
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Podešavanja</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{t("outreach_personalize")}</h2>
               <div className="field">
-                <label className="label">Profesija</label>
+                <label className="label">{t("outreach_profession")}</label>
                 <div className="flex flex-col gap-2">
                   {professions.map(p => (
                     <button key={p} onClick={() => setProfession(p)}
@@ -491,9 +493,9 @@ export default function Outreach() {
                 </div>
               </div>
               <div className="field">
-                <label className="label">Jezik šablona</label>
+                <label className="label">{t("language")}</label>
                 <div className="flex gap-2">
-                  {[{ v: "SR", l: "🇷🇸 Srpski" }, { v: "EN", l: "🇬🇧 Engleski" }].map(lang => (
+                  {[{ v: "SR", l: `🇷🇸 ${t("outreach_sr")}` }, { v: "EN", l: `🇬🇧 ${t("outreach_en")}` }].map(lang => (
                     <button key={lang.v} onClick={() => setLanguage(lang.v)}
                       style={{
                         flex: 1, padding: "10px", borderRadius: 10, border: "1px solid",
@@ -510,17 +512,17 @@ export default function Outreach() {
             </div>
 
             <div className="card">
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Personalizuj</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{t("outreach_personalize")}</h2>
               <div className="field">
-                <label className="label">Ime klijenta</label>
+                <label className="label">{t("outreach_client_name")}</label>
                 <input className="input" placeholder="Marko" value={form.imeKlijenta} onChange={e => setForm(f => ({ ...f, imeKlijenta: e.target.value }))} />
               </div>
               <div className="field">
-                <label className="label">Kompanija</label>
+                <label className="label">{t("outreach_company")}</label>
                 <input className="input" placeholder="Acme d.o.o." value={form.kompanija} onChange={e => setForm(f => ({ ...f, kompanija: e.target.value }))} />
               </div>
               <div className="field">
-                <label className="label">Moja niša (opciono)</label>
+                <label className="label">{t("outreach_your_name")}</label>
                 <input className="input" placeholder={profession} value={form.mojaNisa} onChange={e => setForm(f => ({ ...f, mojaNisa: e.target.value }))} />
               </div>
             </div>
@@ -548,7 +550,7 @@ export default function Outreach() {
                   </div>
                 </div>
                 <button className="btn btn-ghost btn-sm" onClick={() => copy(fill(getRaw(activeTab)), activeTab)}>
-                  {copied === activeTab ? "✓ Kopirano!" : "📋 Kopiraj sve"}
+                  {copied === activeTab ? `✓ ${t("outreach_copied")}` : `📋 ${t("outreach_copy")}`}
                 </button>
               </div>
 
