@@ -4,28 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
+import { LanguageProvider, LOCALES, useLanguage, type Locale } from "../../lib/i18n";
 
-const links = [
-  { href: "/dashboard",    label: "Dashboard",    icon: "🏠" },
-  { href: "/moj-profil",   label: "Moj profil",   icon: "👤" },
-  { href: "/pitch-link",   label: "Pitch linkovi", icon: "🔗" },
-  { href: "/analytics",    label: "Analitika",    icon: "📊" },
-  { href: "/profile-edit", label: "Uredi profil",  icon: "✏️" },
-  { href: "/outreach",     label: "Outreach kit",  icon: "✉️" },
-  { href: "/billing",      label: "Naplata",       icon: "💳" },
-];
-
-// Samo 5 ključnih linkova u mobile bottom navu
-const mobileLinks = [
-  { href: "/dashboard",    label: "Home",    icon: "🏠" },
-  { href: "/moj-profil",   label: "Profil",  icon: "👤" },
-  { href: "/pitch-link",   label: "Linkovi", icon: "🔗" },
-  { href: "/analytics",    label: "Analitika", icon: "📊" },
-  { href: "/outreach",     label: "Outreach", icon: "✉️" },
-];
-
-interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; }
-const EMPTY_SIDEBAR: SidebarProfile = { firstName: "", lastName: "", initials: "", serviceTitle: "", avatarUrl: "" };
+// Nav links su definirani unutar komponente da mogu koristiti prijevode
+interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; plan: string; }
+const EMPTY_SIDEBAR: SidebarProfile = { firstName: "", lastName: "", initials: "", serviceTitle: "", avatarUrl: "", plan: "free" };
 
 function getCachedSidebar(): SidebarProfile {
   try {
@@ -36,11 +19,21 @@ function getCachedSidebar(): SidebarProfile {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LanguageProvider>
+      <AppLayoutInner>{children}</AppLayoutInner>
+    </LanguageProvider>
+  );
+}
+
+function AppLayoutInner({ children }: { children: React.ReactNode }) {
+  const { t, locale, setLocale } = useLanguage();
   const path = usePathname();
   const router = useRouter();
   const [theme, setTheme] = useState<"dark"|"light">("dark");
   const [profile, setProfile] = useState<SidebarProfile>(getCachedSidebar);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("pikmi-theme") as "dark"|"light" | null;
@@ -54,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           if (adminEmails.includes(user.email?.toLowerCase() ?? "")) setIsAdmin(true);
           const { data } = await supabase
             .from("profiles")
-            .select("first_name, last_name, profile_data")
+            .select("first_name, last_name, profile_data, plan")
             .eq("user_id", user.id)
             .single();
           if (data) {
@@ -65,6 +58,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? ""),
               serviceTitle: pd?.serviceTitle ? (pd.serviceTitle as string).split("\n")[0].trim() : "",
               avatarUrl: (pd?.avatarUrl as string) || "",
+              plan: data.plan || "free",
             };
             setProfile(updated);
             try { sessionStorage.setItem("pikmi-sidebar", JSON.stringify(updated)); } catch {}
@@ -161,6 +155,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     localStorage.setItem("pikmi-theme", next);
   }
 
+  const navLinks = [
+    { href: "/dashboard",    label: t("nav_dashboard"),    icon: "🏠" },
+    { href: "/moj-profil",   label: t("nav_my_profile"),   icon: "👤" },
+    { href: "/pitch-link",   label: t("nav_pitch_links"),  icon: "🔗" },
+    { href: "/analytics",    label: t("nav_analytics"),    icon: "📊" },
+    { href: "/profile-edit", label: t("nav_edit_profile"), icon: "✏️" },
+    { href: "/outreach",     label: t("nav_outreach"),     icon: "✉️" },
+    { href: "/billing",      label: t("nav_billing"),      icon: "💳" },
+  ];
+
+  const mobileLinks = [
+    { href: "/dashboard",    label: t("mob_home"),      icon: "🏠" },
+    { href: "/moj-profil",   label: t("mob_profile"),   icon: "👤" },
+    { href: "/pitch-link",   label: t("mob_links"),     icon: "🔗" },
+    { href: "/analytics",    label: t("mob_analytics"), icon: "📊" },
+    { href: "/outreach",     label: t("mob_outreach"),  icon: "✉️" },
+  ];
+
+  const currentLocale = LOCALES.find(l => l.value === locale)!;
+
   return (
     <div className="app-layout">
       <aside className="sidebar">
@@ -169,9 +183,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           pikmi
         </div>
 
-        <div className="sidebar-section">Navigacija</div>
+        <div className="sidebar-section">{t("navigation")}</div>
         <nav className="sidebar-nav">
-          {links.map(l => (
+          {navLinks.map(l => (
             <Link key={l.href} href={l.href} className={`sidebar-link ${path === l.href ? "active" : ""}`}>
               <span style={{ fontSize: 16 }}>{l.icon}</span>
               {l.label}
@@ -197,7 +211,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)";
             }}>
               <span style={{ fontSize: 14 }}>⚡</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#F87171" }}>Admin panel</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#F87171" }}>{t("nav_admin")}</span>
               <span style={{ marginLeft: "auto", fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(239,68,68,0.15)", color: "#F87171", fontWeight: 700, letterSpacing: "0.05em" }}>ADMIN</span>
             </div>
           </Link>
@@ -211,10 +225,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
               background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 13, color: "var(--text2)", marginBottom: 8, transition: "all 0.15s",
+              fontSize: 13, color: "var(--text2)", marginBottom: 0, transition: "all 0.15s",
             }}
           >
-            <span>{theme === "dark" ? "🌙 Tamna tema" : "☀️ Svetla tema"}</span>
+            <span>{theme === "dark" ? `🌙 ${t("dark_theme")}` : `☀️ ${t("light_theme")}`}</span>
             <div style={{
               width: 36, height: 20, borderRadius: 100, background: theme === "light" ? "var(--purple)" : "var(--border)",
               position: "relative", transition: "background 0.2s", flexShrink: 0,
@@ -227,16 +241,69 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </button>
 
-          <div className="sidebar-user">
+          {/* Language selector */}
+          <div style={{ position: "relative", marginTop: 8 }}>
+            <button
+              onClick={() => setShowLangMenu(v => !v)}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
+                background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
+                fontSize: 13, color: "var(--text2)", transition: "all 0.15s",
+              }}
+            >
+              <span>{currentLocale.flag} {currentLocale.label}</span>
+              <span style={{ fontSize: 10, opacity: 0.5 }}>▾</span>
+            </button>
+
+            {showLangMenu && (
+              <>
+                {/* Overlay za zatvaranje */}
+                <div
+                  onClick={() => setShowLangMenu(false)}
+                  style={{ position: "fixed", inset: 0, zIndex: 99 }}
+                />
+                <div style={{
+                  position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0,
+                  background: "var(--card)", border: "1px solid var(--border)",
+                  borderRadius: 10, overflow: "hidden", zIndex: 100,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                }}>
+                  {LOCALES.map(loc => (
+                    <button
+                      key={loc.value}
+                      onClick={() => { setLocale(loc.value as Locale); setShowLangMenu(false); }}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", gap: 10,
+                        padding: "10px 14px", background: locale === loc.value ? "rgba(124,58,237,0.12)" : "transparent",
+                        border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: 13, color: locale === loc.value ? "var(--purple)" : "var(--text2)",
+                        fontWeight: locale === loc.value ? 600 : 400, transition: "background 0.1s",
+                        textAlign: "left",
+                      }}
+                      onMouseEnter={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "var(--surface)"; }}
+                      onMouseLeave={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    >
+                      <span style={{ fontSize: 16 }}>{loc.flag}</span>
+                      {loc.label}
+                      {locale === loc.value && <span style={{ marginLeft: "auto", fontSize: 11 }}>✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="sidebar-user" style={{ marginTop: 8 }}>
             {profile.avatarUrl
               ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
               : <div className="avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{profile.initials}</div>
             }
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{profile.firstName} {profile.lastName}</div>
-              <div style={{ fontSize: 11, color: "var(--text3)" }}>free plan</div>
+              <div style={{ fontSize: 11, color: "var(--text3)" }}>{profile.plan === "pro" ? t("pro_plan") : t("free_plan")}</div>
             </div>
-            <button onClick={handleLogout} title="Odjavi se" style={{
+            <button onClick={handleLogout} title={t("nav_logout")} style={{
               background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.25)",
               cursor: "pointer", color: "#F87171", fontSize: 14, padding: "6px 8px",
               borderRadius: 8, transition: "all 0.15s", fontWeight: 600,
@@ -304,7 +371,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", padding: 0 }}
         >
           <div className="mobile-nav-icon">⏻</div>
-          <span>Odjava</span>
+          <span>{t("nav_logout")}</span>
         </button>
       </nav>
     </div>

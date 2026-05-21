@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 interface BillingProfile {
   plan: "free" | "pro";
@@ -24,6 +25,7 @@ interface SubDetails {
 }
 
 function BillingContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<BillingProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ function BillingContent() {
     }
   }
 
-  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>Učitavanje...</div>;
+  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>{t("loading")}</div>;
 
   const isPro = profile?.plan === "pro";
   const trialEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
@@ -154,8 +156,8 @@ function BillingContent() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Naplata</h1>
-        <p className="page-subtitle">Upravljaj pretplatom i planom</p>
+        <h1 className="page-title">{t("billing_title")}</h1>
+        <p className="page-subtitle">{t("billing_subtitle")}</p>
       </div>
 
       {/* Success/cancel banners */}
@@ -165,7 +167,7 @@ function BillingContent() {
           background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)",
           color: "#4ADE80", fontSize: 14, fontWeight: 600,
         }}>
-          🎉 Uspešno! Tvoj Pro plan je aktiviran.
+          {t("billing_success")}
         </div>
       )}
       {cancelledMsg && (
@@ -174,7 +176,7 @@ function BillingContent() {
           background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)",
           color: "#FCD34D", fontSize: 14,
         }}>
-          Plaćanje je otkazano. Možeš pokušati ponovo u bilo kom trenutku.
+          {t("billing_cancelled")}
         </div>
       )}
       {paymentUpdatedMsg && (
@@ -183,7 +185,7 @@ function BillingContent() {
           background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)",
           color: "#4ADE80", fontSize: 14, fontWeight: 600,
         }}>
-          ✓ Način plaćanja je uspješno ažuriran.
+          {t("billing_payment_updated")}
         </div>
       )}
 
@@ -203,14 +205,14 @@ function BillingContent() {
             </div>
             <div>
               <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 3 }}>
-                {isPro ? "Pro plan" : "Free plan"}
+                {isPro ? t("billing_pro") : t("billing_free")}
               </div>
               <div style={{ fontSize: 13, color: "var(--text2)" }}>
                 {isPro
-                  ? "Imaš pristup svim funkcijama"
+                  ? t("billing_access_all")
                   : trialActive
-                  ? `Trial ističe za ${trialDaysLeft} ${trialDaysLeft === 1 ? "dan" : "dana"}`
-                  : "Trial istekao — nadogradi na Pro"}
+                  ? `${t("billing_trial_expires")} ${trialDaysLeft} ${t("billing_trial_days")}`
+                  : t("billing_trial_expired")}
               </div>
             </div>
           </div>
@@ -225,29 +227,26 @@ function BillingContent() {
       {isPro && subDetails && (
         <div className="card mb-8" style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 18 }}>
-            Detalji pretplate
+            {t("billing_details")}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: subDetails.card || subDetails.lastInvoiceAmount !== null ? 20 : 0 }}>
-            {/* Next billing */}
             <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
               <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
-                {subDetails.cancelAtPeriodEnd ? "⚠ Ističe" : "Sledeća naplata"}
+                {subDetails.cancelAtPeriodEnd ? t("billing_expires_on") : t("billing_next")}
               </div>
               <div style={{ fontSize: 15, fontWeight: 700, color: subDetails.cancelAtPeriodEnd ? "#FCD34D" : "var(--text)" }}>
                 {new Date(subDetails.currentPeriodEnd).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
               </div>
             </div>
-            {/* Amount */}
             <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Iznos pretplate</div>
+              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>{t("billing_amount")}</div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>
                 {subDetails.amount ? `${(subDetails.amount / 100).toLocaleString("sr-RS")} ${subDetails.currency.toUpperCase()}` : "—"}
-                <span style={{ fontSize: 12, fontWeight: 400, color: "var(--text3)" }}>/mes</span>
+                <span style={{ fontSize: 12, fontWeight: 400, color: "var(--text3)" }}>{t("months_per")}</span>
               </div>
             </div>
-            {/* Status */}
             <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Status</div>
+              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>{t("billing_status")}</div>
               <div style={{ fontSize: 14, fontWeight: 700 }}>
                 <span style={{
                   padding: "3px 9px", borderRadius: 6, fontSize: 12,
@@ -255,34 +254,31 @@ function BillingContent() {
                   color: subDetails.status === "active" ? "#4ADE80" : "#FCD34D",
                   border: `1px solid ${subDetails.status === "active" ? "rgba(34,197,94,0.25)" : "rgba(251,191,36,0.25)"}`,
                 }}>
-                  {subDetails.status === "active" ? "✓ Aktivna" : subDetails.status}
+                  {subDetails.status === "active" ? t("billing_active") : subDetails.status}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Payment method + last invoice */}
           {(subDetails.card || subDetails.lastInvoiceAmount !== null) && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
               {subDetails.card && (
                 <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ fontSize: 22 }}>
-                    {subDetails.card.brand === "visa" ? "💳" : subDetails.card.brand === "mastercard" ? "💳" : "💳"}
-                  </div>
+                  <div style={{ fontSize: 22 }}>💳</div>
                   <div>
-                    <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3, fontWeight: 600 }}>Kartica</div>
+                    <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3, fontWeight: 600 }}>{t("billing_card")}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, textTransform: "capitalize" }}>
                       {subDetails.card.brand} •••• {subDetails.card.last4}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text3)" }}>
-                      Ističe {subDetails.card.expMonth}/{subDetails.card.expYear}
+                      {t("billing_card_exp")} {subDetails.card.expMonth}/{subDetails.card.expYear}
                     </div>
                   </div>
                 </div>
               )}
               {subDetails.lastInvoiceAmount !== null && (
                 <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Poslednja faktura</div>
+                  <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>{t("billing_invoice")}</div>
                   <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
                     {(subDetails.lastInvoiceAmount / 100).toLocaleString("sr-RS")} {subDetails.currency.toUpperCase()}
                   </div>
@@ -294,7 +290,7 @@ function BillingContent() {
                   {subDetails.lastInvoicePdf && (
                     <a href={subDetails.lastInvoicePdf} target="_blank" rel="noopener noreferrer"
                       style={{ fontSize: 11, color: "var(--purple)", textDecoration: "none", fontWeight: 600, display: "inline-block", marginTop: 6 }}>
-                      Preuzmi PDF ↗
+                      {t("billing_pdf")}
                     </a>
                   )}
                 </div>
@@ -310,7 +306,7 @@ function BillingContent() {
         <div className="card" style={{ opacity: isPro ? 0.5 : 1 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>Free</div>
           <div style={{ fontSize: 38, fontWeight: 900, marginBottom: 4 }}>0 din</div>
-          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>zauvek besplatno</div>
+          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>{t("forever_free")}</div>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
             {[
               "Neograničen broj pitch linkova",
@@ -328,7 +324,7 @@ function BillingContent() {
             </li>
           </ul>
           <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default", opacity: 0.6 }}>
-            {!isPro ? "Tvoj trenutni plan" : "Free plan"}
+            {!isPro ? t("billing_current") : t("billing_free")}
           </div>
         </div>
 
@@ -340,9 +336,9 @@ function BillingContent() {
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pro</div>
           <div style={{ fontSize: 38, fontWeight: 900, marginBottom: 4 }}>
-            990 din<span style={{ fontSize: 15, fontWeight: 500, color: "var(--text2)" }}>/mes</span>
+            990 din<span style={{ fontSize: 15, fontWeight: 500, color: "var(--text2)" }}>{t("months_per")}</span>
           </div>
-          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>Otkaži u bilo kom trenutku</div>
+          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>{t("cancel_anytime")}</div>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
             {[
               "Sve iz Free plana",
@@ -367,10 +363,10 @@ function BillingContent() {
                   background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)",
                   fontSize: 13, color: "#FCD34D", textAlign: "center",
                 }}>
-                  ⚠ Pretplata ističe {new Date(cancelAt).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
+                  {t("billing_expires")} {new Date(cancelAt).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
                 </div>
               ) : (
-                <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ Tvoj trenutni plan</div>
+                <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ {t("billing_current")}</div>
               )}
               <button
                 className="btn btn-sm"
@@ -378,7 +374,7 @@ function BillingContent() {
                 onClick={handlePortal}
                 disabled={portalLoading}
               >
-                {portalLoading ? "Učitavanje..." : "💳 Promeni način plaćanja"}
+                {portalLoading ? t("billing_loading") : `💳 ${t("billing_manage")}`}
               </button>
               {!cancelAt && (
                 <button
@@ -386,7 +382,7 @@ function BillingContent() {
                   style={{ justifyContent: "center", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}
                   onClick={() => setShowCancelModal(true)}
                 >
-                  Otkaži pretplatu
+                  {t("billing_cancel")}
                 </button>
               )}
             </div>
@@ -397,16 +393,15 @@ function BillingContent() {
               onClick={handleSubscribe}
               disabled={checkoutLoading}
             >
-              {checkoutLoading ? "Preusmjeravam..." : "Pretplati se na Pro →"}
+              {checkoutLoading ? t("billing_subscribing") : t("billing_subscribe")}
             </button>
           )}
         </div>
       </div>
 
-
       {/* FAQ */}
       <div style={{ marginTop: 40 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>Česta pitanja</h2>
+        <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>{t("billing_faq")}</h2>
         <div className="flex flex-col gap-3">
           {[
             { q: "Mogu li da otkažem u bilo kom trenutku?", a: "Da, pretplatu možeš otkazati kada god želiš direktno u Stripe portalu. Pro pristup ostaje aktivan do kraja plaćenog perioda." },
@@ -421,6 +416,7 @@ function BillingContent() {
           ))}
         </div>
       </div>
+
       {/* Modal za potvrdu otkazivanja */}
       {showCancelModal && (
         <div
@@ -442,13 +438,13 @@ function BillingContent() {
           >
             <div style={{ fontSize: 36, textAlign: "center", marginBottom: 16 }}>⚠️</div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, textAlign: "center" }}>
-              Otkaži Pro pretplatu?
+              {t("billing_confirm_cancel")}
             </h3>
             <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.6, textAlign: "center", marginBottom: 8 }}>
-              Zadržaćeš pristup svim Pro funkcijama do kraja trenutnog obračunskog perioda.
+              {t("billing_confirm_text")}
             </p>
             <p style={{ fontSize: 13, color: "var(--text3)", textAlign: "center", marginBottom: 28 }}>
-              Nakon isteka, nalog se automatski prebacuje na Free plan.
+              {t("billing_confirm_after")}
             </p>
             <div style={{ display: "flex", gap: 10 }}>
               <button
@@ -459,7 +455,7 @@ function BillingContent() {
                   color: "var(--text)", fontSize: 14, fontWeight: 600, cursor: "pointer",
                 }}
               >
-                Zadrži Pro
+                {t("billing_keep_pro")}
               </button>
               <button
                 onClick={handleCancel}
@@ -470,7 +466,7 @@ function BillingContent() {
                   color: "#F87171", fontSize: 14, fontWeight: 700, cursor: "pointer",
                 }}
               >
-                {cancelLoading ? "Otkazivanje..." : "Da, otkaži"}
+                {cancelLoading ? t("billing_cancelling") : t("billing_yes_cancel")}
               </button>
             </div>
           </div>
