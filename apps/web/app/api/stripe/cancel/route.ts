@@ -33,8 +33,9 @@ export async function POST(req: NextRequest) {
       { cancel_at_period_end: true }
     );
 
-    const cancelAt = subscription.cancel_at
-      ? new Date(subscription.cancel_at * 1000).toISOString()
+    const cancelAtRaw: number | null = (subscription as any).cancel_at ?? null;
+    const cancelAt = cancelAtRaw
+      ? new Date(cancelAtRaw * 1000).toISOString()
       : null;
 
     return NextResponse.json({ ok: true, cancelAt });

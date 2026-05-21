@@ -34,15 +34,30 @@ export async function POST(req: NextRequest) {
     const pm = sub.default_payment_method as Stripe.PaymentMethod | null;
     const invoice = sub.latest_invoice as Stripe.Invoice | null;
 
+    // In Stripe API >= 2025-03-31, current_period_end/start moved to subscription items
+    const subItem = sub.items.data[0] as any;
+    const periodEnd: number =
+      (sub as any).current_period_end ??
+      subItem?.current_period_end ??
+      subItem?.billing_cycle_anchor ??
+      Math.floor(Date.now() / 1000);
+    const periodStart: number =
+      (sub as any).current_period_start ??
+      subItem?.current_period_start ??
+      Math.floor(Date.now() / 1000);
+
+    const cancelAt: number | null =
+      (sub as any).cancel_at ?? null;
+
     return NextResponse.json({
       subscription: {
         status: sub.status,
-        cancelAtPeriodEnd: sub.cancel_at_period_end,
-        cancelAt: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : null,
-        currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-        currentPeriodStart: new Date(sub.current_period_start * 1000).toISOString(),
-        amount: sub.items.data[0]?.price?.unit_amount ?? 0,
-        currency: sub.items.data[0]?.price?.currency ?? "rsd",
+        cancelAtPeriodEnd: (sub as any).cancel_at_period_end ?? false,
+        cancelAt: cancelAt ? new Date(cancelAt * 1000).toISOString() : null,
+        currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+        currentPeriodStart: new Date(periodStart * 1000).toISOString(),
+        amount: subItem?.price?.unit_amount ?? 0,
+        currency: subItem?.price?.currency ?? "rsd",
         card: pm?.card ? {
           brand: pm.card.brand,
           last4: pm.card.last4,
