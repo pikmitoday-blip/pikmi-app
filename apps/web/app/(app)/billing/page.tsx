@@ -9,6 +9,20 @@ interface BillingProfile {
   stripe_subscription_id: string | null;
 }
 
+interface SubDetails {
+  status: string;
+  cancelAtPeriodEnd: boolean;
+  cancelAt: string | null;
+  currentPeriodEnd: string;
+  currentPeriodStart: string;
+  amount: number;
+  currency: string;
+  card: { brand: string; last4: string; expMonth: number; expYear: number } | null;
+  lastInvoiceAmount: number | null;
+  lastInvoiceDate: string | null;
+  lastInvoicePdf: string | null;
+}
+
 function BillingContent() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<BillingProfile | null>(null);
@@ -20,6 +34,7 @@ function BillingContent() {
   const [cancelAt, setCancelAt] = useState<string | null>(null);
   const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
+  const [subDetails, setSubDetails] = useState<SubDetails | null>(null);
 
   const successMsg = searchParams.get("success") === "1";
   const cancelledMsg = searchParams.get("cancelled") === "1";
@@ -37,7 +52,27 @@ function BillingContent() {
         .eq("user_id", user.id)
         .single();
 
-      setProfile(data as BillingProfile ?? { plan: "free", trial_ends_at: null, stripe_subscription_id: null });
+      const profileData = data as BillingProfile ?? { plan: "free", trial_ends_at: null, stripe_subscription_id: null };
+      setProfile(profileData);
+
+      // Fetch subscription details if Pro
+      if (profileData?.plan === "pro" && profileData?.stripe_subscription_id) {
+        try {
+          const subRes = await fetch("/api/stripe/subscription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id }),
+          });
+          const subData = await subRes.json();
+          if (subData.subscription) {
+            setSubDetails(subData.subscription);
+            if (subData.subscription.cancelAt) {
+              setCancelAt(subData.subscription.cancelAt);
+            }
+          }
+        } catch {}
+      }
+
       setLoading(false);
     }
     load();
@@ -158,6 +193,89 @@ function BillingContent() {
         </div>
       </div>
 
+      {/* Subscription details (Pro only) */}
+      {isPro && subDetails && (
+        <div className="card mb-8" style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 18 }}>
+            Detalji pretplate
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: subDetails.card || subDetails.lastInvoiceAmount !== null ? 20 : 0 }}>
+            {/* Next billing */}
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
+                {subDetails.cancelAtPeriodEnd ? "⚠ Ističe" : "Sledeća naplata"}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: subDetails.cancelAtPeriodEnd ? "#FCD34D" : "var(--text)" }}>
+                {new Date(subDetails.currentPeriodEnd).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
+              </div>
+            </div>
+            {/* Amount */}
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Iznos pretplate</div>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>
+                {subDetails.amount ? `${(subDetails.amount / 100).toLocaleString("sr-RS")} ${subDetails.currency.toUpperCase()}` : "—"}
+                <span style={{ fontSize: 12, fontWeight: 400, color: "var(--text3)" }}>/mes</span>
+              </div>
+            </div>
+            {/* Status */}
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Status</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>
+                <span style={{
+                  padding: "3px 9px", borderRadius: 6, fontSize: 12,
+                  background: subDetails.status === "active" ? "rgba(34,197,94,0.1)" : "rgba(251,191,36,0.1)",
+                  color: subDetails.status === "active" ? "#4ADE80" : "#FCD34D",
+                  border: `1px solid ${subDetails.status === "active" ? "rgba(34,197,94,0.25)" : "rgba(251,191,36,0.25)"}`,
+                }}>
+                  {subDetails.status === "active" ? "✓ Aktivna" : subDetails.status}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment method + last invoice */}
+          {(subDetails.card || subDetails.lastInvoiceAmount !== null) && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
+              {subDetails.card && (
+                <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ fontSize: 22 }}>
+                    {subDetails.card.brand === "visa" ? "💳" : subDetails.card.brand === "mastercard" ? "💳" : "💳"}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3, fontWeight: 600 }}>Kartica</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, textTransform: "capitalize" }}>
+                      {subDetails.card.brand} •••• {subDetails.card.last4}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text3)" }}>
+                      Ističe {subDetails.card.expMonth}/{subDetails.card.expYear}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {subDetails.lastInvoiceAmount !== null && (
+                <div style={{ padding: "14px 16px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Poslednja faktura</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
+                    {(subDetails.lastInvoiceAmount / 100).toLocaleString("sr-RS")} {subDetails.currency.toUpperCase()}
+                  </div>
+                  {subDetails.lastInvoiceDate && (
+                    <div style={{ fontSize: 11, color: "var(--text3)" }}>
+                      {new Date(subDetails.lastInvoiceDate).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
+                    </div>
+                  )}
+                  {subDetails.lastInvoicePdf && (
+                    <a href={subDetails.lastInvoicePdf} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 11, color: "var(--purple)", textDecoration: "none", fontWeight: 600, display: "inline-block", marginTop: 6 }}>
+                      Preuzmi PDF ↗
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Plans */}
       <div className="grid-2" style={{ gap: 24 }}>
         {/* Free */}
@@ -232,7 +350,7 @@ function BillingContent() {
                 onClick={handlePortal}
                 disabled={portalLoading}
               >
-                {portalLoading ? "Učitavanje..." : "⚙️ Upravljaj pretplatom"}
+                {portalLoading ? "Učitavanje..." : "💳 Promeni način plaćanja"}
               </button>
               {!cancelAt && (
                 <button
