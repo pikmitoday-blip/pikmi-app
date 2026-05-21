@@ -15,6 +15,9 @@ function BillingContent() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelAt, setCancelAt] = useState<string | null>(null);
   const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
 
@@ -53,6 +56,23 @@ function BillingContent() {
     } catch {
       setPortalLoading(false);
     }
+  }
+
+  async function handleCancel() {
+    setCancelLoading(true);
+    try {
+      const res = await fetch("/api/stripe/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setCancelAt(data.cancelAt);
+        setShowCancelModal(false);
+      }
+    } catch {}
+    setCancelLoading(false);
   }
 
   async function handleSubscribe() {
@@ -195,7 +215,17 @@ function BillingContent() {
 
           {isPro ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ Tvoj trenutni plan</div>
+              {cancelAt ? (
+                <div style={{
+                  padding: "12px 14px", borderRadius: 10,
+                  background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)",
+                  fontSize: 13, color: "#FCD34D", textAlign: "center",
+                }}>
+                  ⚠ Pretplata ističe {new Date(cancelAt).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              ) : (
+                <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ Tvoj trenutni plan</div>
+              )}
               <button
                 className="btn btn-sm"
                 style={{ justifyContent: "center", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text2)" }}
@@ -204,6 +234,15 @@ function BillingContent() {
               >
                 {portalLoading ? "Učitavanje..." : "⚙️ Upravljaj pretplatom"}
               </button>
+              {!cancelAt && (
+                <button
+                  className="btn btn-sm"
+                  style={{ justifyContent: "center", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}
+                  onClick={() => setShowCancelModal(true)}
+                >
+                  Otkaži pretplatu
+                </button>
+              )}
             </div>
           ) : (
             <button
@@ -252,6 +291,61 @@ function BillingContent() {
           ))}
         </div>
       </div>
+      {/* Modal za potvrdu otkazivanja */}
+      {showCancelModal && (
+        <div
+          onClick={() => setShowCancelModal(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "var(--card)", borderRadius: 16, padding: "32px 28px",
+              width: "100%", maxWidth: 420,
+              border: "1px solid var(--border)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
+            }}
+          >
+            <div style={{ fontSize: 36, textAlign: "center", marginBottom: 16 }}>⚠️</div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, textAlign: "center" }}>
+              Otkaži Pro pretplatu?
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.6, textAlign: "center", marginBottom: 8 }}>
+              Zadržaćeš pristup svim Pro funkcijama do kraja trenutnog obračunskog perioda.
+            </p>
+            <p style={{ fontSize: 13, color: "var(--text3)", textAlign: "center", marginBottom: 28 }}>
+              Nakon isteka, nalog se automatski prebacuje na Free plan.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                style={{
+                  flex: 1, padding: "12px", borderRadius: 10,
+                  background: "var(--surface)", border: "1px solid var(--border)",
+                  color: "var(--text)", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                Zadrži Pro
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={cancelLoading}
+                style={{
+                  flex: 1, padding: "12px", borderRadius: 10,
+                  background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                  color: "#F87171", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                {cancelLoading ? "Otkazivanje..." : "Da, otkaži"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
