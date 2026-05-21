@@ -81,6 +81,24 @@ export async function POST(req: NextRequest) {
       }
       break;
     }
+
+    case "setup_intent.succeeded": {
+      // Kada korisnik uspješno unese novu karticu, postavi je kao default na pretplati
+      const setupIntent = event.data.object as Stripe.SetupIntent;
+      const subscriptionId = setupIntent.metadata?.subscription_id;
+      const paymentMethodId = setupIntent.payment_method as string;
+
+      if (subscriptionId && paymentMethodId) {
+        try {
+          await stripe.subscriptions.update(subscriptionId, {
+            default_payment_method: paymentMethodId,
+          });
+        } catch (e) {
+          console.error("Failed to update default payment method:", e);
+        }
+      }
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });

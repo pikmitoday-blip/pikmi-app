@@ -38,6 +38,7 @@ function BillingContent() {
 
   const successMsg = searchParams.get("success") === "1";
   const cancelledMsg = searchParams.get("cancelled") === "1";
+  const paymentUpdatedMsg = searchParams.get("payment_updated") === "1";
 
   useEffect(() => {
     async function load() {
@@ -81,7 +82,7 @@ function BillingContent() {
   async function handlePortal() {
     setPortalLoading(true);
     try {
-      const res = await fetch("/api/stripe/portal", {
+      const res = await fetch("/api/stripe/update-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
@@ -156,6 +157,15 @@ function BillingContent() {
           color: "#FCD34D", fontSize: 14,
         }}>
           Plaćanje je otkazano. Možeš pokušati ponovo u bilo kom trenutku.
+        </div>
+      )}
+      {paymentUpdatedMsg && (
+        <div style={{
+          padding: "14px 18px", borderRadius: 10, marginBottom: 20,
+          background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)",
+          color: "#4ADE80", fontSize: 14, fontWeight: 600,
+        }}>
+          ✓ Način plaćanja je uspješno ažuriran.
         </div>
       )}
 
