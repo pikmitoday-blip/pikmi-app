@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
-import { LanguageProvider, LOCALES, useLanguage, type Locale } from "../../lib/i18n";
+import { LanguageProvider, LOCALES, useLanguage, initLocale, type Locale } from "../../lib/i18n";
 
 // Nav links su definirani unutar komponente da mogu koristiti prijevode
 interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; plan: string; }
@@ -34,6 +34,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<SidebarProfile>(getCachedSidebar);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+
+  // Inicijalizuj jezik iz localStorage
+  useEffect(() => { initLocale(); }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("pikmi-theme") as "dark"|"light" | null;

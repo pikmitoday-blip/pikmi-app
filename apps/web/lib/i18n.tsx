@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useSyncExternalStore } from "react";
 
 export type Locale = "sr" | "hr" | "en";
 
@@ -9,11 +9,29 @@ export const LOCALES: { value: Locale; label: string; flag: string }[] = [
   { value: "en", label: "English",  flag: "🇬🇧" },
 ];
 
+// ─── Global store (bypasses React context tree issues) ────────────────────────
+
+let _locale: Locale = "sr";
+const _listeners = new Set<() => void>();
+
+function _notify() {
+  _listeners.forEach(fn => fn());
+}
+
+export function setLocale(l: Locale) {
+  _locale = l;
+  if (typeof window !== "undefined") localStorage.setItem("pikmi-lang", l);
+  _notify();
+}
+
+export function getLocale(): Locale {
+  return _locale;
+}
+
 // ─── Translations ────────────────────────────────────────────────────────────
 
 const translations = {
   sr: {
-    // Nav
     nav_dashboard:    "Dashboard",
     nav_my_profile:   "Moj profil",
     nav_pitch_links:  "Pitch linkovi",
@@ -23,20 +41,17 @@ const translations = {
     nav_billing:      "Naplata",
     nav_admin:        "Admin panel",
     nav_logout:       "Odjava",
-    // Sidebar
     navigation:       "Navigacija",
     dark_theme:       "Tamna tema",
     light_theme:      "Svetla tema",
     free_plan:        "free plan",
     pro_plan:         "pro plan",
     language:         "Jezik",
-    // Mobile nav
     mob_home:         "Home",
     mob_profile:      "Profil",
     mob_links:        "Linkovi",
     mob_analytics:    "Analitika",
     mob_outreach:     "Outreach",
-    // Loading
     loading:          "Učitavanje...",
     // Dashboard
     dash_title:       "Dashboard",
@@ -49,37 +64,6 @@ const translations = {
     dash_create_link: "Kreiraj pitch link",
     dash_no_links:    "Nemaš još ni jedan pitch link.",
     dash_create_first:"Kreiraj prvi →",
-    // Profile
-    profile_title:    "Moj profil",
-    profile_subtitle: "Pregled i uređivanje profila",
-    profile_view:     "Pogledaj profil",
-    profile_edit:     "Uredi",
-    profile_save:     "Sačuvaj",
-    profile_cancel:   "Otkaži",
-    profile_saved:    "Sačuvano ✓",
-    profile_saving:   "Čuvanje...",
-    // Pitch links
-    links_title:      "Pitch linkovi",
-    links_subtitle:   "Upravljaj pitch linkovima",
-    links_create:     "Novi link",
-    links_copy:       "Kopiraj",
-    links_copied:     "Kopirano!",
-    links_delete:     "Obriši",
-    links_views:      "pregleda",
-    links_empty:      "Nemaš još ni jedan pitch link.",
-    links_client:     "Ime klijenta",
-    links_slug:       "URL adresa",
-    links_note:       "Napomena",
-    links_create_btn: "Kreiraj link",
-    links_creating:   "Kreiranje...",
-    // Analytics
-    analytics_title:  "Analitika",
-    analytics_subtitle:"Statistika pregleda tvojih linkova",
-    analytics_all_links:"Svi linkovi",
-    analytics_total:  "Ukupno pregleda",
-    analytics_unique: "Jedinstveni pregledi",
-    analytics_avg:    "Prosek dnevno",
-    analytics_best:   "Najaktivniji dan",
     // Billing
     billing_title:    "Naplata",
     billing_subtitle: "Upravljaj pretplatom i planom",
@@ -116,39 +100,15 @@ const translations = {
     billing_trial_days: "dana",
     billing_trial_expires: "Trial ističe za",
     billing_trial_expired: "Trial istekao — nadogradi na Pro",
-    // Outreach
-    outreach_title:   "Outreach kit",
-    outreach_subtitle:"Šabloni za akviziciju klijenata",
-    outreach_pro_only:"Outreach kit je dostupan samo Pro korisnicima.",
-    outreach_upgrade: "Nadogradi na Pro",
-    // Auth
-    auth_login:       "Prijavi se",
-    auth_register:    "Registruj se",
-    auth_logout:      "Odjavi se",
-    auth_email:       "Email adresa",
-    auth_password:    "Lozinka",
-    auth_forgot:      "Zaboravljena lozinka?",
-    auth_no_account:  "Nemaš nalog?",
-    auth_have_account:"Već imaš nalog?",
     // Common
     save:             "Sačuvaj",
     cancel:           "Otkaži",
-    delete:           "Obriši",
-    edit:             "Uredi",
-    create:           "Kreiraj",
-    confirm:          "Potvrdi",
-    back:             "Nazad",
-    yes:              "Da",
-    no:               "Ne",
-    error:            "Greška",
-    success:          "Uspešno",
     months_per:       "/mes",
     forever_free:     "zauvek besplatno",
     cancel_anytime:   "Otkaži u bilo kom trenutku",
   },
 
   hr: {
-    // Nav
     nav_dashboard:    "Dashboard",
     nav_my_profile:   "Moj profil",
     nav_pitch_links:  "Pitch linkovi",
@@ -158,22 +118,18 @@ const translations = {
     nav_billing:      "Naplata",
     nav_admin:        "Admin panel",
     nav_logout:       "Odjava",
-    // Sidebar
     navigation:       "Navigacija",
     dark_theme:       "Tamna tema",
     light_theme:      "Svijetla tema",
     free_plan:        "free plan",
     pro_plan:         "pro plan",
     language:         "Jezik",
-    // Mobile nav
     mob_home:         "Početna",
     mob_profile:      "Profil",
     mob_links:        "Linkovi",
     mob_analytics:    "Analitika",
     mob_outreach:     "Outreach",
-    // Loading
     loading:          "Učitavanje...",
-    // Dashboard
     dash_title:       "Dashboard",
     dash_subtitle:    "Pregled tvojih aktivnosti",
     dash_welcome:     "Dobrodošao natrag",
@@ -184,38 +140,6 @@ const translations = {
     dash_create_link: "Kreiraj pitch link",
     dash_no_links:    "Nemaš još ni jedan pitch link.",
     dash_create_first:"Kreiraj prvi →",
-    // Profile
-    profile_title:    "Moj profil",
-    profile_subtitle: "Pregled i uređivanje profila",
-    profile_view:     "Pogledaj profil",
-    profile_edit:     "Uredi",
-    profile_save:     "Spremi",
-    profile_cancel:   "Odustani",
-    profile_saved:    "Spremljeno ✓",
-    profile_saving:   "Spremanje...",
-    // Pitch links
-    links_title:      "Pitch linkovi",
-    links_subtitle:   "Upravljaj pitch linkovima",
-    links_create:     "Novi link",
-    links_copy:       "Kopiraj",
-    links_copied:     "Kopirano!",
-    links_delete:     "Obriši",
-    links_views:      "pregleda",
-    links_empty:      "Nemaš još ni jedan pitch link.",
-    links_client:     "Ime klijenta",
-    links_slug:       "URL adresa",
-    links_note:       "Napomena",
-    links_create_btn: "Kreiraj link",
-    links_creating:   "Kreiranje...",
-    // Analytics
-    analytics_title:  "Analitika",
-    analytics_subtitle:"Statistika pregleda tvojih linkova",
-    analytics_all_links:"Svi linkovi",
-    analytics_total:  "Ukupno pregleda",
-    analytics_unique: "Jedinstveni pregledi",
-    analytics_avg:    "Prosjek dnevno",
-    analytics_best:   "Najaktivniji dan",
-    // Billing
     billing_title:    "Naplata",
     billing_subtitle: "Upravljaj pretplatom i planom",
     billing_pro:      "Pro plan",
@@ -251,39 +175,14 @@ const translations = {
     billing_trial_days: "dana",
     billing_trial_expires: "Trial ističe za",
     billing_trial_expired: "Trial istekao — nadogradi na Pro",
-    // Outreach
-    outreach_title:   "Outreach kit",
-    outreach_subtitle:"Predlošci za akviziciju klijenata",
-    outreach_pro_only:"Outreach kit je dostupan samo Pro korisnicima.",
-    outreach_upgrade: "Nadogradi na Pro",
-    // Auth
-    auth_login:       "Prijavi se",
-    auth_register:    "Registriraj se",
-    auth_logout:      "Odjavi se",
-    auth_email:       "Email adresa",
-    auth_password:    "Lozinka",
-    auth_forgot:      "Zaboravljena lozinka?",
-    auth_no_account:  "Nemaš račun?",
-    auth_have_account:"Već imaš račun?",
-    // Common
     save:             "Spremi",
     cancel:           "Odustani",
-    delete:           "Obriši",
-    edit:             "Uredi",
-    create:           "Kreiraj",
-    confirm:          "Potvrdi",
-    back:             "Natrag",
-    yes:              "Da",
-    no:               "Ne",
-    error:            "Greška",
-    success:          "Uspješno",
     months_per:       "/mjes",
     forever_free:     "zauvijek besplatno",
     cancel_anytime:   "Otkaži u bilo kojem trenutku",
   },
 
   en: {
-    // Nav
     nav_dashboard:    "Dashboard",
     nav_my_profile:   "My Profile",
     nav_pitch_links:  "Pitch Links",
@@ -293,22 +192,18 @@ const translations = {
     nav_billing:      "Billing",
     nav_admin:        "Admin Panel",
     nav_logout:       "Logout",
-    // Sidebar
     navigation:       "Navigation",
     dark_theme:       "Dark mode",
     light_theme:      "Light mode",
     free_plan:        "free plan",
     pro_plan:         "pro plan",
     language:         "Language",
-    // Mobile nav
     mob_home:         "Home",
     mob_profile:      "Profile",
     mob_links:        "Links",
     mob_analytics:    "Analytics",
     mob_outreach:     "Outreach",
-    // Loading
     loading:          "Loading...",
-    // Dashboard
     dash_title:       "Dashboard",
     dash_subtitle:    "Overview of your activity",
     dash_welcome:     "Welcome back",
@@ -319,38 +214,6 @@ const translations = {
     dash_create_link: "Create pitch link",
     dash_no_links:    "You don't have any pitch links yet.",
     dash_create_first:"Create your first →",
-    // Profile
-    profile_title:    "My Profile",
-    profile_subtitle: "View and edit your profile",
-    profile_view:     "View Profile",
-    profile_edit:     "Edit",
-    profile_save:     "Save",
-    profile_cancel:   "Cancel",
-    profile_saved:    "Saved ✓",
-    profile_saving:   "Saving...",
-    // Pitch links
-    links_title:      "Pitch Links",
-    links_subtitle:   "Manage your pitch links",
-    links_create:     "New link",
-    links_copy:       "Copy",
-    links_copied:     "Copied!",
-    links_delete:     "Delete",
-    links_views:      "views",
-    links_empty:      "You don't have any pitch links yet.",
-    links_client:     "Client name",
-    links_slug:       "URL slug",
-    links_note:       "Note",
-    links_create_btn: "Create link",
-    links_creating:   "Creating...",
-    // Analytics
-    analytics_title:  "Analytics",
-    analytics_subtitle:"View statistics for your pitch links",
-    analytics_all_links:"All links",
-    analytics_total:  "Total views",
-    analytics_unique: "Unique views",
-    analytics_avg:    "Daily average",
-    analytics_best:   "Most active day",
-    // Billing
     billing_title:    "Billing",
     billing_subtitle: "Manage your subscription and plan",
     billing_pro:      "Pro plan",
@@ -386,32 +249,8 @@ const translations = {
     billing_trial_days: "days",
     billing_trial_expires: "Trial expires in",
     billing_trial_expired: "Trial expired — upgrade to Pro",
-    // Outreach
-    outreach_title:   "Outreach Kit",
-    outreach_subtitle:"Templates for client acquisition",
-    outreach_pro_only:"Outreach Kit is available for Pro users only.",
-    outreach_upgrade: "Upgrade to Pro",
-    // Auth
-    auth_login:       "Sign in",
-    auth_register:    "Sign up",
-    auth_logout:      "Sign out",
-    auth_email:       "Email address",
-    auth_password:    "Password",
-    auth_forgot:      "Forgot password?",
-    auth_no_account:  "Don't have an account?",
-    auth_have_account:"Already have an account?",
-    // Common
     save:             "Save",
     cancel:           "Cancel",
-    delete:           "Delete",
-    edit:             "Edit",
-    create:           "Create",
-    confirm:          "Confirm",
-    back:             "Back",
-    yes:              "Yes",
-    no:               "No",
-    error:            "Error",
-    success:          "Success",
     months_per:       "/mo",
     forever_free:     "free forever",
     cancel_anytime:   "Cancel anytime",
@@ -420,32 +259,18 @@ const translations = {
 
 export type TranslationKey = keyof typeof translations.sr;
 
-// ─── Context ─────────────────────────────────────────────────────────────────
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
-interface LangContextType {
-  locale: Locale;
-  setLocale: (l: Locale) => void;
-  t: (key: TranslationKey) => string;
-}
-
-const LangContext = createContext<LangContextType>({
-  locale: "sr",
-  setLocale: () => {},
-  t: (key) => translations.sr[key] ?? key,
-});
-
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("sr");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("pikmi-lang") as Locale | null;
-    if (saved && ["sr", "hr", "en"].includes(saved)) setLocaleState(saved);
-  }, []);
-
-  function setLocale(l: Locale) {
-    setLocaleState(l);
-    localStorage.setItem("pikmi-lang", l);
-  }
+export function useLanguage() {
+  // useSyncExternalStore guarantees re-render in ALL components when locale changes
+  const locale = useSyncExternalStore(
+    (callback) => {
+      _listeners.add(callback);
+      return () => _listeners.delete(callback);
+    },
+    getLocale,
+    () => "sr" as Locale // server snapshot
+  );
 
   function t(key: TranslationKey): string {
     return (translations[locale] as Record<string, string>)[key]
@@ -453,13 +278,29 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       ?? key;
   }
 
-  return (
-    <LangContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </LangContext.Provider>
-  );
+  return { locale, setLocale, t };
 }
 
-export function useLanguage() {
-  return useContext(LangContext);
+// ─── Init from localStorage (call once in root layout) ────────────────────────
+
+export function initLocale() {
+  if (typeof window === "undefined") return;
+  const saved = localStorage.getItem("pikmi-lang") as Locale | null;
+  if (saved && ["sr", "hr", "en"].includes(saved) && saved !== _locale) {
+    _locale = saved;
+    _notify();
+  }
+}
+
+// ─── LanguageProvider (samo init, ne treba context) ────────────────────────────
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  // Inicijalizuj locale iz localStorage pri prvom rendu
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("pikmi-lang") as Locale | null;
+    if (saved && ["sr", "hr", "en"].includes(saved)) {
+      _locale = saved;
+    }
+  }
+  return <>{children}</>;
 }
