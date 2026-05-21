@@ -403,22 +403,6 @@ function BillingContent() {
         </div>
       </div>
 
-      {/* Legal linkovi */}
-      <div style={{ marginTop: 32, padding: "16px 20px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <span style={{ fontSize: 12, color: "var(--text3)" }}>
-          Korišćenjem Pike Pro plana prihvataš naše pravne uslove.
-        </span>
-        <div style={{ display: "flex", gap: 16 }}>
-          <a href="/uslovi" target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 12, color: "var(--purple)", textDecoration: "none", fontWeight: 600 }}>
-            Uslovi korišćenja ↗
-          </a>
-          <a href="/privatnost" target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 12, color: "var(--purple)", textDecoration: "none", fontWeight: 600 }}>
-            Politika privatnosti ↗
-          </a>
-        </div>
-      </div>
 
       {/* FAQ */}
       <div style={{ marginTop: 40 }}>
