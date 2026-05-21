@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 interface CaseStudy {
   industry: string; metric: string; metricLabel: string;
@@ -73,6 +74,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 export default function MojProfil() {
+  const { t } = useLanguage();
   const [p, setP] = useState<Profile | null>(() => getCachedProfile());
   const [userId, setUserId] = useState<string>("");
   const [profileUrl, setProfileUrl] = useState<string>("");
@@ -214,7 +216,7 @@ export default function MojProfil() {
           onMouseEnter={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.35)" : "#DBEAFE"; }}
           onMouseLeave={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.2)" : "#EEF2FF"; }}
         >
-          ✏️ Uredi
+          {t("profile_edit_btn")}
         </button>
       </div>
     );
@@ -229,13 +231,13 @@ export default function MojProfil() {
           disabled={saving}
           style={{ padding: "10px 20px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
         >
-          {saving ? "Čuvanje..." : "✓ Sačuvaj"}
+          {saving ? t("profile_saving") : t("profile_save_btn")}
         </button>
         <button
           onClick={cancelEdit}
           style={{ padding: "10px 16px", background: "#F7F7F5", color: "#6B6B6B", border: "1px solid #E4EBE4", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
         >
-          Otkaži
+          {t("profile_cancel")}
         </button>
       </div>
     );
@@ -243,12 +245,12 @@ export default function MojProfil() {
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-      <div style={{ color: "var(--text3)", fontSize: 14 }}>Učitavanje profila...</div>
+      <div style={{ color: "var(--text3)", fontSize: 14 }}>{t("profile_loading")}</div>
     </div>
   );
   if (!p) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-      <div style={{ color: "var(--text3)", fontSize: 14 }}>Profil nije pronađen.</div>
+      <div style={{ color: "var(--text3)", fontSize: 14 }}>{t("profile_not_found")}</div>
     </div>
   );
 
@@ -258,14 +260,14 @@ export default function MojProfil() {
     <div>
       <div className="flex items-center justify-between page-header">
         <div>
-          <h1 className="page-title">Moj profil</h1>
-          <p className="page-subtitle">Klikni ✏️ na bilo kojoj sekciji da je urediš</p>
+          <h1 className="page-title">{t("profile_page_title")}</h1>
+          <p className="page-subtitle">{t("profile_page_sub")}</p>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {savedMsg && <span style={{ fontSize: 13, color: "#14A800", fontWeight: 600 }}>✓ Sačuvano!</span>}
+          {savedMsg && <span style={{ fontSize: 13, color: "#14A800", fontWeight: 600 }}>{t("profile_saved")}</span>}
           {profileUrl && (
             <a href={`https://www.pikmi.today/${profileUrl}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">
-              👁 Pogledaj profil ↗
+              {t("profile_view")}
             </a>
           )}
         </div>
@@ -279,62 +281,61 @@ export default function MojProfil() {
             <div>
               {editSection === "sidebar" && draft ? (
                 <div>
-                  <SectionHeader label="Bočna traka" section="sidebar" />
-
+                  <SectionHeader label={t("profile_sec_sidebar")} section="sidebar" />
 
                   {/* Avatar */}
-                  <label style={labelStyle}>Profilna slika</label>
+                  <label style={labelStyle}>{t("profile_avatar_label")}</label>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                     {draft.avatarUrl
                       ? <img src={draft.avatarUrl} alt="" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover" }} />
                       : <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#1F57C3", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{draft.initials}</div>
                     }
                     <label style={{ padding: "8px 14px", background: "#F0F4FF", border: "1px solid #D0DCFF", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#1F57C3", fontWeight: 600 }}>
-                      {uploadingAvatar ? "Uploading..." : "Promijeni sliku"}
+                      {uploadingAvatar ? t("profile_uploading") : t("profile_change_img")}
                       <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadAvatar(e.target.files[0]); }} />
                     </label>
                   </div>
 
-                  <label style={labelStyle}>Ime</label>
+                  <label style={labelStyle}>{t("profile_first_name")}</label>
                   <input style={inputStyle} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" />
-                  <label style={labelStyle}>Prezime</label>
+                  <label style={labelStyle}>{t("profile_last_name")}</label>
                   <input style={inputStyle} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" />
-                  <label style={labelStyle}>Grad</label>
+                  <label style={labelStyle}>{t("profile_city")}</label>
                   <input style={inputStyle} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
-                  <label style={labelStyle}>Status dostupnosti</label>
+                  <label style={labelStyle}>{t("profile_availability")}</label>
                   <input style={inputStyle} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="OTVOREN ZA RETAINER" />
-                  <label style={labelStyle}>Bedž (npr. TOP 5%)</label>
+                  <label style={labelStyle}>{t("profile_badge")}</label>
                   <input style={inputStyle} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="TOP 5%" />
-                  <label style={labelStyle}>Metrika 1 — vrijednost</label>
+                  <label style={labelStyle}>{t("profile_metric1_val")}</label>
                   <input style={inputStyle} value={draft.metric1Value} onChange={e => setD("metric1Value", e.target.value)} placeholder="€840k" />
-                  <label style={labelStyle}>Metrika 1 — naziv</label>
+                  <label style={labelStyle}>{t("profile_metric1_lbl")}</label>
                   <input style={inputStyle} value={draft.metric1Label} onChange={e => setD("metric1Label", e.target.value)} placeholder="UPRAVLJANO AD SPEND" />
-                  <label style={labelStyle}>Metrika 2 — vrijednost</label>
+                  <label style={labelStyle}>{t("profile_metric2_val")}</label>
                   <input style={inputStyle} value={draft.metric2Value} onChange={e => setD("metric2Value", e.target.value)} placeholder="4.1×" />
-                  <label style={labelStyle}>Metrika 2 — naziv</label>
+                  <label style={labelStyle}>{t("profile_metric2_lbl")}</label>
                   <input style={inputStyle} value={draft.metric2Label} onChange={e => setD("metric2Label", e.target.value)} placeholder="PROS. ROAS" />
-                  <label style={labelStyle}>Cijena retainera</label>
+                  <label style={labelStyle}>{t("profile_retainer_price")}</label>
                   <input style={inputStyle} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€1.800" />
-                  <label style={labelStyle}>Oznaka cijene</label>
+                  <label style={labelStyle}>{t("profile_price_label")}</label>
                   <input style={inputStyle} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="/mes retainer" />
-                  <label style={labelStyle}>Kapacitet</label>
+                  <label style={labelStyle}>{t("profile_capacity")}</label>
                   <input style={inputStyle} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="2 retainer slota" />
-                  <label style={labelStyle}>Brzina odgovora</label>
+                  <label style={labelStyle}>{t("profile_response")}</label>
                   <input style={inputStyle} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" />
-                  <label style={labelStyle}>Min. budžet</label>
+                  <label style={labelStyle}>{t("profile_min_budget")}</label>
                   <input style={inputStyle} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="€5k/mes" />
-                  <label style={labelStyle}>Jezici</label>
+                  <label style={labelStyle}>{t("profile_languages")}</label>
                   <input style={inputStyle} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" />
-                  <label style={labelStyle}>CTA dugme 1</label>
+                  <label style={labelStyle}>{t("profile_cta_btn1")}</label>
                   <input style={inputStyle} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} />
-                  <label style={labelStyle}>CTA dugme 2</label>
+                  <label style={labelStyle}>{t("profile_cta_btn2")}</label>
                   <input style={inputStyle} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} />
                   <EditActions />
                 </div>
               ) : (
                 <>
                   <div style={{ marginBottom: 12 }}>
-                    <SectionHeader label="Informacije" section="sidebar" />
+                    <SectionHeader label={t("profile_sec_info")} section="sidebar" />
                   </div>
                   <div style={{ textAlign: "center", marginBottom: 24 }}>
                     {p.avatarUrl
@@ -356,7 +357,7 @@ export default function MojProfil() {
                   </div>
                   <Divider />
                   <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, color: "#6B6B6B", letterSpacing: "0.5px", marginBottom: 4 }}>RETAINER CIJENA</div>
+                    <div style={{ fontSize: 11, color: "#6B6B6B", letterSpacing: "0.5px", marginBottom: 4 }}>{t("profile_retainer_lbl")}</div>
                     <div style={{ fontSize: 26, fontWeight: 800, color: "#1E1E1E" }}>{p.servicePrice}<span style={{ fontSize: 14, fontWeight: 400, color: "#6B6B6B" }}> {p.servicePriceLabel}</span></div>
                   </div>
                   <Divider />
@@ -373,10 +374,10 @@ export default function MojProfil() {
                   <Divider />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {[
-                      { icon: "⚡", label: "Odgovor", value: p.detailResponse },
-                      { icon: "👥", label: "Kapacitet", value: p.detailCapacity },
-                      { icon: "💰", label: "Min budget", value: p.detailMinBudget },
-                      { icon: "🌐", label: "Jezici", value: p.detailLanguages },
+                      { icon: "⚡", label: t("profile_response_lbl"), value: p.detailResponse },
+                      { icon: "👥", label: t("profile_capacity"),     value: p.detailCapacity },
+                      { icon: "💰", label: t("profile_min_budget_lbl"), value: p.detailMinBudget },
+                      { icon: "🌐", label: t("profile_languages"),    value: p.detailLanguages },
                     ].map((d, i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: 13, color: "#6B6B6B" }}>{d.icon} {d.label}</span>
@@ -386,7 +387,7 @@ export default function MojProfil() {
                   </div>
                   <Divider />
                   <div style={{ textAlign: "center", fontSize: 11, color: "#ADADAD" }}>
-                    Profil na <a href="https://www.pikmi.today/" target="_blank" rel="noopener noreferrer" style={{ color: "#1F57C3", fontWeight: 600, textDecoration: "none" }}>pikmi.today</a>
+                    {t("profile_on_pikmi")} <a href="https://www.pikmi.today/" target="_blank" rel="noopener noreferrer" style={{ color: "#1F57C3", fontWeight: 600, textDecoration: "none" }}>pikmi.today</a>
                   </div>
                 </>
               )}
@@ -400,16 +401,16 @@ export default function MojProfil() {
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "service" && draft ? (
                 <div>
-                  <SectionHeader label="01 — Šta radim" section="service" />
-                  <label style={labelStyle}>Naslov usluge</label>
+                  <SectionHeader label={t("profile_sec_01")} section="service" />
+                  <label style={labelStyle}>{t("profile_service_lbl")}</label>
                   <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Npr. Meta i TikTok Ads za e-commerce brendove." />
-                  <label style={labelStyle}>Opis usluge</label>
+                  <label style={labelStyle}>{t("profile_service_desc")}</label>
                   <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga i specijalizacija..." />
                   <EditActions />
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="01 — Šta radim" section="service" />
+                  <SectionHeader label={t("profile_sec_01")} section="service" />
                   <h2 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 700, color: "#1E1E1E", lineHeight: 1.25, letterSpacing: "-0.3px", whiteSpace: "pre-line" }}>{p.serviceTitle}</h2>
                   <p style={{ margin: 0, fontSize: 15, color: "#3C3C3C", lineHeight: 1.8 }}>{p.serviceDesc}</p>
                 </>
@@ -420,29 +421,29 @@ export default function MojProfil() {
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "portfolio" && draft ? (
                 <div>
-                  <SectionHeader label="02 — Rezultati / Portfolio" section="portfolio" />
+                  <SectionHeader label={t("profile_sec_02")} section="portfolio" />
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                     {[0, 1, 2, 3].map(i => (
                       <div key={i}>
-                        <label style={labelStyle}>Slika projekta {i + 1}</label>
+                        <label style={labelStyle}>{t("profile_project_img")} {i + 1}</label>
                         <div style={{ aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "1.5px dashed #D0D8FF", background: "#F7F9FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8, position: "relative" }}>
                           {draft.csImages[i]
                             ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             : <div style={{ textAlign: "center", color: "#ADADAD" }}>
                                 <div style={{ fontSize: 24, marginBottom: 4 }}>📁</div>
-                                <div style={{ fontSize: 10 }}>Projekat {i + 1}</div>
+                                <div style={{ fontSize: 10 }}>{t("profile_project")} {i + 1}</div>
                               </div>
                           }
                         </div>
                         <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
                           <span style={{ padding: "7px 14px", background: "#F0F4FF", border: "1px solid #D0DCFF", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#1F57C3", fontWeight: 600, whiteSpace: "nowrap" }}>
-                            {uploading === i ? "Uploading..." : "⬆ Uploaduj"}
+                            {uploading === i ? t("profile_uploading") : t("profile_upload_btn")}
                           </span>
                           <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
                           {draft.csImages[i] && (
                             <button onClick={() => { const imgs = [...draft.csImages]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
                               style={{ padding: "7px 10px", background: "none", border: "1px solid #FECACA", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#EF4444" }}>
-                              Ukloni
+                              {t("profile_remove")}
                             </button>
                           )}
                         </label>
@@ -453,7 +454,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="02 — Rezultati / Portfolio" section="portfolio" />
+                  <SectionHeader label={t("profile_sec_02")} section="portfolio" />
                   <div className="profile-cs-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                     {[0, 1, 2, 3].map(i => (
                       <div key={i} style={{ aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: p.csImages[i] ? "1px solid #E4EBE4" : "1.5px dashed #D0D0C8", background: p.csImages[i] ? "transparent" : "#F7F7F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -461,7 +462,7 @@ export default function MojProfil() {
                           ? <img src={p.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           : <div style={{ textAlign: "center" }}>
                               <div style={{ fontSize: 20, opacity: 0.25, marginBottom: 4 }}>📁</div>
-                              <div style={{ fontSize: 9, color: "#ADADAD", letterSpacing: "0.5px" }}>PROJEKAT {i + 1}</div>
+                              <div style={{ fontSize: 9, color: "#ADADAD", letterSpacing: "0.5px" }}>{t("profile_pkg_label")} {i + 1}</div>
                             </div>
                         }
                       </div>
@@ -475,19 +476,19 @@ export default function MojProfil() {
             <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "pricing" && draft ? (
                 <div>
-                  <SectionHeader label="03 — Paketi i cijene" section="pricing" />
+                  <SectionHeader label={t("profile_sec_03")} section="pricing" />
                   {draft.pricing.map((tier, i) => (
                     <div key={i} style={{ padding: "16px", background: "#F7F9FF", borderRadius: 10, marginBottom: 12, border: "1px solid #E0E6FF" }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10 }}>PAKET {i + 1}</div>
-                      <label style={labelStyle}>Naziv</label>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10 }}>{t("profile_pkg_label")} {i + 1}</div>
+                      <label style={labelStyle}>{t("profile_name")}</label>
                       <input style={inputStyle} value={tier.name} onChange={e => setDraft_tier(i, "name", e.target.value)} placeholder="Naziv paketa" />
-                      <label style={labelStyle}>Cijena</label>
+                      <label style={labelStyle}>{t("profile_price")}</label>
                       <input style={inputStyle} value={tier.price} onChange={e => setDraft_tier(i, "price", e.target.value)} placeholder="€600" />
-                      <label style={labelStyle}>Opis</label>
+                      <label style={labelStyle}>{t("profile_desc")}</label>
                       <input style={inputStyle} value={tier.desc} onChange={e => setDraft_tier(i, "desc", e.target.value)} placeholder="Kratki opis..." />
                       <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6B6B6B", cursor: "pointer" }}>
                         <input type="checkbox" checked={!!tier.green} onChange={e => setDraft_tier(i, "green", e.target.checked)} />
-                        Zelena boja cijene
+                        {t("profile_green_price")}
                       </label>
                     </div>
                   ))}
@@ -495,7 +496,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="03 — Paketi i cijene" section="pricing" />
+                  <SectionHeader label={t("profile_sec_03")} section="pricing" />
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {p.pricing.map((tier, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 0", borderBottom: i < p.pricing.length - 1 ? "1px solid #F0F0EB" : "none" }}>
@@ -515,14 +516,14 @@ export default function MojProfil() {
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "stack" && draft ? (
                 <div>
-                  <SectionHeader label="04 — Stack / Vještine" section="stack" />
-                  <label style={labelStyle}>Alati i vještine (razdvoji zarezom)</label>
+                  <SectionHeader label={t("profile_sec_04")} section="stack" />
+                  <label style={labelStyle}>{t("profile_tools_skills")}</label>
                   <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Meta Ads, TikTok Ads, Klaviyo, GA4..." />
                   <EditActions />
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="04 — Stack / Vještine" section="stack" />
+                  <SectionHeader label={t("profile_sec_04")} section="stack" />
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {stackTags.map((tag, i) => (
                       <span key={i} style={{ fontSize: 13, padding: "7px 16px", borderRadius: 20, background: "#F0F4FF", color: "#1F57C3", border: "1px solid #D0DCFF", fontWeight: 500 }}>{tag}</span>
@@ -536,18 +537,18 @@ export default function MojProfil() {
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
               {editSection === "testimonial" && draft ? (
                 <div>
-                  <SectionHeader label="06 — Recenzija klijenta" section="testimonial" />
-                  <label style={labelStyle}>Citat klijenta</label>
+                  <SectionHeader label={t("profile_sec_06")} section="testimonial" />
+                  <label style={labelStyle}>{t("profile_client_quote")}</label>
                   <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder="Npr. Stefan je za 6 meseci skalirao naš ad spend 4×..." />
-                  <label style={labelStyle}>Ime klijenta</label>
+                  <label style={labelStyle}>{t("profile_client_name")}</label>
                   <input style={inputStyle} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Ana Lukić" />
-                  <label style={labelStyle}>Titula / Kompanija</label>
+                  <label style={labelStyle}>{t("profile_title_company")}</label>
                   <input style={inputStyle} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="CEO, Lumea Beauty" />
                   <EditActions />
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="06 — Recenzija klijenta" section="testimonial" />
+                  <SectionHeader label={t("profile_sec_06")} section="testimonial" />
                   <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
                     {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#14A800", fontSize: 16 }}>★</span>)}
                     <span style={{ fontSize: 13, color: "#6B6B6B", marginLeft: 6, alignSelf: "center" }}>5.0 / 5.0</span>
@@ -570,21 +571,21 @@ export default function MojProfil() {
             <div style={{ position: "relative", borderRadius: 12, padding: "32px", background: "linear-gradient(135deg, #1F57C3 0%, #0D3B8C 100%)" }}>
               {editSection === "cta" && draft ? (
                 <div style={{ background: "#fff", borderRadius: 10, padding: 20 }}>
-                  <SectionHeader label="07 — CTA / Kontakt" section="cta" />
-                  <label style={labelStyle}>Naslov CTA</label>
+                  <SectionHeader label={t("profile_sec_07_edit")} section="cta" />
+                  <label style={labelStyle}>{t("profile_cta_title_lbl")}</label>
                   <input style={inputStyle} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Spreman da skaliraš" />
-                  <label style={labelStyle}>Istaknuta riječ (italic, plava)</label>
+                  <label style={labelStyle}>{t("profile_highlighted")}</label>
                   <input style={inputStyle} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="profitabilno" />
-                  <label style={labelStyle}>Tekst dugmeta 1</label>
+                  <label style={labelStyle}>{t("profile_btn1_txt")}</label>
                   <input style={inputStyle} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} />
-                  <label style={labelStyle}>Tekst dugmeta 2</label>
+                  <label style={labelStyle}>{t("profile_btn2_txt")}</label>
                   <input style={inputStyle} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} />
                   <EditActions />
                 </div>
               ) : (
                 <>
-                  <SectionHeader label="07 — KONTAKT" section="cta" light={true} />
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", marginBottom: 10 }}>07 — KONTAKT</div>
+                  <SectionHeader label={t("profile_sec_07")} section="cta" light={true} />
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", marginBottom: 10 }}>{t("profile_sec_07")}</div>
                   <h3 style={{ margin: "0 0 20px", fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                     {p.ctaTitle} <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em>?
                   </h3>

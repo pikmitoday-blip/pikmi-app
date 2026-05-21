@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 interface CaseStudy {
   industry: string; metric: string; metricLabel: string;
@@ -56,13 +57,6 @@ const DEFAULT: Profile = {
   pdfUrl: "",
 };
 
-const CS_GRADIENTS = [
-  "linear-gradient(135deg,#2B4FFF,#1A33B3)",
-  "linear-gradient(135deg,#1AA877,#0F6E56)",
-  "linear-gradient(135deg,#0F1419,#2A323C)",
-  "linear-gradient(135deg,#7AE5C5,#1AA877)",
-];
-
 function Section({ label, color = "#A78BFA", children }: { label: string; color?: string; children: React.ReactNode }) {
   return (
     <div className="card">
@@ -84,6 +78,7 @@ function getCachedEdit(): Profile | null {
 }
 
 export default function ProfileEdit() {
+  const { t } = useLanguage();
   const [p, setP] = useState<Profile>(() => getCachedEdit() ?? DEFAULT);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -125,23 +120,19 @@ export default function ProfileEdit() {
 
   async function save() {
     setSaving(true);
-    // Sačuvaj u localStorage (brzo, za sidebar preview)
-    const dataToSave = { ...p, csImages: p.csImages }; // uključi slike
+    const dataToSave = { ...p, csImages: p.csImages };
     localStorage.setItem("pikmi-profile", JSON.stringify(dataToSave));
-    // Ažuriraj sessionStorage cache
     try {
       sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(dataToSave));
       sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(dataToSave));
-      sessionStorage.removeItem("pikmi-sidebar"); // sidebar će refreshovati ime/avatar
+      sessionStorage.removeItem("pikmi-sidebar");
     } catch {}
 
-    // Sačuvaj u Supabase
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // csImages sada sadrži URL-ove iz Storage (ne base64) — možemo čuvati
         const csImagesClean = p.csImages.map(img =>
-          img.startsWith("data:") ? "" : img  // ukloni stare base64 slike
+          img.startsWith("data:") ? "" : img
         );
         await supabase
           .from("profiles")
@@ -232,13 +223,13 @@ export default function ProfileEdit() {
     <div>
       <div className="flex items-center justify-between page-header">
         <div>
-          <h1 className="page-title">Uredi profil</h1>
-          <p className="page-subtitle">Popuni sve sekcije — klikom na "Sačuvaj" ažurira se tvoj profil</p>
+          <h1 className="page-title">{t("edit_page_title")}</h1>
+          <p className="page-subtitle">{t("edit_page_sub")}</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">👁 Pogledaj profil</a>
+          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">{t("edit_view_profile")}</a>
           <button className="btn btn-primary" onClick={save} disabled={saving}>
-            {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj"}
+            {saving ? t("edit_saving") : saved ? t("edit_saved") : t("edit_save")}
           </button>
         </div>
       </div>
@@ -246,7 +237,7 @@ export default function ProfileEdit() {
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* HERO */}
-        <Section label="Hero — Ime, avatar i metrike">
+        <Section label={t("edit_sec_hero")}>
 
           {/* Avatar upload */}
           <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 24, padding: "16px", background: "rgba(124,58,237,0.05)", borderRadius: 12, border: "1px solid rgba(124,58,237,0.15)" }}>
@@ -257,11 +248,11 @@ export default function ProfileEdit() {
               }
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Profilna slika</div>
-              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>JPG, PNG · max 2MB</div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{t("edit_avatar_label")}</div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>{t("edit_avatar_hint")}</div>
               <label style={{ cursor: "pointer" }}>
                 <span className="btn btn-ghost btn-sm" style={{ pointerEvents: "none" }}>
-                  {uploadingAvatar ? "Uploading..." : "📷 Promeni sliku"}
+                  {uploadingAvatar ? t("edit_uploading") : t("edit_change_img")}
                 </span>
                 <input type="file" accept="image/*" style={{ display: "none" }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); }} />
@@ -269,7 +260,7 @@ export default function ProfileEdit() {
               {p.avatarUrl && (
                 <button className="btn btn-ghost btn-sm" style={{ marginLeft: 8, color: "#F87171" }}
                   onClick={() => setP(prev => ({ ...prev, avatarUrl: "" }))}>
-                  Ukloni
+                  {t("edit_remove")}
                 </button>
               )}
             </div>
@@ -277,74 +268,74 @@ export default function ProfileEdit() {
 
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Ime</label>
+              <label className="label">{t("edit_first_name")}</label>
               <input className="input" value={p.firstName} onChange={e => set("firstName", e.target.value)} placeholder="Stefan" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Prezime</label>
+              <label className="label">{t("edit_last_name")}</label>
               <input className="input" value={p.lastName} onChange={e => set("lastName", e.target.value)} placeholder="Radović" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Inicijali (avatar, maks 3 slova)</label>
+              <label className="label">{t("edit_initials")}</label>
               <input className="input" value={p.initials} maxLength={3} onChange={e => set("initials", e.target.value.toUpperCase())} placeholder="SR" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Grad</label>
+              <label className="label">{t("edit_city")}</label>
               <input className="input" value={p.city} onChange={e => set("city", e.target.value)} placeholder="Beograd, Srbija" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Status badge (crni, zelena tačka)</label>
+              <label className="label">{t("edit_status_badge")}</label>
               <input className="input" value={p.openStatus} onChange={e => set("openStatus", e.target.value)} placeholder="OTVOREN ZA RETAINER" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Desni badge (plavi)</label>
+              <label className="label">{t("edit_right_badge")}</label>
               <input className="input" value={p.badge} onChange={e => set("badge", e.target.value)} placeholder="TOP 5%" />
             </div>
           </div>
           <div className="edit-grid-4" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Metrika 1 (vrijednost)</label>
+              <label className="label">{t("edit_metric1_val")}</label>
               <input className="input" value={p.metric1Value} onChange={e => set("metric1Value", e.target.value)} placeholder="€840k" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Metrika 1 (labela)</label>
+              <label className="label">{t("edit_metric1_lbl")}</label>
               <input className="input" value={p.metric1Label} onChange={e => set("metric1Label", e.target.value)} placeholder="AD SPEND" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Metrika 2 (vrijednost)</label>
+              <label className="label">{t("edit_metric2_val")}</label>
               <input className="input" value={p.metric2Value} onChange={e => set("metric2Value", e.target.value)} placeholder="4.1×" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Metrika 2 (labela)</label>
+              <label className="label">{t("edit_metric2_lbl")}</label>
               <input className="input" value={p.metric2Label} onChange={e => set("metric2Label", e.target.value)} placeholder="PROS. ROAS" />
             </div>
           </div>
         </Section>
 
         {/* 01 */}
-        <Section label="01 — Šta radim">
+        <Section label={t("edit_sec_01")}>
           <div className="field">
-            <label className="label">Naslov usluge (Enter = novi red u profilu)</label>
+            <label className="label">{t("edit_service_title_lbl")}</label>
             <textarea className="input" rows={2} value={p.serviceTitle} onChange={e => set("serviceTitle", e.target.value)} />
           </div>
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Cijena</label>
+              <label className="label">{t("edit_price")}</label>
               <input className="input" value={p.servicePrice} onChange={e => set("servicePrice", e.target.value)} placeholder="€1.800" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Labela cijene</label>
+              <label className="label">{t("edit_price_label")}</label>
               <input className="input" value={p.servicePriceLabel} onChange={e => set("servicePriceLabel", e.target.value)} placeholder="/mes retainer" />
             </div>
           </div>
           <div className="field" style={{ marginBottom: 0 }}>
-            <label className="label">Opis</label>
+            <label className="label">{t("edit_desc")}</label>
             <textarea className="input" rows={3} value={p.serviceDesc} onChange={e => set("serviceDesc", e.target.value)} />
           </div>
         </Section>
 
         {/* 02 */}
-        <Section label="02 — Rezultati (upload projekata)">
+        <Section label={t("edit_sec_02")}>
           <div className="edit-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             {[0, 1, 2, 3].map(i => (
               <div key={i} style={{ borderRadius: 12, border: "1px solid var(--border)", overflow: "hidden" }}>
@@ -369,7 +360,7 @@ export default function ProfileEdit() {
                   >
                     {uploading === i ? (
                       <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 12, color: "var(--text3)" }}>Uploadovanje...</div>
+                        <div style={{ fontSize: 12, color: "var(--text3)" }}>{t("edit_uploading_img")}</div>
                       </div>
                     ) : p.csImages[i] ? (
                       <>
@@ -382,14 +373,14 @@ export default function ProfileEdit() {
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "0"}
                         >
-                          <span style={{ color: "white", fontSize: 12, fontWeight: 600 }}>Zamijeni fajl</span>
+                          <span style={{ color: "white", fontSize: 12, fontWeight: 600 }}>{t("edit_replace_file")}</span>
                         </div>
                       </>
                     ) : (
                       <div style={{ textAlign: "center" }}>
                         <div style={{ fontSize: 28, marginBottom: 8 }}>+</div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)", marginBottom: 4 }}>Projekat {i + 1}</div>
-                        <div style={{ fontSize: 11, color: "var(--text3)" }}>Klikni da uploaduješ</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)", marginBottom: 4 }}>{t("edit_project")} {i + 1}</div>
+                        <div style={{ fontSize: 11, color: "var(--text3)" }}>{t("edit_click_upload")}</div>
                         <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 4 }}>PNG · JPG · PDF · MP4</div>
                       </div>
                     )}
@@ -401,7 +392,7 @@ export default function ProfileEdit() {
                     onClick={() => removeImage(i)}
                     style={{ width: "100%", padding: "8px", background: "rgba(239,68,68,0.08)", border: "none", borderTop: "1px solid var(--border)", color: "#F87171", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
                   >
-                    × Ukloni sliku
+                    {t("edit_remove_img")}
                   </button>
                 )}
               </div>
@@ -410,22 +401,22 @@ export default function ProfileEdit() {
         </Section>
 
         {/* 03 */}
-        <Section label="03 — Kako radim (paketi / cijene)">
+        <Section label={t("edit_sec_03")}>
           {p.pricing.map((tier, i) => (
             <div key={i} style={{ marginBottom: i < 2 ? 20 : 0, paddingBottom: i < 2 ? 20 : 0, borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", marginBottom: 10 }}>Paket {i + 1} {i === 2 && <span style={{ color: "#1AA877" }}>— zelena boja</span>}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", marginBottom: 10 }}>{t("edit_package")} {i + 1} {i === 2 && <span style={{ color: "#1AA877" }}>{t("edit_green_color")}</span>}</div>
               <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 8 }}>
                 <div className="field" style={{ marginBottom: 0 }}>
-                  <label className="label">Naziv</label>
+                  <label className="label">{t("edit_name")}</label>
                   <input className="input" value={tier.name} onChange={e => setTier(i, "name", e.target.value)} />
                 </div>
                 <div className="field" style={{ marginBottom: 0 }}>
-                  <label className="label">Cijena</label>
+                  <label className="label">{t("edit_price")}</label>
                   <input className="input" value={tier.price} onChange={e => setTier(i, "price", e.target.value)} />
                 </div>
               </div>
               <div className="field" style={{ marginBottom: 0 }}>
-                <label className="label">Opis</label>
+                <label className="label">{t("edit_desc")}</label>
                 <input className="input" value={tier.desc} onChange={e => setTier(i, "desc", e.target.value)} />
               </div>
             </div>
@@ -433,9 +424,9 @@ export default function ProfileEdit() {
         </Section>
 
         {/* 04 */}
-        <Section label="04 — Stack / Alati">
+        <Section label={t("edit_sec_04")}>
           <div className="field" style={{ marginBottom: 12 }}>
-            <label className="label">Alati odvojeni zarezom</label>
+            <label className="label">{t("edit_tools_comma")}</label>
             <input className="input" value={p.stack} onChange={e => set("stack", e.target.value)} placeholder="Meta Ads, TikTok Ads, GA4, Shopify..." />
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -446,66 +437,66 @@ export default function ProfileEdit() {
         </Section>
 
         {/* 05 */}
-        <Section label="05 — Detalji">
+        <Section label={t("edit_sec_05")}>
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Kapacitet</label>
+              <label className="label">{t("edit_capacity")}</label>
               <input className="input" value={p.detailCapacity} onChange={e => set("detailCapacity", e.target.value)} placeholder="2 retainer slota" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Vrijeme odgovora</label>
+              <label className="label">{t("edit_response_time")}</label>
               <input className="input" value={p.detailResponse} onChange={e => set("detailResponse", e.target.value)} placeholder="0–4 sata" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Minimalni budget</label>
+              <label className="label">{t("edit_min_budget")}</label>
               <input className="input" value={p.detailMinBudget} onChange={e => set("detailMinBudget", e.target.value)} placeholder="€5k/mes" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Jezici</label>
+              <label className="label">{t("edit_languages")}</label>
               <input className="input" value={p.detailLanguages} onChange={e => set("detailLanguages", e.target.value)} placeholder="SR · EN" />
             </div>
           </div>
         </Section>
 
         {/* 06 */}
-        <Section label="06 — Reč klijenta" color="#1AA877">
+        <Section label={t("edit_sec_06")} color="#1AA877">
           <div className="field">
-            <label className="label">Citat</label>
+            <label className="label">{t("edit_quote")}</label>
             <textarea className="input" rows={3} value={p.testimonialQuote} onChange={e => set("testimonialQuote", e.target.value)} />
           </div>
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Ime i prezime</label>
+              <label className="label">{t("edit_full_name")}</label>
               <input className="input" value={p.testimonialName} onChange={e => set("testimonialName", e.target.value)} placeholder="Ana Lukić" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Pozicija, kompanija</label>
+              <label className="label">{t("edit_position")}</label>
               <input className="input" value={p.testimonialTitle} onChange={e => set("testimonialTitle", e.target.value)} placeholder="CEO, Lumea Beauty" />
             </div>
           </div>
         </Section>
 
         {/* 07 */}
-        <Section label="07 — Kontakt / CTA">
+        <Section label={t("edit_sec_07")}>
           <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Tekst naslova</label>
+              <label className="label">{t("edit_cta_title_lbl")}</label>
               <input className="input" value={p.ctaTitle} onChange={e => set("ctaTitle", e.target.value)} placeholder="Spreman da skaliraš" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Istaknuta riječ (plava, kurziv)</label>
+              <label className="label">{t("edit_highlighted_word")}</label>
               <input className="input" value={p.ctaHighlight} onChange={e => set("ctaHighlight", e.target.value)} placeholder="profitabilno" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Dugme 1 (plavo) — tekst</label>
+              <label className="label">{t("edit_btn1_text")}</label>
               <input className="input" value={p.ctaBtn1} onChange={e => set("ctaBtn1", e.target.value)} placeholder="Zakaži strategy poziv →" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Dugme 2 (outline) — tekst</label>
+              <label className="label">{t("edit_btn2_text")}</label>
               <input className="input" value={p.ctaBtn2} onChange={e => set("ctaBtn2", e.target.value)} placeholder="Preuzmi case study (PDF)" />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">Dugme 2 — PDF link (Google Drive, Dropbox...)</label>
+              <label className="label">{t("edit_btn2_pdf")}</label>
               <input className="input" value={p.pdfUrl} onChange={e => set("pdfUrl", e.target.value)} placeholder="https://drive.google.com/..." />
             </div>
           </div>
@@ -513,9 +504,9 @@ export default function ProfileEdit() {
 
         {/* Save */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingBottom: 40 }}>
-          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost">👁 Pogledaj profil</a>
+          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost">{t("edit_view_profile")}</a>
           <button className="btn btn-primary" onClick={save} style={{ minWidth: 160 }}>
-            {saving ? "Čuvanje..." : saved ? "✓ Sačuvano!" : "💾 Sačuvaj promjene"}
+            {saving ? t("edit_saving") : saved ? t("edit_saved") : t("edit_save_changes")}
           </button>
         </div>
       </div>
