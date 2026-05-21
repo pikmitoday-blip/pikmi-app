@@ -265,9 +265,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
                 />
                 <div style={{
                   position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0,
-                  background: "var(--card)", border: "1px solid var(--border)",
-                  borderRadius: 10, overflow: "hidden", zIndex: 100,
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                  background: "var(--bg, #0E0E12)", border: "1px solid var(--border)",
+                  borderRadius: 10, overflow: "hidden", zIndex: 9999,
+                  boxShadow: "0 -8px 32px rgba(0,0,0,0.7)",
+                  backdropFilter: "none",
                 }}>
                   {LOCALES.map(loc => (
                     <button
@@ -275,14 +276,14 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
                       onClick={() => { setLocale(loc.value as Locale); setShowLangMenu(false); }}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", gap: 10,
-                        padding: "10px 14px", background: locale === loc.value ? "rgba(124,58,237,0.12)" : "transparent",
+                        padding: "10px 14px", background: locale === loc.value ? "rgba(124,58,237,0.2)" : "var(--bg, #0E0E12)",
                         border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer",
-                        fontFamily: "inherit", fontSize: 13, color: locale === loc.value ? "var(--purple)" : "var(--text2)",
-                        fontWeight: locale === loc.value ? 600 : 400, transition: "background 0.1s",
+                        fontFamily: "inherit", fontSize: 13, color: locale === loc.value ? "#A78BFA" : "var(--text2)",
+                        fontWeight: locale === loc.value ? 700 : 400, transition: "background 0.1s",
                         textAlign: "left",
                       }}
-                      onMouseEnter={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "var(--surface)"; }}
-                      onMouseLeave={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                      onMouseEnter={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
+                      onMouseLeave={e => { if (locale !== loc.value) (e.currentTarget as HTMLElement).style.background = "var(--bg, #0E0E12)"; }}
                     >
                       <span style={{ fontSize: 16 }}>{loc.flag}</span>
                       {loc.label}
