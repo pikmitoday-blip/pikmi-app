@@ -141,26 +141,43 @@ export default function AdminOverview() {
           background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)",
           borderRadius: 12, padding: "24px", marginBottom: 32,
         }}>
-          {/* Header + filter */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
-            <div style={{ fontSize: 12, color: "#A78BFA", fontWeight: 700, letterSpacing: "0.06em" }}>
-              PROCIJENJENI PRIHOD / MJESEC
-            </div>
-            <select
-              value={revenueMonth}
-              onChange={e => setRevenueMonth(e.target.value)}
+          {/* Header */}
+          <div style={{ fontSize: 12, color: "#A78BFA", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 16 }}>
+            PROCIJENJENI PRIHOD / MJESEC
+          </div>
+
+          {/* Filter pill dugmad */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+            <button
+              onClick={() => setRevenueMonth("all")}
               style={{
-                background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.35)",
-                borderRadius: 8, padding: "6px 12px", color: "#A78BFA",
-                fontSize: 12, fontWeight: 600, cursor: "pointer", outline: "none",
-                fontFamily: "inherit",
+                padding: "5px 14px", borderRadius: 999, border: "1px solid",
+                borderColor: revenueMonth === "all" ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.08)",
+                background: revenueMonth === "all" ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.03)",
+                color: revenueMonth === "all" ? "#A78BFA" : "#6B7280",
+                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                transition: "all 0.15s",
               }}
             >
-              <option value="all">Ukupno (svi aktivni)</option>
-              {months.map(m => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
-            </select>
+              Svi aktivni
+            </button>
+            {months.map(m => (
+              <button
+                key={m.value}
+                onClick={() => setRevenueMonth(m.value)}
+                style={{
+                  padding: "5px 14px", borderRadius: 999, border: "1px solid",
+                  borderColor: revenueMonth === m.value ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.08)",
+                  background: revenueMonth === m.value ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.03)",
+                  color: revenueMonth === m.value ? "#A78BFA" : "#6B7280",
+                  fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.15s",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
           {/* Iznos + konverzija */}
@@ -170,7 +187,7 @@ export default function AdminOverview() {
                 {revenueAmount.toLocaleString("sr-RS")} <span style={{ fontSize: 20, fontWeight: 600, color: "#A78BFA" }}>din</span>
               </div>
               <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
-                {filteredProUsers.length} Pro korisnik{filteredProUsers.length === 1 ? "" : filteredProUsers.length < 5 ? "a" : "a"} × 990 din
+                {filteredProUsers.length} Pro korisnik{filteredProUsers.length === 1 ? "" : "a"} × 990 din
                 {revenueMonth !== "all" && (
                   <span style={{ marginLeft: 8, color: "#A78BFA" }}>
                     — {months.find(m => m.value === revenueMonth)?.label}
