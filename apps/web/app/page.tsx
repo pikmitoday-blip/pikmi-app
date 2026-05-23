@@ -183,12 +183,12 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "32px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <footer style={{ borderTop: "1px solid var(--border)", padding: "32px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
         <div className="nav-logo">
           <PikmiLogo size={24} />
           pikmi
         </div>
-        <div style={{ fontSize: 13, color: "var(--text3)", flex: 1, textAlign: "center" }}>© 2026 pikmi. Sva prava zadržana.</div>
+        <div style={{ fontSize: 13, color: "var(--text3)", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>© 2026 pikmi. Sva prava zadržana.</div>
         <div className="flex gap-4" style={{ fontSize: 13, color: "var(--text3)" }}>
           <Link href="/uslovi" style={{ color: "var(--text3)", textDecoration: "none" }}>Uslovi korišćenja</Link>
           <Link href="/privatnost" style={{ color: "var(--text3)", textDecoration: "none" }}>Politika privatnosti</Link>
