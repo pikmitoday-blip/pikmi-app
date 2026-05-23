@@ -9,6 +9,7 @@ interface ProfileRow {
   last_name: string;
   plan: string;
   created_at: string;
+  plan_churned_at: string | null;
 }
 
 interface Stats {
@@ -46,7 +47,7 @@ export default function AdminOverview() {
     async function load() {
       try {
         const [profilesRes, linksRes] = await Promise.all([
-          supabase.from("profiles").select("user_id, first_name, last_name, plan, created_at"),
+          supabase.from("profiles").select("user_id, first_name, last_name, plan, created_at, plan_churned_at"),
           supabase.from("pitch_links").select("id, views"),
         ]);
 
@@ -81,6 +82,12 @@ export default function AdminOverview() {
     : allProfiles.filter(p => p.plan === "pro" && p.created_at?.slice(0, 7) === revenueMonth);
 
   const revenueAmount = filteredProUsers.length * 990;
+
+  // Churn ovog mjeseca
+  const thisMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const churnThisMonth = allProfiles.filter(p =>
+    p.plan_churned_at && p.plan_churned_at.slice(0, 7) === thisMonth
+  ).length;
 
   // Bar chart — novi Pro po mjesecu (zadnjih 6)
   const chartMonths = lastNMonths(6).reverse();
@@ -195,10 +202,23 @@ export default function AdminOverview() {
                 )}
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Konverzija</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: "#A78BFA" }}>
-                {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : "0.0"}%
+            <div style={{ display: "flex", gap: 24 }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Konverzija</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "#A78BFA" }}>
+                  {stats.totalUsers > 0 ? ((stats.proUsers / stats.totalUsers) * 100).toFixed(1) : "0.0"}%
+                </div>
+              </div>
+              <div style={{ textAlign: "right", paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Otkazano ovog mjeseca</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: churnThisMonth > 0 ? "#F87171" : "#4ADE80" }}>
+                  {churnThisMonth}
+                </div>
+                {churnThisMonth > 0 && stats.proUsers > 0 && (
+                  <div style={{ fontSize: 11, color: "#F87171", marginTop: 2 }}>
+                    churn {((churnThisMonth / (stats.proUsers + churnThisMonth)) * 100).toFixed(1)}%
+                  </div>
+                )}
               </div>
             </div>
           </div>

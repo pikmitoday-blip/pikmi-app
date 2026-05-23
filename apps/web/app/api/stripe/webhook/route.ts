@@ -52,17 +52,17 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.paused": {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = getUserId(subscription);
+      const churnedAt = new Date().toISOString();
 
       if (userId) {
         await supabaseAdmin
           .from("profiles")
-          .update({ plan: "free", stripe_subscription_id: null })
+          .update({ plan: "free", stripe_subscription_id: null, plan_churned_at: churnedAt })
           .eq("user_id", userId);
       } else {
-        // Pokušaj da nađeš po subscription_id
         await supabaseAdmin
           .from("profiles")
-          .update({ plan: "free", stripe_subscription_id: null })
+          .update({ plan: "free", stripe_subscription_id: null, plan_churned_at: churnedAt })
           .eq("stripe_subscription_id", subscription.id);
       }
       break;
