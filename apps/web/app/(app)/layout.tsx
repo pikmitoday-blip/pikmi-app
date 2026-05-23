@@ -171,7 +171,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/moj-profil",   label: t("nav_my_profile"),   icon: "👤" },
     { href: "/pitch-link",   label: t("nav_pitch_links"),  icon: "🔗" },
     { href: "/analytics",    label: t("nav_analytics"),    icon: "📊" },
-    { href: "/profile-edit", label: t("nav_edit_profile"), icon: "✏️" },
     { href: "/outreach",     label: t("nav_outreach"),     icon: "✉️" },
     { href: "/billing",      label: t("nav_billing"),      icon: "💳" },
   ];
