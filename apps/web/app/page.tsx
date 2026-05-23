@@ -178,7 +178,7 @@ export default function Home() {
           <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 36, lineHeight: 1.6 }}>
             Kreiraj pikmi profil za 5 minuta i pošalji prvi personalizovani pitch link još danas.
           </p>
-          <Link href="/onboarding" className="btn btn-primary btn-lg">Kreiraj profil besplatno →</Link>
+          <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno →</Link>
         </div>
       </section>
 
