@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
 const REMEMBER_KEY = "pikmi-remember";
+const SESSION_TS_KEY = "pikmi-session-ts";
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 sata
 
 function LoginForm() {
   const router = useRouter();
@@ -16,22 +18,42 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [sessionWarning, setSessionWarning] = useState(false);
 
-  // Učitaj zapamćene podatke pri prvom renderu
+  // Učitaj zapamćene podatke + provjeri aktivnu sesiju
   useEffect(() => {
     if (searchParams.get("reason") === "limit") {
       setSessionWarning(true);
+      return; // Ne radi auto-redirect ako je istisnuta sesija
     }
 
-    try {
-      const saved = localStorage.getItem(REMEMBER_KEY);
-      if (saved) {
-        const { email: savedEmail, password: savedPassword } = JSON.parse(saved);
-        if (savedEmail) setEmail(savedEmail);
-        if (savedPassword) setPassword(savedPassword);
-        setRememberMe(true);
-      }
-    } catch {}
-  }, [searchParams]);
+    // Auto-redirect ako postoji aktivna sesija unutar 24h
+    async function checkSession() {
+      try {
+        const ts = localStorage.getItem(SESSION_TS_KEY);
+        if (ts && Date.now() - Number(ts) < SESSION_TTL_MS) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            router.replace("/dashboard");
+            return;
+          }
+        }
+        // Istekao ili nema sesije — obriši timestamp
+        localStorage.removeItem(SESSION_TS_KEY);
+      } catch {}
+
+      // Učitaj zapamćene login podatke
+      try {
+        const saved = localStorage.getItem(REMEMBER_KEY);
+        if (saved) {
+          const { email: savedEmail, password: savedPassword } = JSON.parse(saved);
+          if (savedEmail) setEmail(savedEmail);
+          if (savedPassword) setPassword(savedPassword);
+          setRememberMe(true);
+        }
+      } catch {}
+    }
+
+    checkSession();
+  }, [searchParams, router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -52,6 +74,8 @@ function LoginForm() {
       } else {
         localStorage.removeItem(REMEMBER_KEY);
       }
+      // Snimi timestamp sesije (auto-redirect narednih 24h)
+      localStorage.setItem(SESSION_TS_KEY, Date.now().toString());
       router.push("/dashboard");
     }
   }

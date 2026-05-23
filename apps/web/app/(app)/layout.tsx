@@ -145,6 +145,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     } catch {}
     // Resetuj temu i obrisi cache pri odjavljivanju
     localStorage.removeItem("pikmi-theme");
+    localStorage.removeItem("pikmi-session-ts");
     document.documentElement.dataset.theme = "dark";
     try { sessionStorage.clear(); } catch {}
     await supabase.auth.signOut();
