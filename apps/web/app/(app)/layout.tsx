@@ -203,31 +203,30 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Admin link — vidljiv samo adminima */}
-        {isAdmin && (
-          <Link href="/admin" style={{ textDecoration: "none", display: "block", margin: "4px 4px 0" }}>
-            <div style={{
-              padding: "10px 14px", borderRadius: 10,
-              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
-              display: "flex", alignItems: "center", gap: 8,
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.35)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)";
-            }}>
-              <span style={{ fontSize: 14 }}>⚡</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#F87171" }}>{t("nav_admin")}</span>
-              <span style={{ marginLeft: "auto", fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(239,68,68,0.15)", color: "#F87171", fontWeight: 700, letterSpacing: "0.05em" }}>ADMIN</span>
-            </div>
-          </Link>
-        )}
-
         <div className="sidebar-footer">
+          {/* Admin link — vidljiv samo adminima */}
+          {isAdmin && (
+            <Link href="/admin" style={{ textDecoration: "none", display: "block", marginBottom: 8 }}>
+              <div style={{
+                padding: "10px 14px", borderRadius: 10,
+                background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+                display: "flex", alignItems: "center", gap: 8,
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.35)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)";
+              }}>
+                <span style={{ fontSize: 14 }}>⚡</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#F87171" }}>{t("nav_admin")}</span>
+                <span style={{ marginLeft: "auto", fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(239,68,68,0.15)", color: "#F87171", fontWeight: 700, letterSpacing: "0.05em" }}>ADMIN</span>
+              </div>
+            </Link>
+          )}
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
