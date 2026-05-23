@@ -266,8 +266,16 @@ export default function MojProfil() {
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {savedMsg && <span style={{ fontSize: 13, color: "#14A800", fontWeight: 600 }}>{t("profile_saved")}</span>}
           {profileUrl && (
-            <a href={`https://www.pikmi.today/${profileUrl}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">
-              {t("profile_view")}
+            <a
+              href={`https://www.pikmi.today/${profileUrl}`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-primary btn-sm"
+              style={{ gap: 8 }}
+            >
+              <span style={{ fontSize: 15 }}>👁</span>
+              {t("profile_view_live")}
+              <span style={{ fontSize: 12, opacity: 0.8 }}>↗</span>
             </a>
           )}
         </div>
