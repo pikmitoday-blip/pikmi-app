@@ -323,7 +323,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             >⏻</button>
           </div>
 
-          {/* Policy linkovi */}
+          {/* Policy linkovi — samo na dashboardu */}
+          {path === "/dashboard" && (
           <div style={{ display: "flex", gap: 10, paddingTop: 10, justifyContent: "center" }}>
             <a href="/uslovi" target="_blank" rel="noopener noreferrer"
               style={{ fontSize: 11, color: "var(--text3)", textDecoration: "none" }}
@@ -339,11 +340,13 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               Privatnost
             </a>
           </div>
+          )}
         </div>
       </aside>
       <main className="main-content">
         {children}
-        {/* Policy linkovi — samo mobilna verzija, na dnu sadržaja */}
+        {/* Policy linkovi — samo mobilna verzija, samo na dashboardu */}
+        {path === "/dashboard" && (
         <div className="mobile-only" style={{ textAlign: "center", padding: "8px 0 24px", display: "flex", justifyContent: "center", gap: 16 }}>
           <a href="/uslovi" target="_blank" rel="noopener noreferrer"
             style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
@@ -355,6 +358,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             Politika privatnosti
           </a>
         </div>
+        )}
       </main>
 
       {/* ── Mobile bottom nav ── */}
