@@ -138,11 +138,6 @@ export default function PitchLink() {
             </div>
           </div>
           <div className="field">
-            <label className="label">{t("links_msg_label")}</label>
-            <textarea className="input" value={form.message} placeholder={t("links_msg_ph")}
-              onChange={e => set("message", e.target.value)} />
-          </div>
-          <div className="field">
             <label className="label">{t("links_filter_label")}</label>
             <input className="input" value={form.filters} placeholder={t("links_filter_ph")}
               onChange={e => set("filters", e.target.value)} />
