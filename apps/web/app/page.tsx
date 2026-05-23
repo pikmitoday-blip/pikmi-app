@@ -16,6 +16,7 @@ export default function Home() {
           <li><a href="#features">Features</a></li>
           <li><a href="#how">Kako funkcioniše</a></li>
           <li><a href="#pricing">Cene</a></li>
+          <li><Link href="/blog">Blog</Link></li>
         </ul>
         <div className="nav-actions">
           <Link href="/login" className="btn btn-ghost btn-sm">Login</Link>

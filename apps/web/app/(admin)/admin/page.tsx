@@ -318,9 +318,10 @@ export default function AdminOverview() {
       </div>
 
       {/* Brze akcije */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginTop: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 24 }}>
         {[
           { href: "/admin/korisnici", icon: "👥", label: "Upravljaj korisnicima" },
+          { href: "/admin/blog",      icon: "✍️", label: "Blog postovi" },
           { href: "/admin/landing",   icon: "✏️", label: "Uredi landing page" },
           { href: "/admin/podesavanja", icon: "⚙️", label: "Podešavanja platforme" },
         ].map(a => (
