@@ -39,7 +39,6 @@ export default function Home() {
           </p>
           <div className="flex items-center justify-center gap-3 hero-btns">
             <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno</Link>
-            <a href="#how" className="btn btn-ghost btn-lg">▷ Kako funkcioniše</a>
           </div>
         </div>
 
