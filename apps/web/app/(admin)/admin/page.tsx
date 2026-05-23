@@ -89,6 +89,13 @@ export default function AdminOverview() {
     p.plan_churned_at && p.plan_churned_at.slice(0, 7) === thisMonth
   ).length;
 
+  // Prosječan broj linkova po korisniku
+  const avgLinksPerUser = stats && stats.totalUsers > 0
+    ? (stats.totalLinks / stats.totalUsers)
+    : 0;
+  const avgLinksColor = avgLinksPerUser >= 5 ? "#4ADE80" : avgLinksPerUser >= 3 ? "#FBBF24" : "#F87171";
+  const avgLinksLabel = avgLinksPerUser >= 5 ? "Odlično 🚀" : avgLinksPerUser >= 3 ? "Solidno 👍" : "Activation problem ⚠️";
+
   // Bar chart — novi Pro po mjesecu (zadnjih 6)
   const chartMonths = lastNMonths(6).reverse();
   const chartData = chartMonths.map(m => ({
@@ -202,7 +209,7 @@ export default function AdminOverview() {
                 )}
               </div>
             </div>
-            <div style={{ display: "flex", gap: 24 }}>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Konverzija</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: "#A78BFA" }}>
@@ -219,6 +226,15 @@ export default function AdminOverview() {
                     churn {((churnThisMonth / (stats.proUsers + churnThisMonth)) * 100).toFixed(1)}%
                   </div>
                 )}
+              </div>
+              <div style={{ textAlign: "right", paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Prosj. linkova / korisnik</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: avgLinksColor }}>
+                  {avgLinksPerUser.toFixed(1)}
+                </div>
+                <div style={{ fontSize: 11, color: avgLinksColor, marginTop: 2 }}>
+                  {avgLinksLabel}
+                </div>
               </div>
             </div>
           </div>
