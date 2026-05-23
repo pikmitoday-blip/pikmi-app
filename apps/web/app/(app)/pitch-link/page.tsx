@@ -15,6 +15,8 @@ interface PitchLink {
   created_at: string;
 }
 
+const FREE_LINK_LIMIT = 3;
+
 export default function PitchLink() {
   const { t } = useLanguage();
   const [form, setForm] = useState({ clientName: "", slug: "", message: "", filters: "" });
@@ -23,9 +25,9 @@ export default function PitchLink() {
   const [links, setLinks] = useState<PitchLink[]>([]);
   const [copied, setCopied] = useState<string|null>(null);
   const [loadingLinks, setLoadingLinks] = useState(true);
+  const [userPlan, setUserPlan] = useState<"free"|"pro">("free");
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
-
 
   useEffect(() => {
     loadLinks();
@@ -36,18 +38,21 @@ export default function PitchLink() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from("pitch_links")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (data) setLinks(data);
+      const [linksRes, profileRes] = await Promise.all([
+        supabase.from("pitch_links").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("profiles").select("plan").eq("user_id", user.id).single(),
+      ]);
+      if (linksRes.data) setLinks(linksRes.data);
+      if (profileRes.data) setUserPlan(profileRes.data.plan === "pro" ? "pro" : "free");
     } catch {}
     setLoadingLinks(false);
   }
 
+  const isAtLimit = userPlan === "free" && links.length >= FREE_LINK_LIMIT;
+
   async function create() {
     if (!form.clientName || !form.slug) return;
+    if (isAtLimit) return;
     setStatus("loading");
     setErrMsg("");
     try {
@@ -116,10 +121,52 @@ export default function PitchLink() {
         <p className="page-subtitle">{t("links_page_sub")}</p>
       </div>
 
+      {/* Free limit banner */}
+      {userPlan === "free" && !loadingLinks && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
+          padding: "12px 16px", borderRadius: 10, marginBottom: 20,
+          background: isAtLimit ? "rgba(239,68,68,0.08)" : "rgba(124,58,237,0.06)",
+          border: `1px solid ${isAtLimit ? "rgba(239,68,68,0.25)" : "rgba(124,58,237,0.2)"}`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 16 }}>{isAtLimit ? "🔒" : "🔗"}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: isAtLimit ? "#F87171" : "var(--text2)" }}>
+                {isAtLimit ? t("links_limit_reached") : t("links_limit_info")}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
+                {links.length} / {FREE_LINK_LIMIT} {t("links_used")}
+              </div>
+            </div>
+          </div>
+          {isAtLimit && (
+            <a href="/billing" className="btn btn-primary btn-sm" style={{ whiteSpace: "nowrap" }}>
+              ⚡ {t("links_upgrade")}
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="grid-2" style={{ gap: 32, alignItems: "start" }}>
         {/* Form */}
-        <div className="card">
+        <div className="card" style={{ opacity: isAtLimit ? 0.5 : 1, pointerEvents: isAtLimit ? "none" : "auto", position: "relative" }}>
           <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 24 }}>{t("links_new_title")}</h2>
+
+          {isAtLimit && (
+            <div style={{
+              position: "absolute", inset: 0, borderRadius: "var(--r)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(0,0,0,0.3)", backdropFilter: "blur(2px)", zIndex: 1,
+              flexDirection: "column", gap: 12,
+            }}>
+              <span style={{ fontSize: 32 }}>🔒</span>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", textAlign: "center", padding: "0 20px" }}>
+                {t("links_limit_reached")}
+              </div>
+              <a href="/billing" className="btn btn-primary btn-sm">⚡ {t("links_upgrade")}</a>
+            </div>
+          )}
 
           <div className="field">
             <label className="label">{t("links_client_label")}</label>
@@ -144,7 +191,7 @@ export default function PitchLink() {
           </div>
 
           <button className="btn btn-primary w-full" style={{ justifyContent: "center", marginTop: 8 }}
-            onClick={create} disabled={status === "loading" || !form.clientName || !form.slug}>
+            onClick={create} disabled={status === "loading" || !form.clientName || !form.slug || isAtLimit}>
             {status === "loading" ? t("links_creating") : t("links_create_btn")}
           </button>
           {status === "ok"  && <div className="success-msg">{t("links_created_ok")}</div>}

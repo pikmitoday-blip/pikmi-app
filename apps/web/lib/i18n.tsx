@@ -368,6 +368,10 @@ const translations = {
     account_err_pass_wrong:"Trenutna lozinka nije ispravna.",
     account_err_too_large: "Slika je prevelika. Maksimalno 2MB.",
     profile_view_live:     "Pogledaj svoj profil",
+    links_limit_reached:   "Dostignut limit besplatnog plana",
+    links_limit_info:      "Free plan — do 3 pitch linka",
+    links_used:            "linkova iskorišćeno",
+    links_upgrade:         "Nadogradi na Pro",
   },
 
   en: {
@@ -701,6 +705,10 @@ const translations = {
     account_err_pass_wrong:"Current password is incorrect.",
     account_err_too_large: "Image is too large. Maximum 2MB.",
     profile_view_live:     "View your profile",
+    links_limit_reached:   "Free plan limit reached",
+    links_limit_info:      "Free plan — up to 3 pitch links",
+    links_used:            "links used",
+    links_upgrade:         "Upgrade to Pro",
   },
 } as const;
 
