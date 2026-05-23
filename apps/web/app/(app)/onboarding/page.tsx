@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
@@ -13,6 +13,16 @@ const professions = [
   "Drugo / kombinacija",
 ];
 
+function generateSlug(firstName: string, lastName: string): string {
+  return `${firstName}-${lastName}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")   // ukloni dijakritike (č→c, ć→c, š→s...)
+    .replace(/[^a-z0-9-]/g, "-")       // zamijeni sve ostale znakove s -
+    .replace(/-+/g, "-")               // ukloni višestruke -
+    .replace(/^-|-$/g, "");            // ukloni - s početka i kraja
+}
+
 export default function Onboarding() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -21,35 +31,51 @@ export default function Onboarding() {
     lastName: "",
     city: "",
     profession: "",
-    profileUrl: "",
   });
-  const [checking, setChecking] = useState(false);
-  const [urlStatus, setUrlStatus] = useState<{ available: boolean; suggestions?: string[] } | null>(null);
+  const [generatedSlug, setGeneratedSlug] = useState("");
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [checkingSlug, setCheckingSlug] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
 
-  async function checkUrl() {
-    if (!form.profileUrl) return;
-    setChecking(true);
-    try {
+  // Kad korisnik pređe na korak 3, generiši i provjeri slug
+  useEffect(() => {
+    if (step === 3 && form.firstName && form.lastName) {
+      checkGeneratedSlug();
+    }
+  }, [step]);
+
+  async function checkGeneratedSlug() {
+    setCheckingSlug(true);
+    setSlugAvailable(null);
+    const base = generateSlug(form.firstName, form.lastName);
+    let slug = base;
+    let attempt = 0;
+
+    while (attempt < 10) {
       const { data } = await supabase
         .from("profiles")
         .select("id")
-        .eq("profile_url", form.profileUrl)
+        .eq("profile_url", slug)
         .maybeSingle();
-      const available = !data;
-      const suggestions = available
-        ? []
-        : [form.profileUrl + "1", form.profileUrl + Math.floor(Math.random() * 90 + 10)];
-      setUrlStatus({ available, suggestions });
-    } catch {
-      setUrlStatus({ available: true });
+
+      if (!data) {
+        // Slobodan!
+        setGeneratedSlug(slug);
+        setSlugAvailable(true);
+        break;
+      }
+      // Zauzet — dodaj broj
+      attempt++;
+      slug = `${base}${attempt + 1}`;
     }
-    setChecking(false);
+
+    setCheckingSlug(false);
   }
 
   async function finish() {
+    if (!generatedSlug) return;
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -58,7 +84,7 @@ export default function Onboarding() {
         await supabase.from("profiles").update({
           first_name: form.firstName,
           last_name: form.lastName,
-          profile_url: form.profileUrl,
+          profile_url: generatedSlug,
           profile_data: {
             firstName: form.firstName,
             lastName: form.lastName,
@@ -165,41 +191,27 @@ export default function Onboarding() {
         {/* Korak 3 */}
         {step === 3 && (
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Tvoj pikmi URL</h3>
-            <div className="field">
-              <label className="label">Izaberi korisničko ime</label>
-              <div className="flex items-center" style={{ gap: 0 }}>
-                <span style={{
-                  padding: "11px 14px", background: "rgba(255,255,255,0.03)",
-                  border: "1px solid var(--border)", borderRight: "none",
-                  borderRadius: "var(--r) 0 0 var(--r)", fontSize: 14,
-                  color: "var(--text3)", whiteSpace: "nowrap",
-                }}>
-                  pikmi.today/
-                </span>
-                <input
-                  className="input"
-                  style={{ borderRadius: "0 var(--r) var(--r) 0" }}
-                  value={form.profileUrl}
-                  placeholder="marko"
-                  onChange={e => {
-                    set("profileUrl", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-                    setUrlStatus(null);
-                  }}
-                  onBlur={checkUrl}
-                />
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Tvoj pikmi URL</h3>
+            <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>
+              Tvoj profil će biti dostupan na sljedećoj adresi:
+            </p>
+
+            <div style={{
+              padding: "18px 20px", borderRadius: 12, marginBottom: 20,
+              background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.2)",
+              display: "flex", alignItems: "center", gap: 12,
+            }}>
+              <span style={{ fontSize: 20 }}>🔗</span>
+              <div>
+                <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Tvoja adresa</div>
+                {checkingSlug ? (
+                  <div style={{ fontSize: 15, color: "var(--text3)" }}>Generišem URL...</div>
+                ) : (
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#A78BFA" }}>
+                    pikmi.today/<span style={{ color: "var(--text)" }}>{generatedSlug}</span>
+                  </div>
+                )}
               </div>
-              {checking && <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>Provjeravam dostupnost...</div>}
-              {urlStatus && (
-                <div style={{
-                  marginTop: 6, fontSize: 13,
-                  color: urlStatus.available ? "#1AA877" : "#F87171",
-                }}>
-                  {urlStatus.available
-                    ? "✓ URL je slobodan!"
-                    : `✗ Zauzet. Prijedlozi: ${urlStatus.suggestions?.join(", ")}`}
-                </div>
-              )}
             </div>
 
             <div style={{
@@ -215,7 +227,7 @@ export default function Onboarding() {
               <button
                 className="btn btn-primary"
                 onClick={finish}
-                disabled={!form.profileUrl || checking || saving || (urlStatus !== null && !urlStatus.available)}
+                disabled={!slugAvailable || checkingSlug || saving}
               >
                 {saving ? "Čuvanje..." : "Dalje — popuni profil →"}
               </button>
