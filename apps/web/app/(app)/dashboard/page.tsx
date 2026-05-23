@@ -157,22 +157,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Quick actions */}
-      <div className="quick-actions-grid mb-8">
-        {[
-          { href: "/pitch-link",   icon: "🔗", title: t("dash_create_link"), desc: t("dash_no_links_desc") },
-          { href: "/profile-edit", icon: "✏️", title: t("dash_edit_profile"), desc: t("dash_update_desc") },
-          { href: "/outreach",     icon: "✉️", title: t("nav_outreach"),      desc: t("dash_outreach_desc") },
-        ].map(a => (
-          <Link key={a.href} href={a.href} className="card card-hover flex gap-3 items-start" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: 24 }}>{a.icon}</div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{a.title}</div>
-              <div style={{ fontSize: 13, color: "var(--text3)" }}>{a.desc}</div>
-            </div>
-          </Link>
-        ))}
-      </div>
 
       {/* Theme toggle — samo mobilni */}
       <div className="mobile-only" style={{ marginBottom: 8 }}>
