@@ -50,9 +50,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           if (adminEmails.includes(user.email?.toLowerCase() ?? "")) setIsAdmin(true);
           const { data } = await supabase
             .from("profiles")
-            .select("first_name, last_name, profile_data, plan")
+            .select("first_name, last_name, profile_data, plan, profile_url")
             .eq("user_id", user.id)
             .single();
+
+          // Novi korisnik koji nije završio onboarding → redirect
+          if (!data?.profile_url && !path.includes("/onboarding") && !path.includes("/profile-edit")) {
+            router.replace("/onboarding");
+            return;
+          }
+
           if (data) {
             const pd = data.profile_data as Record<string, string> | null;
             const updated: SidebarProfile = {

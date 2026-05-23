@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 
@@ -77,8 +78,11 @@ function getCachedEdit(): Profile | null {
   return null;
 }
 
-export default function ProfileEdit() {
+function ProfileEditInner() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSetup = searchParams.get("setup") === "true";
   const [p, setP] = useState<Profile>(() => getCachedEdit() ?? DEFAULT);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -149,6 +153,10 @@ export default function ProfileEdit() {
       console.error("Supabase save error:", e);
     }
     setSaving(false);
+    if (isSetup) {
+      router.push("/dashboard");
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -223,13 +231,27 @@ export default function ProfileEdit() {
     <div>
       <div className="flex items-center justify-between page-header">
         <div>
-          <h1 className="page-title">{t("edit_page_title")}</h1>
-          <p className="page-subtitle">{t("edit_page_sub")}</p>
+          {isSetup ? (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", background: "rgba(124,58,237,0.12)", padding: "3px 10px", borderRadius: 999 }}>KORAK 4 OD 4</div>
+              </div>
+              <h1 className="page-title">Popuni profil</h1>
+              <p className="page-subtitle">Ovo klijenti vide kada otvore tvoj pitch link — možeš ga uvijek promijeniti</p>
+            </>
+          ) : (
+            <>
+              <h1 className="page-title">{t("edit_page_title")}</h1>
+              <p className="page-subtitle">{t("edit_page_sub")}</p>
+            </>
+          )}
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">{t("edit_view_profile")}</a>
+          {!isSetup && (
+            <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">{t("edit_view_profile")}</a>
+          )}
           <button className="btn btn-primary" onClick={save} disabled={saving}>
-            {saving ? t("edit_saving") : saved ? t("edit_saved") : t("edit_save")}
+            {saving ? t("edit_saving") : isSetup ? "Završi →" : saved ? t("edit_saved") : t("edit_save")}
           </button>
         </div>
       </div>
@@ -504,12 +526,22 @@ export default function ProfileEdit() {
 
         {/* Save */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingBottom: 40 }}>
-          <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost">{t("edit_view_profile")}</a>
+          {!isSetup && (
+            <a href={profileUrl ? `https://www.pikmi.today/${profileUrl}` : "#"} target="_blank" rel="noreferrer" className="btn btn-ghost">{t("edit_view_profile")}</a>
+          )}
           <button className="btn btn-primary" onClick={save} style={{ minWidth: 160 }}>
-            {saving ? t("edit_saving") : saved ? t("edit_saved") : t("edit_save_changes")}
+            {saving ? t("edit_saving") : isSetup ? "Završi i idi na dashboard →" : saved ? t("edit_saved") : t("edit_save_changes")}
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfileEdit() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>Učitavanje...</div>}>
+      <ProfileEditInner />
+    </Suspense>
   );
 }

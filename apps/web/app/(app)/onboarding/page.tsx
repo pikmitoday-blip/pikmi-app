@@ -1,16 +1,31 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../../lib/supabase";
 
-const professions = ["Video editor", "Copywriter", "Grafički dizajner", "Web dizajner", "SMM menadžer", "Fotograf", "Drugo / kombinacija"];
+const professions = [
+  "Video editor",
+  "Copywriter",
+  "Grafički dizajner",
+  "Web dizajner",
+  "SMM menadžer",
+  "Fotograf",
+  "Drugo / kombinacija",
+];
 
 export default function Onboarding() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: "", city: "", profession: "", profileUrl: "", language: "SR" });
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    city: "",
+    profession: "",
+    profileUrl: "",
+  });
   const [checking, setChecking] = useState(false);
-  const [urlStatus, setUrlStatus] = useState<any>(null);
-  const [done, setDone] = useState(false);
+  const [urlStatus, setUrlStatus] = useState<{ available: boolean; suggestions?: string[] } | null>(null);
+  const [saving, setSaving] = useState(false);
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
 
@@ -18,35 +33,49 @@ export default function Onboarding() {
     if (!form.profileUrl) return;
     setChecking(true);
     try {
-      const r = await fetch(`http://localhost:4000/api/onboarding/check-url/${form.profileUrl}`);
-      setUrlStatus(await r.json());
-    } catch { setUrlStatus({ available: true }); }
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("profile_url", form.profileUrl)
+        .maybeSingle();
+      const available = !data;
+      const suggestions = available
+        ? []
+        : [form.profileUrl + "1", form.profileUrl + Math.floor(Math.random() * 90 + 10)];
+      setUrlStatus({ available, suggestions });
+    } catch {
+      setUrlStatus({ available: true });
+    }
     setChecking(false);
   }
 
   async function finish() {
-    setChecking(true);
+    setSaving(true);
     try {
-      await fetch("http://localhost:4000/api/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      setDone(true);
-      setTimeout(() => router.push("/dashboard"), 1500);
-    } catch { /* ignore */ }
-    setChecking(false);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const initials = (form.firstName[0] ?? "").toUpperCase() + (form.lastName[0] ?? "").toUpperCase();
+        await supabase.from("profiles").update({
+          first_name: form.firstName,
+          last_name: form.lastName,
+          profile_url: form.profileUrl,
+          profile_data: {
+            firstName: form.firstName,
+            lastName: form.lastName,
+            initials,
+            city: form.city,
+            openStatus: "OTVOREN ZA SARADNJU",
+          },
+        }).eq("user_id", user.id);
+      }
+      router.push("/profile-edit?setup=true");
+    } catch (e) {
+      console.error("Onboarding error:", e);
+      setSaving(false);
+    }
   }
 
   const steps = ["Osnovno", "Profesija", "Tvoj URL"];
-
-  if (done) return (
-    <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center", paddingTop: 80 }}>
-      <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
-      <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>Profil kreiran!</h2>
-      <p style={{ color: "var(--text2)" }}>Preusmeravanje na dashboard...</p>
-    </div>
-  );
 
   return (
     <div style={{ maxWidth: 520, margin: "0 auto" }}>
@@ -73,24 +102,38 @@ export default function Onboarding() {
       </div>
 
       <div className="card">
+        {/* Korak 1 */}
         {step === 1 && (
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Kako ti se zoveš?</h3>
-            <div className="field">
-              <label className="label">Ime i prezime</label>
-              <input className="input" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Npr. Marko Jovanović" />
+            <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label className="label">Ime</label>
+                <input className="input" value={form.firstName} onChange={e => set("firstName", e.target.value)} placeholder="Marko" />
+              </div>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label className="label">Prezime</label>
+                <input className="input" value={form.lastName} onChange={e => set("lastName", e.target.value)} placeholder="Jovanović" />
+              </div>
             </div>
             <div className="field">
               <label className="label">Grad</label>
-              <input className="input" value={form.city} onChange={e => set("city", e.target.value)} placeholder="Npr. Beograd" />
+              <input className="input" value={form.city} onChange={e => set("city", e.target.value)} placeholder="Npr. Beograd, Srbija" />
             </div>
             <div className="flex justify-between mt-6">
               <div />
-              <button className="btn btn-primary" onClick={() => setStep(2)} disabled={!form.name || !form.city}>Dalje →</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setStep(2)}
+                disabled={!form.firstName || !form.lastName || !form.city}
+              >
+                Dalje →
+              </button>
             </div>
           </div>
         )}
 
+        {/* Korak 2 */}
         {step === 2 && (
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Čime se baviš?</h3>
@@ -119,40 +162,62 @@ export default function Onboarding() {
           </div>
         )}
 
+        {/* Korak 3 */}
         {step === 3 && (
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Tvoj pikmi URL</h3>
             <div className="field">
               <label className="label">Izaberi korisničko ime</label>
               <div className="flex items-center" style={{ gap: 0 }}>
-                <span style={{ padding: "11px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", borderRight: "none", borderRadius: "var(--r) 0 0 var(--r)", fontSize: 14, color: "var(--text3)", whiteSpace: "nowrap" }}>
-                  pikmi.app/
+                <span style={{
+                  padding: "11px 14px", background: "rgba(255,255,255,0.03)",
+                  border: "1px solid var(--border)", borderRight: "none",
+                  borderRadius: "var(--r) 0 0 var(--r)", fontSize: 14,
+                  color: "var(--text3)", whiteSpace: "nowrap",
+                }}>
+                  pikmi.today/
                 </span>
                 <input
-                  className="input" style={{ borderRadius: "0 var(--r) var(--r) 0" }}
-                  value={form.profileUrl} placeholder="marko"
-                  onChange={e => { set("profileUrl", e.target.value.toLowerCase().replace(/\s/g, "-")); setUrlStatus(null); }}
+                  className="input"
+                  style={{ borderRadius: "0 var(--r) var(--r) 0" }}
+                  value={form.profileUrl}
+                  placeholder="marko"
+                  onChange={e => {
+                    set("profileUrl", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                    setUrlStatus(null);
+                  }}
                   onBlur={checkUrl}
                 />
               </div>
-              {checking && <div className="text-xs text-muted mt-2">Proveravam dostupnost...</div>}
+              {checking && <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>Provjeravam dostupnost...</div>}
               {urlStatus && (
-                <div className={`mt-2 text-sm ${urlStatus.available ? "success-msg" : "error-msg"}`}>
-                  {urlStatus.available ? "✓ URL je slobodan!" : `✗ Zauzet. Predlozi: ${urlStatus.suggestions?.join(", ")}`}
+                <div style={{
+                  marginTop: 6, fontSize: 13,
+                  color: urlStatus.available ? "#1AA877" : "#F87171",
+                }}>
+                  {urlStatus.available
+                    ? "✓ URL je slobodan!"
+                    : `✗ Zauzet. Prijedlozi: ${urlStatus.suggestions?.join(", ")}`}
                 </div>
               )}
             </div>
-            <div className="field">
-              <label className="label">Jezik profila</label>
-              <select className="input" value={form.language} onChange={e => set("language", e.target.value)}>
-                <option value="SR">🇷🇸 Srpski</option>
-                <option value="EN">🇬🇧 Engleski</option>
-              </select>
+
+            <div style={{
+              padding: "12px 16px", borderRadius: 10, marginBottom: 8,
+              background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)",
+              fontSize: 13, color: "var(--text3)",
+            }}>
+              🎨 Nakon ovoga popunit ćeš profil koji klijenti vide kada otvore tvoj pitch link.
             </div>
-            <div className="flex justify-between mt-6">
+
+            <div className="flex justify-between mt-4">
               <button className="btn btn-ghost" onClick={() => setStep(2)}>← Nazad</button>
-              <button className="btn btn-primary" onClick={finish} disabled={!form.profileUrl || checking || (urlStatus && !urlStatus.available)}>
-                {checking ? "Kreiranje..." : "Završi ✦"}
+              <button
+                className="btn btn-primary"
+                onClick={finish}
+                disabled={!form.profileUrl || checking || saving || (urlStatus !== null && !urlStatus.available)}
+              >
+                {saving ? "Čuvanje..." : "Dalje — popuni profil →"}
               </button>
             </div>
           </div>
