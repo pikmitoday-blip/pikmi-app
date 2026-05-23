@@ -336,12 +336,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   return (
     <div style={{ background: "#F7F7F5", minHeight: "100vh", fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
       {/* Mini nav */}
-      <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "0 24px", height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E4EBE4" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "0 24px", height: 52, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E4EBE4" }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", fontWeight: 700, fontSize: 16, color: "#1E1E1E" }}>
           <PikmiLogo size={24} />
           pikmi
         </Link>
-        <Link href="/register" className="btn btn-primary btn-sm">Kreiraj tvoj profil</Link>
       </div>
 
       {/* Main layout */}
