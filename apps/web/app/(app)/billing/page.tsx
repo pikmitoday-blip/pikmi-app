@@ -308,19 +308,19 @@ function BillingContent() {
           <div style={{ fontSize: 38, fontWeight: 900, marginBottom: 4 }}>0 din</div>
           <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>{t("forever_free")}</div>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-            {[
-              "Neograničen broj pitch linkova",
-              "Potpun profil",
-              "Statistika pregleda",
-              "Sve sekcije profila",
-            ].map(f => (
+            {([
+              t("billing_free_f1"),
+              t("billing_free_f2"),
+              t("billing_free_f3"),
+              t("billing_free_f4"),
+            ] as string[]).map(f => (
               <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text2)" }}>
                 <span style={{ color: "#4ADE80", fontSize: 12 }}>✓</span> {f}
               </li>
             ))}
             <li className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text3)" }}>
               <span style={{ color: "var(--text3)", fontSize: 12 }}>✗</span>
-              <span>Outreach kit <span style={{ fontSize: 11, color: "var(--text3)" }}>(zaključano)</span></span>
+              <span>Outreach kit <span style={{ fontSize: 11, color: "var(--text3)" }}>{t("billing_locked")}</span></span>
             </li>
           </ul>
           <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default", opacity: 0.6 }}>
@@ -340,17 +340,17 @@ function BillingContent() {
           </div>
           <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>{t("cancel_anytime")}</div>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-            {[
-              "Sve iz Free plana",
-              "✦ Outreach kit — Cold DM, Email, Follow-up",
-              "✦ Srpski i engleski šabloni",
-              "✦ Personalizacija jednim klikom",
-              "✦ Buduće Pro funkcionalnosti",
-              "✦ Prioritetna podrška",
-            ].map(f => (
-              <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: f.startsWith("✦") ? "var(--text)" : "var(--text2)" }}>
+            {([
+              { text: t("billing_pro_f1"), pro: false },
+              { text: t("billing_pro_f2"), pro: true },
+              { text: t("billing_pro_f3"), pro: true },
+              { text: t("billing_pro_f4"), pro: true },
+              { text: t("billing_pro_f5"), pro: true },
+              { text: t("billing_pro_f6"), pro: true },
+            ]).map(f => (
+              <li key={f.text} className="flex items-center gap-2" style={{ fontSize: 14, color: f.pro ? "var(--text)" : "var(--text2)" }}>
                 <span style={{ color: "#A78BFA", fontSize: 12 }}>✦</span>
-                {f.replace("✦ ", "")}
+                {f.text}
               </li>
             ))}
           </ul>
@@ -403,12 +403,12 @@ function BillingContent() {
       <div style={{ marginTop: 40 }}>
         <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>{t("billing_faq")}</h2>
         <div className="flex flex-col gap-3">
-          {[
-            { q: "Mogu li da otkažem u bilo kom trenutku?", a: "Da, pretplatu možeš otkazati kada god želiš direktno u Stripe portalu. Pro pristup ostaje aktivan do kraja plaćenog perioda." },
-            { q: "Zašto je Outreach kit jedina razlika?", a: "Vjerujemo da svaki freelancer zaslužuje odličan profil i pitch linkove — besplatno. Outreach kit je premium alat za one koji žele da skaliraju akviziciju klijenata." },
-            { q: "Koliko dugo traje besplatni trial?", a: "7 dana od registracije. Tokom triala imaš pristup svim funkcijama uključujući Outreach kit — bez kreditne kartice." },
-            { q: "Da li su podaci bezbedni?", a: "Plaćanje se vrši direktno kroz Stripe — mi nikada ne vidimo podatke tvoje kartice. Profil podaci su enkriptovani i sigurno čuvani." },
-          ].map((item) => (
+          {([
+            { q: t("billing_faq_q1"), a: t("billing_faq_a1") },
+            { q: t("billing_faq_q2"), a: t("billing_faq_a2") },
+            { q: t("billing_faq_q3"), a: t("billing_faq_a3") },
+            { q: t("billing_faq_q4"), a: t("billing_faq_a4") },
+          ]).map((item) => (
             <div key={item.q} className="card">
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{item.q}</div>
               <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6 }}>{item.a}</div>

@@ -168,7 +168,7 @@ export default function Analytics() {
     if (!dateStr) return "—";
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "upravo";
+    if (mins < 1) return t("analytics_just_now");
     if (mins < 60) return `${mins}m`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h`;
@@ -290,7 +290,7 @@ export default function Analytics() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Pitch link</th>
+                  <th>{t("analytics_pitch_link")}</th>
                   <th className="hide-mobile">{t("analytics_device")}</th>
                   <th className="hide-mobile">{t("analytics_source")}</th>
                   <th>{t("analytics_time")}</th>
@@ -316,11 +316,13 @@ export default function Analytics() {
                     </td>
                     <td className="hide-mobile">
                       <span style={{ fontSize: 12, color: "var(--text3)" }}>
-                        {v.referrer ? (() => { try { return new URL(v.referrer).hostname; } catch { return v.referrer; } })() : "Direct"}
+                        {v.referrer ? (() => { try { return new URL(v.referrer).hostname; } catch { return v.referrer; } })() : t("analytics_direct")}
                       </span>
                     </td>
                     <td style={{ color: "var(--text3)", fontSize: 13 }}>
-                      {timeAgo(v.viewed_at)} ago
+                      {timeAgo(v.viewed_at) === t("analytics_just_now")
+                        ? t("analytics_just_now")
+                        : `${timeAgo(v.viewed_at)} ${t("analytics_ago")}`}
                     </td>
                   </tr>
                 ))}
