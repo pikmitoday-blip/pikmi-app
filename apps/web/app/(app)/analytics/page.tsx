@@ -186,47 +186,23 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* Filter traka: link + timeline */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24, alignItems: "center", justifyContent: "space-between" }}>
-        {/* Filter po linku */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      {/* Filter po linku */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+        <button
+          onClick={() => setSelectedLink("all")}
+          className={`btn btn-sm ${selectedLink === "all" ? "btn-primary" : "btn-ghost"}`}
+        >
+          {t("analytics_all_links")}
+        </button>
+        {links.map(l => (
           <button
-            onClick={() => setSelectedLink("all")}
-            className={`btn btn-sm ${selectedLink === "all" ? "btn-primary" : "btn-ghost"}`}
+            key={l.id}
+            onClick={() => setSelectedLink(l.id)}
+            className={`btn btn-sm ${selectedLink === l.id ? "btn-primary" : "btn-ghost"}`}
           >
-            {t("analytics_all_links")}
+            {l.title}
           </button>
-          {links.map(l => (
-            <button
-              key={l.id}
-              onClick={() => setSelectedLink(l.id)}
-              className={`btn btn-sm ${selectedLink === l.id ? "btn-primary" : "btn-ghost"}`}
-            >
-              {l.title}
-            </button>
-          ))}
-        </div>
-
-        {/* Timeline selector */}
-        <div style={{
-          display: "flex", gap: 2, background: "var(--surface)",
-          border: "1px solid var(--border)", borderRadius: 10, padding: 3,
-        }}>
-          {TIMELINES.map(tl => (
-            <button
-              key={tl.value}
-              onClick={() => setTimeline(tl.value)}
-              style={{
-                padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
-                background: timeline === tl.value ? "var(--purple)" : "transparent",
-                color: timeline === tl.value ? "white" : "var(--text3)",
-              }}
-            >
-              {tl.label}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* Stats */}
@@ -247,7 +223,28 @@ export default function Analytics() {
 
       {/* Chart */}
       <div className="card mb-6">
-        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{chartTitle}</h2>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700 }}>{chartTitle}</h2>
+          <div style={{
+            display: "flex", gap: 2, background: "var(--surface)",
+            border: "1px solid var(--border)", borderRadius: 10, padding: 3,
+          }}>
+            {TIMELINES.map(tl => (
+              <button
+                key={tl.value}
+                onClick={() => setTimeline(tl.value)}
+                style={{
+                  padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                  fontSize: 13, fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
+                  background: timeline === tl.value ? "var(--purple)" : "transparent",
+                  color: timeline === tl.value ? "white" : "var(--text3)",
+                }}
+              >
+                {tl.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div style={{
           display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8,
           height: 120, overflowX: "auto",
