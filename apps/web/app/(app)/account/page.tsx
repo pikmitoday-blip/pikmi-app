@@ -8,6 +8,7 @@ export default function AccountSettings() {
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
 
   const [nameSaving, setNameSaving] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
@@ -48,37 +49,62 @@ export default function AccountSettings() {
 
   async function uploadAvatar(file: File) {
     setUploadingAvatar(true);
+    setAvatarError("");
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setUploadingAvatar(false); return; }
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/avatar.${ext}`;
-      const { error } = await supabase.storage
-        .from("pikmi-uploads")
-        .upload(path, file, { upsert: true });
-      if (error) {
-        console.error("Avatar upload error:", error);
+
+      // Provjera veličine (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setAvatarError("Slika je prevelika. Maksimalno 2MB.");
         setUploadingAvatar(false);
         return;
       }
+
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error } = await supabase.storage
+        .from("pikmi-uploads")
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (error) {
+        console.error("Avatar upload error:", error);
+        setAvatarError(`Greška pri uploadu: ${error.message}`);
+        setUploadingAvatar(false);
+        return;
+      }
+
       const { data: { publicUrl } } = supabase.storage
         .from("pikmi-uploads")
         .getPublicUrl(path);
 
-      // Update profile_data with new avatar
+      // Dodaj timestamp da browser ne keširа staru sliku
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
       const { data: profileRow } = await supabase
         .from("profiles")
         .select("profile_data")
         .eq("user_id", user.id)
         .single();
       const existing = (profileRow?.profile_data as Record<string, unknown>) ?? {};
-      await supabase.from("profiles").update({
+      const { error: updateError } = await supabase.from("profiles").update({
         profile_data: { ...existing, avatarUrl: publicUrl },
       }).eq("user_id", user.id);
 
-      setAvatarUrl(publicUrl);
+      if (updateError) {
+        console.error("Profile update error:", updateError);
+        setAvatarError(`Greška pri čuvanju: ${updateError.message}`);
+        setUploadingAvatar(false);
+        return;
+      }
+
+      setAvatarUrl(urlWithCacheBust);
       try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
-    } catch (e) { console.error("Avatar upload exception:", e); }
+    } catch (e: any) {
+      console.error("Avatar upload exception:", e);
+      setAvatarError(e.message || "Nepoznata greška pri uploadu.");
+    }
     setUploadingAvatar(false);
   }
 
@@ -187,6 +213,12 @@ export default function AccountSettings() {
             </div>
           </div>
         </div>
+
+        {avatarError && (
+          <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#F87171", fontSize: 13 }}>
+            ⚠️ {avatarError}
+          </div>
+        )}
 
         {/* Ime */}
         <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
