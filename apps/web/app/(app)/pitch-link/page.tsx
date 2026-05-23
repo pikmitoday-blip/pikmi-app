@@ -9,6 +9,7 @@ interface PitchLink {
   title: string;
   slug: string;
   template: string;
+  filters: string;
   views: number;
   is_active: boolean;
   created_at: string;
@@ -60,6 +61,7 @@ export default function PitchLink() {
           title: form.clientName,
           slug: form.slug,
           template: form.message || "",
+          filters: form.filters || "",
           is_active: true,
           views: 0,
         })
@@ -175,7 +177,17 @@ export default function PitchLink() {
                       <div className="avatar" style={{ width: 32, height: 32, fontSize: 12 }}>{l.title[0]}</div>
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 600 }}>{l.title}</div>
-                        <div style={{ fontSize: 12, color: "var(--text3)" }}>{getLinkUrl(l.slug)}</div>
+                        {l.filters && (
+                          <span style={{
+                            display: "inline-block", marginTop: 3,
+                            fontSize: 11, fontWeight: 600, padding: "2px 8px",
+                            borderRadius: 999, background: "rgba(124,58,237,0.12)",
+                            color: "#A78BFA", letterSpacing: "0.03em",
+                          }}>
+                            {l.filters}
+                          </span>
+                        )}
+                        <div style={{ fontSize: 12, color: "var(--text3)", marginTop: l.filters ? 3 : 0 }}>{getLinkUrl(l.slug)}</div>
                       </div>
                     </div>
                     <span className={`badge ${l.is_active ? "badge-green" : ""}`} style={!l.is_active ? { background: "rgba(255,255,255,0.05)", color: "var(--text3)" } : {}}>
