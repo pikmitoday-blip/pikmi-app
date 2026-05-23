@@ -307,14 +307,21 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="sidebar-user" style={{ marginTop: 8 }}>
-            {profile.avatarUrl
-              ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-              : <div className="avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{profile.initials}</div>
-            }
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{profile.firstName} {profile.lastName}</div>
-              <div style={{ fontSize: 11, color: "var(--text3)" }}>{profile.plan === "pro" ? t("pro_plan") : t("free_plan")}</div>
-            </div>
+            <Link href="/account" title="Podešavanja naloga" style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, textDecoration: "none", minWidth: 0,
+              padding: "4px 6px", borderRadius: 8, transition: "background 0.15s",
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+            >
+              {profile.avatarUrl
+                ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                : <div className="avatar" style={{ width: 30, height: 30, fontSize: 12, flexShrink: 0 }}>{profile.initials}</div>
+              }
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile.firstName} {profile.lastName}</div>
+                <div style={{ fontSize: 11, color: "var(--text3)" }}>{profile.plan === "pro" ? t("pro_plan") : t("free_plan")}</div>
+              </div>
+            </Link>
             <button onClick={handleLogout} title={t("nav_logout")} style={{
               background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.25)",
               cursor: "pointer", color: "#F87171", fontSize: 14, padding: "6px 8px",
