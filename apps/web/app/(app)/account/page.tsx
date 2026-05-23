@@ -50,13 +50,17 @@ export default function AccountSettings() {
     setUploadingAvatar(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setUploadingAvatar(false); return; }
       const ext = file.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/avatar.${ext}`;
       const { error } = await supabase.storage
         .from("pikmi-uploads")
         .upload(path, file, { upsert: true });
-      if (error) { console.error(error); return; }
+      if (error) {
+        console.error("Avatar upload error:", error);
+        setUploadingAvatar(false);
+        return;
+      }
       const { data: { publicUrl } } = supabase.storage
         .from("pikmi-uploads")
         .getPublicUrl(path);
@@ -74,7 +78,7 @@ export default function AccountSettings() {
 
       setAvatarUrl(publicUrl);
       try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Avatar upload exception:", e); }
     setUploadingAvatar(false);
   }
 
