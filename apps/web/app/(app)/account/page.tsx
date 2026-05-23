@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
+import { useLanguage } from "../../../lib/i18n";
 
 export default function AccountSettings() {
+  const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,9 +56,8 @@ export default function AccountSettings() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setUploadingAvatar(false); return; }
 
-      // Provjera veličine (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
-        setAvatarError("Slika je prevelika. Maksimalno 2MB.");
+        setAvatarError(t("account_err_too_large"));
         setUploadingAvatar(false);
         return;
       }
@@ -70,7 +71,7 @@ export default function AccountSettings() {
 
       if (error) {
         console.error("Avatar upload error:", error);
-        setAvatarError(`Greška pri uploadu: ${error.message}`);
+        setAvatarError(`${error.message}`);
         setUploadingAvatar(false);
         return;
       }
@@ -79,7 +80,6 @@ export default function AccountSettings() {
         .from("pikmi-uploads")
         .getPublicUrl(path);
 
-      // Dodaj timestamp da browser ne keširа staru sliku
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
 
       const { data: profileRow } = await supabase
@@ -94,7 +94,7 @@ export default function AccountSettings() {
 
       if (updateError) {
         console.error("Profile update error:", updateError);
-        setAvatarError(`Greška pri čuvanju: ${updateError.message}`);
+        setAvatarError(updateError.message);
         setUploadingAvatar(false);
         return;
       }
@@ -103,13 +103,13 @@ export default function AccountSettings() {
       try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
     } catch (e: any) {
       console.error("Avatar upload exception:", e);
-      setAvatarError(e.message || "Nepoznata greška pri uploadu.");
+      setAvatarError(e.message || "Upload error.");
     }
     setUploadingAvatar(false);
   }
 
   async function saveName() {
-    if (!firstName.trim()) { setNameError("Ime je obavezno."); return; }
+    if (!firstName.trim()) { setNameError(t("account_err_name_req")); return; }
     setNameSaving(true);
     setNameError("");
     try {
@@ -123,26 +123,25 @@ export default function AccountSettings() {
       setNameSaved(true);
       setTimeout(() => setNameSaved(false), 2500);
     } catch (e: any) {
-      setNameError(e.message || "Greška pri čuvanju.");
+      setNameError(e.message || "Error saving.");
     }
     setNameSaving(false);
   }
 
   async function savePassword() {
     setPassError("");
-    if (!newPassword) { setPassError("Unesite novu lozinku."); return; }
-    if (newPassword.length < 6) { setPassError("Lozinka mora imati najmanje 6 karaktera."); return; }
-    if (newPassword !== confirmPassword) { setPassError("Lozinke se ne poklapaju."); return; }
+    if (!newPassword) { setPassError(t("account_err_pass_new")); return; }
+    if (newPassword.length < 6) { setPassError(t("account_err_pass_short")); return; }
+    if (newPassword !== confirmPassword) { setPassError(t("account_err_pass_match")); return; }
 
     setPassSaving(true);
     try {
-      // Re-autentifikuj s trenutnom lozinkom
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password: currentPassword,
       });
       if (signInError) {
-        setPassError("Trenutna lozinka nije ispravna.");
+        setPassError(t("account_err_pass_wrong"));
         setPassSaving(false);
         return;
       }
@@ -156,7 +155,7 @@ export default function AccountSettings() {
       setPassSaved(true);
       setTimeout(() => setPassSaved(false), 2500);
     } catch (e: any) {
-      setPassError(e.message || "Greška pri promjeni lozinke.");
+      setPassError(e.message || "Error changing password.");
     }
     setPassSaving(false);
   }
@@ -166,15 +165,15 @@ export default function AccountSettings() {
   return (
     <div style={{ maxWidth: 560 }}>
       <div className="page-header">
-        <h1 className="page-title">Podešavanja naloga</h1>
-        <p className="page-subtitle">Uredi ime, profilnu sliku i lozinku</p>
+        <h1 className="page-title">{t("account_title")}</h1>
+        <p className="page-subtitle">{t("account_subtitle")}</p>
       </div>
 
       {/* Avatar + Ime */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
-          Profilna slika i ime
+          {t("account_avatar_section")}
         </div>
 
         {/* Avatar */}
@@ -186,12 +185,12 @@ export default function AccountSettings() {
             }
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Profilna slika</div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>JPG ili PNG · max 2MB</div>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{t("account_avatar_label")}</div>
+            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>{t("account_avatar_hint")}</div>
             <div style={{ display: "flex", gap: 8 }}>
               <label style={{ cursor: "pointer" }}>
                 <span className="btn btn-ghost btn-sm" style={{ pointerEvents: "none" }}>
-                  {uploadingAvatar ? "Uploading..." : "📷 Promijeni sliku"}
+                  {uploadingAvatar ? t("account_avatar_uploading") : t("account_avatar_change")}
                 </span>
                 <input type="file" accept="image/*" style={{ display: "none" }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); }} />
@@ -207,7 +206,7 @@ export default function AccountSettings() {
                     setAvatarUrl("");
                     try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
                   }}>
-                  Ukloni
+                  {t("account_avatar_remove")}
                 </button>
               )}
             </div>
@@ -223,19 +222,19 @@ export default function AccountSettings() {
         {/* Ime */}
         <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
           <div className="field" style={{ marginBottom: 0 }}>
-            <label className="label">Ime</label>
+            <label className="label">{t("account_first_name")}</label>
             <input className="input" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Marko" />
           </div>
           <div className="field" style={{ marginBottom: 0 }}>
-            <label className="label">Prezime</label>
+            <label className="label">{t("account_last_name")}</label>
             <input className="input" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Jovanović" />
           </div>
         </div>
 
         <div className="field" style={{ marginBottom: 16 }}>
-          <label className="label">Email adresa</label>
+          <label className="label">{t("account_email")}</label>
           <input className="input" value={email} disabled style={{ opacity: 0.5, cursor: "not-allowed" }} />
-          <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Email se ne može mijenjati</div>
+          <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>{t("account_email_note")}</div>
         </div>
 
         {nameError && (
@@ -246,7 +245,7 @@ export default function AccountSettings() {
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button className="btn btn-primary" onClick={saveName} disabled={nameSaving}>
-            {nameSaving ? "Čuvanje..." : nameSaved ? "✓ Sačuvano!" : "💾 Sačuvaj"}
+            {nameSaving ? t("account_saving") : nameSaved ? t("account_saved") : t("account_save")}
           </button>
         </div>
       </div>
@@ -255,11 +254,11 @@ export default function AccountSettings() {
       <div className="card">
         <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
-          Promjena lozinke
+          {t("account_password_section")}
         </div>
 
         <div className="field">
-          <label className="label">Trenutna lozinka</label>
+          <label className="label">{t("account_current_pass")}</label>
           <div style={{ position: "relative" }}>
             <input
               className="input"
@@ -280,14 +279,14 @@ export default function AccountSettings() {
         </div>
 
         <div className="field">
-          <label className="label">Nova lozinka</label>
+          <label className="label">{t("account_new_pass")}</label>
           <div style={{ position: "relative" }}>
             <input
               className="input"
               type={showNew ? "text" : "password"}
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              placeholder="Min. 6 karaktera"
+              placeholder={t("account_new_pass_ph")}
               style={{ paddingRight: 44 }}
             />
             <button
@@ -301,14 +300,14 @@ export default function AccountSettings() {
         </div>
 
         <div className="field">
-          <label className="label">Potvrdi novu lozinku</label>
+          <label className="label">{t("account_confirm_pass")}</label>
           <div style={{ position: "relative" }}>
             <input
               className="input"
               type={showConfirm ? "text" : "password"}
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Ponovi lozinku"
+              placeholder={t("account_confirm_pass_ph")}
               style={{ paddingRight: 44 }}
             />
             <button
@@ -320,10 +319,10 @@ export default function AccountSettings() {
             </button>
           </div>
           {newPassword && confirmPassword && newPassword !== confirmPassword && (
-            <div style={{ fontSize: 12, color: "#F87171", marginTop: 4 }}>Lozinke se ne poklapaju</div>
+            <div style={{ fontSize: 12, color: "#F87171", marginTop: 4 }}>{t("account_pass_no_match")}</div>
           )}
           {newPassword && confirmPassword && newPassword === confirmPassword && (
-            <div style={{ fontSize: 12, color: "#1AA877", marginTop: 4 }}>✓ Lozinke se poklapaju</div>
+            <div style={{ fontSize: 12, color: "#1AA877", marginTop: 4 }}>{t("account_pass_match")}</div>
           )}
         </div>
 
@@ -335,7 +334,7 @@ export default function AccountSettings() {
 
         {passSaved && (
           <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12, background: "rgba(26,168,119,0.1)", border: "1px solid rgba(26,168,119,0.3)", color: "#1AA877", fontSize: 13 }}>
-            ✓ Lozinka je uspješno promijenjena!
+            {t("account_pass_changed")}
           </div>
         )}
 
@@ -345,7 +344,7 @@ export default function AccountSettings() {
             onClick={savePassword}
             disabled={passSaving || !currentPassword || !newPassword || !confirmPassword}
           >
-            {passSaving ? "Mijenjanje..." : "Promijeni lozinku"}
+            {passSaving ? t("account_changing_pass") : t("account_change_pass")}
           </button>
         </div>
       </div>
