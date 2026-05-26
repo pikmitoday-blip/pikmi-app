@@ -29,16 +29,21 @@ export default function BlogPage() {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    supabase
-      .from("blog_posts")
-      .select("id, title, slug, excerpt, cover_image, published_at, created_at")
-      .eq("published", true)
-      .order("published_at", { ascending: false })
-      .then(({ data }) => {
+    async function load() {
+      try {
+        const { data } = await supabase
+          .from("blog_posts")
+          .select("id, title, slug, excerpt, cover_image, published_at, created_at")
+          .eq("published", true)
+          .order("published_at", { ascending: false });
         setPosts(data ?? []);
+      } catch {
+        // ignore
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    }
+    load();
   }, []);
 
   return (
