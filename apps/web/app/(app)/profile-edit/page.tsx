@@ -237,7 +237,7 @@ function ProfileEditInner() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", background: "rgba(124,58,237,0.12)", padding: "3px 10px", borderRadius: 999 }}>KORAK 4 OD 4</div>
               </div>
               <h1 className="page-title">Popuni profil</h1>
-              <p className="page-subtitle">Ovo klijenti vide kada otvore tvoj pitch link — možeš ga uvijek promijeniti</p>
+              <p className="page-subtitle">Ovo klijenti vide kada otvore tvoj pitch link — možeš ga uvek promeniti</p>
             </>
           ) : (
             <>

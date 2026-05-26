@@ -43,12 +43,12 @@ const PRESETS: { label: string; from: string; to: string }[] = [
   { label: "Svi aktivni",    from: "",            to: "" },
   { label: "Danas",          from: today(),       to: today() },
   { label: "Zadnjih 7 dana", from: daysAgo(7),    to: today() },
-  { label: "Ovaj mjesec",    from: startOfMonth(),to: endOfMonth() },
-  { label: "Prošli mjesec",  from: startOfMonth(-1), to: endOfMonth(-1) },
+  { label: "Ovaj mesec",     from: startOfMonth(),to: endOfMonth() },
+  { label: "Prošli mesec",   from: startOfMonth(-1), to: endOfMonth(-1) },
   { label: "Ova godina",     from: startOfYear(), to: today() },
 ];
 
-// Generisanje posljednjih N mjeseci kao "YYYY-MM" stringova (za chart)
+// Generisanje poslednjih N meseci kao "YYYY-MM" stringova (za chart)
 function lastNMonths(n: number): { value: string; label: string }[] {
   const result = [];
   const now = new Date();
@@ -145,7 +145,7 @@ export default function AdminOverview() {
     setDropdownOpen(false);
   }
 
-  // Churn ovog mjeseca
+  // Churn ovog meseca
   const thisMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
   const churnThisMonth = allProfiles.filter(p =>
     p.plan_churned_at && p.plan_churned_at.slice(0, 7) === thisMonth
@@ -158,7 +158,7 @@ export default function AdminOverview() {
   const avgLinksColor = avgLinksPerUser >= 5 ? "#4ADE80" : avgLinksPerUser >= 3 ? "#FBBF24" : "#F87171";
   const avgLinksLabel = avgLinksPerUser >= 5 ? "Odlično 🚀" : avgLinksPerUser >= 3 ? "Solidno 👍" : "Activation problem ⚠️";
 
-  // Bar chart — novi Pro po mjesecu (zadnjih 6)
+  // Bar chart — novi Pro po mesecu (zadnjih 6)
   const chartMonths = lastNMonths(6).reverse();
   const chartData = chartMonths.map(m => ({
     label: m.label.split(" ")[0].slice(0, 3), // kratki naziv
@@ -219,7 +219,7 @@ export default function AdminOverview() {
         }}>
           {/* Header */}
           <div style={{ fontSize: 12, color: "#A78BFA", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 16 }}>
-            PROCIJENJENI PRIHOD / MJESEC
+            PROCENJENI PRIHOD / MESEC
           </div>
 
           {/* Filter dropdown */}
@@ -301,7 +301,7 @@ export default function AdminOverview() {
                     border: "none", color: "#fff", fontSize: 12, fontWeight: 700,
                     cursor: "pointer", fontFamily: "inherit",
                   }}>
-                    Primijeni period
+                    Primeni period
                   </button>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function AdminOverview() {
                 </div>
               </div>
               <div style={{ textAlign: "right", paddingLeft: 24, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Otkazano ovog mjeseca</div>
+                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Otkazano ovog meseca</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: churnThisMonth > 0 ? "#F87171" : "#4ADE80" }}>
                   {churnThisMonth}
                 </div>
@@ -353,7 +353,7 @@ export default function AdminOverview() {
 
           {/* Mini bar chart — novi Pro po mjesecu */}
           <div>
-            <div style={{ fontSize: 11, color: "#4B5563", fontWeight: 600, letterSpacing: "0.05em", marginBottom: 10 }}>NOVI PRO KORISNICI PO MJESECU</div>
+            <div style={{ fontSize: 11, color: "#4B5563", fontWeight: 600, letterSpacing: "0.05em", marginBottom: 10 }}>NOVI PRO KORISNICI PO MESECU</div>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 60 }}>
               {chartData.map((c, i) => (
                 <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>

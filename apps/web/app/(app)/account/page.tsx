@@ -295,7 +295,7 @@ export default function AccountSettings() {
             </div>
           </div>
 
-          {/* Promjena lozinke */}
+          {/* Promena lozinke */}
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
@@ -392,7 +392,7 @@ export default function AccountSettings() {
             </div>
           </div>
 
-          {/* Promjena kartice — samo za Pro */}
+          {/* Promena kartice — samo za Pro */}
           {plan === "pro" && (
             <div className="card">
               <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>

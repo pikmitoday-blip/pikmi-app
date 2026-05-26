@@ -138,7 +138,7 @@ export default function Analytics() {
       });
     }
 
-    // Sve — mjesečni prikaz (zadnjih 12 mjeseci)
+    // Sve — mesečni prikaz (zadnjih 12 meseci)
     return Array.from({ length: 12 }, (_, i) => {
       const d = new Date();
       d.setMonth(d.getMonth() - (11 - i));

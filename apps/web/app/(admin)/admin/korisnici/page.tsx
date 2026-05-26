@@ -53,7 +53,7 @@ export default function AdminKorisnici() {
         .eq("user_id", userId);
       if (error) throw error;
       setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, plan: newPlan } : u));
-      showToast(`Plan promijenjen u ${newPlan.toUpperCase()}`, true);
+      showToast(`Plan promenjen u ${newPlan.toUpperCase()}`, true);
     } catch {
       showToast("Greška pri promjeni plana", false);
     }

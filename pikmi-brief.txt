@@ -1,0 +1,616 @@
+================================================================
+PIKMI.TODAY — KOMPLETAN PRODUCT BRIEF
+Platforma za freelancere: personalizovani portfolio linkovi + klijent tracking
+================================================================
+
+KRATKI OPIS
+-----------
+Pikmi je SaaS platforma za freelancere koja im omogućava da kreiraju
+personalizovane portfolio linkove za svakog potencijalnog klijenta,
+prate ko i kada gleda njihov profil, i šalju cold outreach poruke.
+Umjesto jednog statičnog portfolia koji se šalje svima, svaki klijent
+dobija poseban link koji freelancer može pratiti u realnom vremenu.
+
+URL: pikmi.today
+Tech stack: Next.js (App Router), Supabase, Stripe, Resend
+
+
+================================================================
+PLANOVI I CIJENE
+================================================================
+
+FREE PLAN
+---------
+- Pristup platformi s osnovnim funkcionalnostima
+- Trial period (ograničen broj dana)
+- Jedan uređaj po trial-u (zaštita od abuse putem device_id)
+- Nakon isteka triala → prelaz na Pro ili gubitak pristupa
+
+PRO PLAN
+--------
+- Puna funkcionalnost platforme
+- Neograničen broj pitch linkova
+- Outreach kit (šabloni za poruke)
+- Email notifikacije o pregledima
+- Stripe naplata (pretplata)
+- Mogućnost otkazivanja u bilo kom trenutku
+- Nakon otkazivanja: pristup do kraja plaćenog perioda
+- Promjena načina plaćanja putem Stripe Checkout
+
+
+================================================================
+STRANICE I FUNKCIONALNOSTI
+================================================================
+
+1. LANDING PAGE (/)
+-------------------
+Javna marketing stranica:
+- Hero sekcija s glavnom porukom: "Portfolio koji zatvara klijente dok spavaš"
+- Features sekcija (kako funkcioniše)
+- Pricing sekcija
+- CTA dugmad: "Kreiraj profil besplatno" + "Login"
+- Navigacija: Features / Kako funkcioniše / Cene
+
+
+2. REGISTRACIJA (/register)
+----------------------------
+- Polja: Ime, Prezime, Email, Lozinka (min 6 karaktera)
+- Anti-abuse zaštita: device_id provjera (1 trial po uređaju)
+  → Ako isti uređaj pokuša drugi trial, prikazuje poruku s greškom
+- Email verifikacija (Supabase auth)
+- Greška ako je email već registrovan
+- Nakon uspješne registracije → onboarding
+
+
+3. LOGIN (/login)
+-----------------
+- Polja: Email, Lozinka
+- "Zapamti me" checkbox:
+  → Čekiran: čuva email + lozinku u localStorage (ključ: pikmi-remember)
+  → Na povratku: automatski popunjava polja i čekira checkbox
+  → Odčekiran: briše zapamćene podatke
+- Greška: "Pogrešan email ili lozinka"
+- "Zaboravili ste lozinku?" link
+- Poruka ako je korisnik prijavljen na previše uređaja (max 3)
+- Link na registraciju
+
+
+4. ZABORAVLJENA LOZINKA (/forgot-password)
+-------------------------------------------
+- Unos emaila za reset lozinke
+- Slanje reset linka putem Supabase emaila
+
+
+5. ONBOARDING (/onboarding)
+----------------------------
+3-koračni wizard za nove korisnike:
+- Korak 1 "Osnovno": Ime i prezime, Grad
+- Korak 2 "Profesija": odabir zanimanja iz liste
+  (Video editor, Copywriter, Grafički dizajner, Web dizajner,
+   SMM menadžer, Fotograf, Drugo / kombinacija)
+- Korak 3 "Tvoj URL": unos profil URL-a + provjera dostupnosti
+- Progress bar s koracima
+- Po završetku → redirect na dashboard
+
+
+================================================================
+DASHBOARD (/dashboard)
+================================================================
+Glavna stranica aplikacije nakon prijave.
+
+STAT KARTICE (4 kartice):
+- Ukupno linkova (ukupan broj kreiranih pitch linkova)
+- Otvaranja (ukupan broj pregleda svih linkova)
+- Hot lead-ovi (linkovi s 2+ pregleda — označeni vatrom 🔥)
+- Aktivnih linkova (linkovi koji su trenutno uključeni)
+
+TABELA PITCH LINKOVA:
+- Kolone: Klijent (avatar + ime), Link (slug), Pregledi, Kreirano, Status
+- Hot lead-ovi: istaknuti pink bojom s 🔥 ikonom
+- Status badge: Aktivan (zeleni) / Neaktivan (sivi)
+- Klik na link → otvara javni profil u novom tabu
+- Prikaz "X dana/sati/minuta ago" za datum kreiranja
+
+EMPTY STATE:
+- Prikazuje se kad nema linkova
+- CTA dugme za kreiranje prvog linka
+
+QUICK ACTIONS (3 kartice):
+- Kreiraj pitch link → /pitch-link
+- Uredi profil → /profile-edit
+- Outreach kit → /outreach
+
+TEMA (dark/light toggle):
+- Vidljivo samo na mobilnom uređaju
+- Čuva se u localStorage (pikmi-theme)
+
+
+================================================================
+PITCH LINKOVI (/pitch-link)
+================================================================
+Kreiranje i upravljanje personalizovanim linkovima.
+
+FORMA ZA KREIRANJE:
+- Ime klijenta (naziv linka, obavezno)
+- Slug / URL (pikmi.app/[slug], automatski lowercase, samo a-z 0-9 -)
+- Personalizovana poruka (opciono, prikazuje se klijentu)
+- Filter projekata (opciono, opis koje projekte prikazati)
+- Dugme "Kreiraj pitch link" (onemogućeno dok polja nisu popunjena)
+- Prikaz greške ako slug već postoji
+
+LISTA KREIRANIH LINKOVA:
+- Svaki link prikazuje: avatar (inicijal), naziv, pun URL, broj pregleda, status
+- AKCIJE po linku:
+  → "Kopiraj link" — kopira pun URL u clipboard (pokazuje "Kopirano!" 2 sekunde)
+  → "Deaktiviraj" / "Aktiviraj" — uključuje/isključuje link
+  → 🗑 Brisanje linka (bez potvrde)
+- Status badge: Aktivan (zeleni) / Neaktivan (sivi)
+
+PONAŠANJE LINKA:
+- Aktivni link → prikazuje javni profil posjetiocu
+- Neaktivni link → posjetilac ne može pristupiti profilu
+
+
+================================================================
+ANALITIKA (/analytics)
+================================================================
+Statistike pregleda za sve pitch linkove.
+
+FILTERI:
+- Filter po linku: "Svi linkovi" + svaki link posebno (dugmad)
+- Filter po vremenskom periodu:
+  → 7 dana (dnevni prikaz)
+  → 30 dana (dnevni prikaz)
+  → 90 dana (sedmični prikaz — 13 sedmica)
+  → Sve (mjesečni prikaz — 12 mjeseci)
+
+STAT KARTICE:
+- Ukupno pregleda (filtrirani period)
+- Aktivni dani (broj dana s barem jednim pregledom)
+- Mobile pregledi (📱)
+- Desktop pregledi (🖥)
+
+GRAFIKON (bar chart):
+- Vizualni prikaz pregleda po periodu
+- Ljubičaste bar-ove s gradientom
+- Vrijednosti prikazane iznad bara
+- Dinamički naslovi prema odabranom periodu
+
+TABELA NEDAVNIH PREGLEDA:
+- Maksimalno 100 redova
+- Kolone: Pitch link (klikabilni link ↗), Uređaj, Izvor (referrer), Vreme
+- "Direktan posjet" ako nema referrera
+- Hostname iz referrer URL-a (npr. linkedin.com)
+- Relativno vrijeme (Xm, Xh, Xd) + "ago"
+- Empty state: "Nema pregleda za odabrani filter"
+
+
+================================================================
+MOJ PROFIL (/moj-profil)
+================================================================
+Pregled i inline uređivanje javnog profila.
+
+LAYOUT:
+- Sidebar (300px) + Glavni sadržaj (fluid)
+- Sticky sidebar
+- Bijela pozadina (izolovan od tamne teme aplike)
+- Svaka sekcija ima ✏️ Uredi dugme (inline edit)
+
+SIDEBAR SEKCIJA (edit: Bočna traka):
+- Profilna slika (krug, sa upload opcijom)
+- Ime i Prezime
+- Grad (s 📍 ikonom)
+- Status dostupnosti (zelena tačka + tekst, npr. "OTVOREN ZA RETAINER")
+- "TOP RATED" bedž (fiksan)
+- Custom bedž (npr. "TOP 5%")
+- CTA dugme 1 (plavo, poziv na akciju)
+- CTA dugme 2 (outline, npr. download PDF)
+- Retainer cijena (velika, bold)
+- 2 metrike (npr. "€840k | UPRAVLJANO AD SPEND" i "4.1× | PROS. ROAS")
+- Detalji: Odgovor / Kapacitet / Min budget / Jezici
+- Link "Profil na pikmi.today"
+
+EDIT FORMA SIDEBAR:
+- Upload profilne slike (Supabase Storage)
+- Ime, Prezime, Grad
+- Status dostupnosti, Bedž
+- Metrika 1 (vrijednost + naziv), Metrika 2 (vrijednost + naziv)
+- Cijena retainera, Oznaka cijene
+- Kapacitet, Brzina odgovora, Min. budžet, Jezici
+- CTA dugme 1, CTA dugme 2
+
+SEKCIJA 01 — Šta radim (edit: service):
+- Naslov usluge (multiline, pre-line)
+- Opis usluge
+
+SEKCIJA 02 — Rezultati / Portfolio (edit: portfolio):
+- 4 slike projekata (grid 4 kolone u pregledu, 2 u editu)
+- Upload slika u Supabase Storage
+- Prazni slotovi prikazuju placeholder
+
+SEKCIJA 03 — Paketi i cijene (edit: pricing):
+- 3 paketa/cjenovnika
+- Svaki: Naziv, Cijena, Opis
+- Opcija "Zelena boja cijene" (checkbox) za premium paket
+
+SEKCIJA 04 — Stack / Vještine (edit: stack):
+- Comma-separated lista alata
+- Prikazuje kao tag chips (plavi)
+- Edit: textarea + preview tagova
+
+SEKCIJA 06 — Recenzija klijenta (edit: testimonial):
+- 5 zvjezdica (zelene)
+- Citat (italic, navodnici)
+- Avatar inicijal + Ime klijenta + Titula/Kompanija
+
+SEKCIJA 07 — CTA / Kontakt (edit: cta):
+- Gradijentna pozadina (plavo-tamno)
+- Naslov + istaknuta riječ (plava, italic)
+- Dva dugmeta (bijelo + outline)
+- Edit: Naslov, Istaknuta riječ, Tekst dugmeta 1, Tekst dugmeta 2
+
+SAVE SISTEM:
+- Svaka sekcija ima vlastiti "✓ Sačuvaj" i "Otkaži"
+- Čuvanje ide u Supabase (profiles.profile_data)
+- SessionStorage cache za brže učitavanje
+- "✓ Sačuvano!" poruka 2.5 sekunde
+
+
+================================================================
+UREDI PROFIL (/profile-edit)
+================================================================
+Alternativni prikaz za editovanje profila — sve sekcije na jednom
+scrollu (vs inline edita u moj-profil).
+
+HEADER:
+- "👁 Pogledaj profil" link (otvara javni profil)
+- Dugme "💾 Sačuvaj" / "Čuvanje..." / "✓ Sačuvano!"
+- Dugme "💾 Sačuvaj promjene" pri dnu stranice
+
+SEKCIJA HERO:
+- Avatar upload (JPG, PNG · max 2MB) s preview-om
+- "📷 Promeni sliku" label + "Ukloni" dugme
+- Grid 2×2: Ime, Prezime, Inicijali, Grad
+- Grid 2×2: Status badge, Desni badge
+- Grid 4: Metrika 1 (vrijednost), Metrika 1 (labela),
+          Metrika 2 (vrijednost), Metrika 2 (labela)
+
+SEKCIJA 01 — Šta radim:
+- Naslov usluge (textarea, Enter = novi red)
+- Cijena + Labela cijene (grid 2)
+- Opis usluge (textarea)
+
+SEKCIJA 02 — Rezultati (upload projekata):
+- 4 upload zone (aspekt ratio 4:3)
+- Drag & drop ili click to upload
+- Hover overlay "Zamijeni fajl"
+- "× Ukloni sliku" dugme (crveno)
+- Podržava: PNG, JPG, PDF, MP4, MOV
+
+SEKCIJA 03 — Kako radim (paketi / cijene):
+- 3 paketa, svaki: Naziv, Cijena, Opis
+- Paket 3 ima zelenu oznaku za cijenu
+
+SEKCIJA 04 — Stack / Alati:
+- Alati odvojeni zarezom
+- Live preview tagova ispod polja
+
+SEKCIJA 05 — Detalji:
+- Grid 2×2: Kapacitet, Vrijeme odgovora, Minimalni budget, Jezici
+
+SEKCIJA 06 — Reč klijenta:
+- Citat (textarea)
+- Ime i prezime + Pozicija, kompanija (grid 2)
+
+SEKCIJA 07 — Kontakt / CTA:
+- Tekst naslova + Istaknuta riječ (grid 2)
+- Dugme 1 (plavo) + Dugme 2 (outline) (grid 2)
+- PDF link (Google Drive, Dropbox URL)
+
+ČUVANJE:
+- Ide u: Supabase (profiles tabela), localStorage, sessionStorage
+- Automatski osvježava sidebar i moj-profil cache
+
+
+================================================================
+OUTREACH KIT (/outreach)
+================================================================
+Šabloni poruka za akviziciju klijenata.
+
+DOSTUPNOST:
+- Zaključano za Free plan (prikazuje se overlay s pozivom na upgrade)
+- Dostupno samo Pro korisnicima
+
+FUNKCIONALNOSTI:
+
+Odabir profesije:
+- Video editor, Copywriter, Grafički dizajner, Web dizajner,
+  SMM menadžer, Fotograf (6 profesija)
+
+Odabir šablona (3 taba):
+- Cold DM (kratka poruka za LinkedIn / Instagram DM)
+- Cold Email (duža poruka za email)
+- Follow-up (podsjetnik klijentu)
+
+Odabir jezika šablona:
+- Srpski (SR)
+- Engleski (EN)
+
+Personalizacija:
+- Moje ime / niša (popunjava {moja niša} u šablonu)
+- Ime klijenta (popunjava {ime klijenta})
+- Kompanija (popunjava {kompanija})
+- Tvoj pitch link (popunjava {personalizovan link})
+
+Šabloni se automatski popunjavaju s unesenim podacima.
+Dugme "Kopiraj" kopira finalizovanu poruku u clipboard.
+
+SADRŽAJ ŠABLONA PO PROFESIJAMA:
+
+Web dizajner:
+  Cold DM SR/EN: fokus na moderan sajt koji konvertuje posjetioce
+  Cold Email SR/EN: konkretne ideje za poboljšanje sajta
+  Follow-up SR/EN: provjera je li klijent vidio materijale
+
+Video editor:
+  Cold DM SR/EN: fokus na veći reach kroz bolju montažu i hook
+  Cold Email SR/EN: engagement i follower growth kroz video
+  Follow-up SR/EN: podsjetnik s konkretnim idejama za brand
+
+Copywriter:
+  Cold DM SR/EN: poboljšanje sajt tekstova za bolju konverziju
+  Cold Email SR/EN: copy kao 24/7 prodavač
+  Follow-up SR/EN: konkretne ideje za poboljšanje konverzije
+
+Grafički dizajner:
+  Cold DM SR/EN: vizuelni identitet i percepcija klijenata
+  Cold Email SR/EN: branding za male i srednje firme
+  Follow-up SR/EN: custom kreacija za brend
+
+SMM menadžer:
+  Cold DM SR/EN: rast na social media
+  Cold Email SR/EN: social media strategija i engagement
+  Follow-up SR/EN: konkretne ideje za sadržaj
+
+Fotograf:
+  Cold DM SR/EN: profesionalne fotografije za biznis
+  Cold Email SR/EN: vizuelni storytelling
+  Follow-up SR/EN: podsjetnik s portfoliom
+
+
+================================================================
+NAPLATA (/billing)
+================================================================
+
+PRIKAZ ZA FREE PLAN:
+- "Free plan" status
+- Informacija o trial periodu (ako je aktivan):
+  → "Trial ističe za X dana"
+  → "Trial istekao — nadogradi na Pro" (ako je istekao)
+- Dugme "Pretplati se na Pro →" → Stripe Checkout
+- Lista Pro benefita
+
+PRIKAZ ZA PRO PLAN:
+- "Pro plan" status + "✓ Aktivna" badge
+- Detalji pretplate:
+  → Sljedeća naplata (datum)
+  → Iznos pretplate (EUR)
+  → Kartica: brand + last4 + datum isteka
+  → Posljednja faktura: iznos + datum + "Preuzmi PDF ↗" link
+- Dugme "Promeni način plaćanja" → Stripe Checkout (setup mode)
+  - Pamti loading state, reset na bfcache restore
+- Dugme "Otkaži pretplatu" → modal za potvrdu
+
+CANCEL MODAL:
+- Poruka: zadržava se pristup do kraja perioda
+- Dugmad: "Da, otkaži" + "Zadrži Pro"
+- Nakon otkazivanja: prikazuje datum isteka s ⚠ ikonom
+
+STRIPE INTEGRACIJA:
+- Checkout: novi Stripe Checkout za pretplatu
+- Setup mode: promjena kartice bez nove pretplate
+- Webhook obrađuje: setup_intent.succeeded → auto-update default payment method
+- Stripe API verzija: 2026-04-22.dahlia
+- Kompatibilnost s novim API-jem (items-level period fields)
+
+PORUKE:
+- Success: "🎉 Uspešno! Tvoj Pro plan je aktiviran." (?success=1)
+- Cancelled: "Plaćanje je otkazano..." (?cancelled=1)
+- Payment updated: "✓ Način plaćanja je uspješno ažuriran." (?payment_updated=1)
+
+
+================================================================
+JAVNI PROFIL (/[profileUrl])
+================================================================
+Stranica koju vidi potencijalni klijent kad otvori pitch link.
+
+HEADER (sticky nav):
+- Pikmi logo + link na homepage
+- "Kreiraj tvoj profil" CTA dugme
+
+LAYOUT:
+- Identičan sa moj-profil izgledom (sidebar + main content)
+- Potpuno statičan prikaz (bez edit opcija)
+- Bijela pozadina, čist dizajn
+
+TRACKING:
+- Automatski se detektuje slug linka
+- Server-side provjera da li je link aktivan
+- Anti-self-view zaštita:
+  → Ako je vlasnik ulogovan i gleda vlastiti link → NE broji se pregled
+  → Provjerava se putem Supabase access tokena
+- Bilježi: device (mobile/desktop), referrer, timestamp
+- Povećava views counter u pitch_links tabeli
+- Kreira zapis u link_views tabeli
+
+EMAIL NOTIFIKACIJA:
+- Šalje se odmah nakon brojanja pregleda (ne šalje za vlasnike)
+- Putem Resend API-ja
+- Email sadržaj: naziv linka, datum/vrijeme, uređaj, izvor, ukupno pregleda
+- Dva CTA dugmeta: "Vidi analitiku →" i "Pogledaj pitch link ↗"
+- Sender: konfigurabilan putem RESEND_FROM env varijable
+
+KONTAKT MODAL (Zakaži poziv):
+- Otvara se klikom na CTA dugme freelancera
+- Polje za unos pošiljaočevog emaila
+- Automatski detektuje provajdera:
+  → Gmail: 3 opcije za različite naloge (u/{0,1,2}/)
+  → Outlook / Hotmail / Live: direktni compose link
+  → Yahoo Mail: direktni compose link
+  → Ostali: mailto: fallback
+- Subject: "Strategy poziv — [ime freelancera]"
+- Recipient: automatski popunjen email freelancera
+
+FALLBACK:
+- Ako slug ne odgovara pitch linku → provjeri profile_url
+- Ako ništa ne pronađe → "Profil nije pronađen" stranica
+
+
+================================================================
+VIŠEJEZIČNOST (i18n)
+================================================================
+- 3 jezika: Srpski (SR), Hrvatski (HR), Engleski (EN)
+- Selector u sidebar-u (ispod dark/light toggle)
+- Prikaz: zastava + naziv + strelica ▾
+- Dropdown otvara se prema gore (iznad dugmeta)
+- Promjena je trenutna (bez refresha)
+- Jezik se pamti u localStorage (pikmi-lang)
+- Implementacija: useSyncExternalStore (pouzdano između layout i page)
+- Preveden sadržaj: sva navigacija, dashboard, pitch linkovi,
+  analitika, outreach, naplata, uredi profil, moj profil
+- Fallback: srpski za sve ključeve koji nedostaju u HR/EN
+
+
+================================================================
+ADMIN PANEL (/admin)
+================================================================
+Dostupno samo admin korisnicima.
+
+OVERVIEW STRANICA (/admin):
+STAT KARTICE:
+- Ukupno korisnika
+- Pro korisnici
+- Ukupno pitch linkova
+- Ukupno pregleda
+- Novi korisnici danas
+- Novi korisnici ove sedmice
+
+GRAFIKON PRIHODA:
+- Filter po mjesecu (zadnjih 12 mjeseci + "Sve")
+- Prikaz Pro korisnika po periodu
+
+TABELA NEDAVNIH KORISNIKA:
+- Ime, Email, Plan, Datum registracije
+
+KORISNICI STRANICA (/admin/korisnici):
+- Lista svih korisnika
+- Kolone: Ime, Email, Plan, URL, Linkovi, Registrovan
+- Pretraga (po imenu / emailu)
+- Filter po planu (Sve / Free / Pro)
+- AKCIJE po korisniku:
+  → "Set Pro" — ručno postavljanje Pro plana
+  → "Set Free" — vraćanje na Free plan
+- Toast notifikacije za akcije
+- Broj kreiranih pitch linkova po korisniku
+- Link na Stripe (ako postoji subscription_id)
+
+LANDING STRANICA (/admin/landing):
+- Upravljanje landing page sadržajem (tekst, cijene, features)
+
+PODEŠAVANJA (/admin/podesavanja):
+- Podešavanja platforme
+
+
+================================================================
+AUTENTIFIKACIJA I SESIJA
+================================================================
+- Supabase Auth (email + password)
+- Sesija se čuva automatski (Supabase localStorage)
+- "Zapamti me": email + lozinka u pikmi-remember (localStorage)
+- Max 3 aktivnih sesija po korisniku (session limit zaštita)
+- Forgot password: email reset link putem Supabase
+- Email verifikacija pri registraciji
+
+SESIJA ZAŠTITA:
+- Ako je ulogovan korisnik na previše uređaja → logout + poruka
+- Device trial tracking: device_trials tabela + lokalni deviceId
+
+
+================================================================
+TEHNIČKE FUNKCIONALNOSTI
+================================================================
+
+EMAIL NOTIFIKACIJE (Resend):
+- Trigger: svaki pregled pitch linka (osim vlasnika)
+- API: /api/notify
+- Konfiguracija: RESEND_API_KEY + RESEND_FROM (env varijable)
+- Logging: console.error za debug u Vercel logs
+
+TRACKING PREGLEDA:
+- API: /api/track-view
+- Server-side: provjera vlasništva, upis u link_views, update views counter
+- Bilježi: device, referrer, timestamp, pitch_link_id
+
+STRIPE API-JI:
+- /api/stripe/checkout — novi checkout za Pro pretplatu
+- /api/stripe/subscription — dohvat detalja pretplate
+- /api/stripe/cancel — otkazivanje pretplate
+- /api/stripe/update-payment — Checkout setup mode za novu karticu
+- /api/stripe/webhook — obrada Stripe event-ova
+
+DARK/LIGHT TEMA:
+- localStorage ključ: pikmi-theme
+- data-theme atribut na <html> elementu
+- Toggle u sidebar-u (svi uređaji) + poseban toggle na mobilnom na dashboardu
+
+SUPABASE TABELE (koriste se):
+- profiles: korisnički podaci, plan, profile_data (JSON), profile_url
+- pitch_links: linkovi, slug, views, is_active, user_id
+- link_views: pregledi, device, referrer, viewed_at
+- device_trials: anti-abuse za trial
+
+
+================================================================
+MOBILNI UX
+================================================================
+- Responsive dizajn
+- Bottom navigation bar na mobilnom:
+  Home / Profil / Linkovi / Analitika / Outreach
+- Sidebar se skriva na mobilnom (bottom nav preuzima navigaciju)
+- "hide-mobile" klasa za skrivanje kolona u tabelama
+- Profil pregled: sidebar stack layout na mobilnom
+- Dark/light toggle posebno vidljiv na mobilnom dashboardu
+
+
+================================================================
+SECURITY MJERE
+================================================================
+- Anti-self-view: vlasnik ne broji vlastite preglede
+- Device trial limit: 1 trial po uređaju (device_id u localStorage + bazi)
+- Session limit: max 3 uređaja po korisniku
+- Supabase admin client (service role) koristi se samo server-side
+- Stripe webhook validacija
+- RLS (Row Level Security) u Supabase
+
+
+================================================================
+NAPOMENE ZA RAZVOJ
+================================================================
+- Deployment: Vercel (auto-deploy na git push)
+- Monorepo struktura: apps/web
+- Sve env varijable za produkciju: Vercel dashboard
+- Kritične env varijable:
+  → NEXT_PUBLIC_SUPABASE_URL
+  → NEXT_PUBLIC_SUPABASE_ANON_KEY
+  → SUPABASE_SERVICE_ROLE_KEY
+  → RESEND_API_KEY
+  → RESEND_FROM (preporučeno: pikmi <noreply@pikmi.today>)
+  → STRIPE_SECRET_KEY
+  → STRIPE_WEBHOOK_SECRET
+  → NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+
+================================================================
+Verzija briefa: Maj 2026
+Platforma: pikmi.today
+================================================================

@@ -56,7 +56,7 @@ export default function NewBlogPost() {
       published_at: publishNow ? new Date().toISOString() : null,
     });
     if (err) {
-      setError(err.code === "23505" ? "Slug već postoji. Promijeni URL." : err.message);
+      setError(err.code === "23505" ? "Slug već postoji. Promeni URL." : err.message);
       setSaving(false);
       return;
     }

@@ -38,7 +38,7 @@ export default function AdminPodesavanja() {
               <li>Idi na Vercel → pikmi projekt → Settings → Environment Variables</li>
               <li>Pronađi ili dodaj <code style={{ color: "#A78BFA" }}>NEXT_PUBLIC_ADMIN_EMAIL</code></li>
               <li>Upiši email (ili više emailova odvojenih zarezom)</li>
-              <li>Redeploy projekt da promjena stupi na snagu</li>
+              <li>Redeploy projekt da promena stupi na snagu</li>
             </ol>
           </div>
         </div>

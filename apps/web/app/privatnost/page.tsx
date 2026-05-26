@@ -124,18 +124,18 @@ export default function PrivatnostPage() {
             </ul>
           </Section>
 
-          <Section title="9. Djeca">
+          <Section title="9. Deca">
             <p>
-              pikmi nije namijenjen osobama mladjim od 16 godina. Svjesno ne prikupljamo podatke
-              maloljetnih osoba. Ako smatras da smo greskom prikupili podatke djeteta,
-              kontaktiraj nas i odmah cemo obrisati takve podatke.
+              pikmi nije namenjen osobama mlađim od 16 godina. Svesno ne prikupljamo podatke
+              maloletnih osoba. Ako smatraš da smo greškom prikupili podatke deteta,
+              kontaktiraj nas i odmah ćemo obrisati takve podatke.
             </p>
           </Section>
 
-          <Section title="10. Izmjene politike">
+          <Section title="10. Izmene politike">
             <p>
-              Mozemo povremeno azurirati ovu politiku. O znacajnim izmjenama obavijestit cemo te
-              emailom ili obavjestenjem na platformi. Preporucujemo povremenu provjeru ove stranice.
+              Možemo povremeno ažurirati ovu politiku. O značajnim izmenama obavestićemo te
+              emailom ili obaveštenjem na platformi. Preporučujemo povremenu proveru ove stranice.
             </p>
           </Section>
 

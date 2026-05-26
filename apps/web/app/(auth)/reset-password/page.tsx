@@ -82,8 +82,8 @@ export default function ResetPasswordPage() {
       <main className="auth-page">
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Lozinka promijenjena!</h2>
-          <p style={{ fontSize: 14, color: "var(--text2)" }}>Preusmjeravamo te na dashboard...</p>
+          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Lozinka promenjena!</h2>
+          <p style={{ fontSize: 14, color: "var(--text2)" }}>Preusmeravamo te na dashboard...</p>
         </div>
       </main>
     );

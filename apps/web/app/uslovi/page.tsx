@@ -54,7 +54,7 @@ export default function UsloviPage() {
               <li>Sve aktivnosti koje se odvijaju putem tvog naloga</li>
               <li>Tačnost podataka koje unosiš u profil</li>
             </ul>
-            <p>Zadržavamo pravo da ukinemo nalog koji krši ove uslove ili koji se duže od 12 mjeseci ne koristi na besplatnom planu.</p>
+            <p>Zadržavamo pravo da ukinemo nalog koji krši ove uslove ili koji se duže od 12 meseci ne koristi na besplatnom planu.</p>
           </Section>
 
           <Section title="4. Planovi i plaćanje">
@@ -93,8 +93,8 @@ export default function UsloviPage() {
             <p>U maksimalnoj mjeri dozvoljenoj zakonom, pikmi nije odgovoran za indirektne, slučajne ili posljedične štete nastale korišćenjem ili nemogućnošću korišćenja platforme.</p>
           </Section>
 
-          <Section title="9. Izmjene uslova">
-            <p>Zadržavamo pravo da izmijenimo ove uslove u bilo kom trenutku. O značajnim izmjenama obavijestićemo te putem email adrese vezane za tvoj nalog ili obavještenjem na platformi. Nastavak korišćenja platforme nakon objave izmjena smatra se prihvatanjem novih uslova.</p>
+          <Section title="9. Izmene uslova">
+            <p>Zadržavamo pravo da izmenimo ove uslove u bilo kom trenutku. O značajnim izmenama obavestićemo te putem email adrese vezane za tvoj nalog ili obaveštenjem na platformi. Nastavak korišćenja platforme nakon objave izmena smatra se prihvatanjem novih uslova.</p>
           </Section>
 
           <Section title="10. Mjerodavno pravo i kontakt">
