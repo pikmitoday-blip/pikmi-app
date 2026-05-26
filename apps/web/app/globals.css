@@ -118,8 +118,11 @@ a { color: inherit; text-decoration: none; }
   font-size: 14px; font-weight: 600; cursor: pointer; border: none;
   transition: all 0.15s; white-space: nowrap;
 }
-.btn-primary { background: var(--grad); color: #fff; }
-.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-primary { background: var(--grad); color: #fff; border: 1px solid transparent; }
+.btn-primary:hover { opacity: 0.88; }
+@media (min-width: 769px) {
+  .btn-primary:hover { transform: translateY(-1px); }
+}
 .btn-ghost {
   background: transparent; color: var(--text);
   border: 1px solid var(--border);
