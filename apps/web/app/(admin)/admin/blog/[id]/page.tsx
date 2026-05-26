@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
@@ -8,6 +8,17 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+async function uploadImage(file: File, folder: "cover" | "content"): Promise<string | null> {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const filename = `blog/${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage
+    .from("pikmi-uploads")
+    .upload(filename, file, { contentType: file.type });
+  if (error) { console.error("Upload error:", error); return null; }
+  const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(filename);
+  return publicUrl;
+}
 
 function generateSlug(title: string) {
   return title
@@ -31,10 +42,13 @@ export default function EditBlogPost() {
   });
   const [published, setPublished] = useState(false);
   const [loading, setLoading] = useState(true);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"content" | "seo">("content");
   const [slugUserEdited, setSlugUserEdited] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingInline, setUploadingInline] = useState(false);
 
   useEffect(() => {
     if (id) load();
@@ -63,6 +77,32 @@ export default function EditBlogPost() {
     setPublished(data.published ?? false);
     setSlugUserEdited(true); // don't override existing slug
     setLoading(false);
+  }
+
+  async function handleCoverUpload(file: File) {
+    setUploadingCover(true);
+    const url = await uploadImage(file, "cover");
+    if (url) set("cover_image", url);
+    setUploadingCover(false);
+  }
+
+  async function handleInlineUpload(file: File) {
+    setUploadingInline(true);
+    const url = await uploadImage(file, "content");
+    if (url) {
+      const ta = textareaRef.current;
+      if (ta) {
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const markdown = `\n![](${url})\n`;
+        const newContent = form.content.slice(0, start) + markdown + form.content.slice(end);
+        set("content", newContent);
+        setTimeout(() => { ta.selectionStart = ta.selectionEnd = start + markdown.length; ta.focus(); }, 50);
+      } else {
+        set("content", form.content + `\n![](${url})\n`);
+      }
+    }
+    setUploadingInline(false);
   }
 
   function set(k: string, v: string) {
@@ -229,9 +269,19 @@ export default function EditBlogPost() {
           <div style={{ background: "#111116", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", letterSpacing: "0.06em", textTransform: "uppercase" }}>Tekst posta</label>
-              <span style={{ fontSize: 11, color: "#374151" }}>Markdown podržan</span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 11, color: "#374151" }}>Markdown podržan</span>
+                <label style={{ cursor: "pointer" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)", color: "#A78BFA", cursor: "pointer" }}>
+                    {uploadingInline ? "⏳" : "📷"} {uploadingInline ? "Uploading..." : "Umetni sliku"}
+                  </span>
+                  <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingInline}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleInlineUpload(f); }} />
+                </label>
+              </div>
             </div>
             <textarea
+              ref={textareaRef}
               value={form.content}
               onChange={e => set("content", e.target.value)}
               placeholder={"# Uvod\n\nUpiši sadržaj posta ovdje...\n\n## Podnaslov\n\nNastavak teksta..."}
@@ -285,17 +335,19 @@ export default function EditBlogPost() {
           </div>
 
           <div style={{ background: "#111116", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 20 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", letterSpacing: "0.06em", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Cover slika (URL)</label>
-            <input
-              value={form.cover_image}
-              onChange={e => set("cover_image", e.target.value)}
-              placeholder="https://..."
-              style={{
-                width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 8, padding: "10px 12px", color: "#F9FAFB", fontSize: 14,
-                fontFamily: "inherit", outline: "none", boxSizing: "border-box",
-              }}
-            />
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", letterSpacing: "0.06em", textTransform: "uppercase", display: "block", marginBottom: 12 }}>Cover slika</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+              <input value={form.cover_image} onChange={e => set("cover_image", e.target.value)}
+                placeholder="https://... ili uploaduj ispod"
+                style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "9px 12px", color: "#F9FAFB", fontSize: 13, fontFamily: "inherit", outline: "none" }} />
+              <label style={{ cursor: "pointer", flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", color: "#A78BFA", cursor: "pointer", whiteSpace: "nowrap" }}>
+                  {uploadingCover ? "⏳ Uploading..." : "📷 Upload"}
+                </span>
+                <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingCover}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }} />
+              </label>
+            </div>
             {form.cover_image && (
               <div style={{ marginTop: 12, borderRadius: 8, overflow: "hidden", maxHeight: 180 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
