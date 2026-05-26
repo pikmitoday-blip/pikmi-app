@@ -368,14 +368,6 @@ function BillingContent() {
               ) : (
                 <div className="btn btn-ghost" style={{ justifyContent: "center", cursor: "default" }}>✓ {t("billing_current")}</div>
               )}
-              <button
-                className="btn btn-sm"
-                style={{ justifyContent: "center", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text2)" }}
-                onClick={handlePortal}
-                disabled={portalLoading}
-              >
-                {portalLoading ? t("billing_loading") : `💳 ${t("billing_manage")}`}
-              </button>
               {!cancelAt && (
                 <button
                   className="btn btn-sm"
