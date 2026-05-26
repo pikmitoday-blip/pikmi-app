@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 
@@ -21,7 +21,34 @@ interface Stats {
   newUsersWeek: number;
 }
 
-// Generisanje posljednjih N mjeseci kao "YYYY-MM" stringova
+interface DateRange {
+  from: string; // YYYY-MM-DD or ""
+  to: string;   // YYYY-MM-DD or ""
+  label: string;
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+function daysAgo(n: number) { return new Date(Date.now() - n * 86400000).toISOString().slice(0, 10); }
+function startOfMonth(offset = 0) {
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + offset);
+  return d.toISOString().slice(0, 10);
+}
+function endOfMonth(offset = 0) {
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + offset + 1); d.setDate(0);
+  return d.toISOString().slice(0, 10);
+}
+function startOfYear() { return `${new Date().getFullYear()}-01-01`; }
+
+const PRESETS: { label: string; from: string; to: string }[] = [
+  { label: "Svi aktivni",    from: "",            to: "" },
+  { label: "Danas",          from: today(),       to: today() },
+  { label: "Zadnjih 7 dana", from: daysAgo(7),    to: today() },
+  { label: "Ovaj mjesec",    from: startOfMonth(),to: endOfMonth() },
+  { label: "Prošli mjesec",  from: startOfMonth(-1), to: endOfMonth(-1) },
+  { label: "Ova godina",     from: startOfYear(), to: today() },
+];
+
+// Generisanje posljednjih N mjeseci kao "YYYY-MM" stringova (za chart)
 function lastNMonths(n: number): { value: string; label: string }[] {
   const result = [];
   const now = new Date();
@@ -39,9 +66,22 @@ export default function AdminOverview() {
   const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
   const [recentUsers, setRecentUsers] = useState<ProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [revenueMonth, setRevenueMonth] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "", label: "Svi aktivni" });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const months = lastNMonths(12);
+  // Zatvori dropdown klikom van njega
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -76,12 +116,34 @@ export default function AdminOverview() {
     load();
   }, []);
 
-  // Prihod za odabrani mjesec
-  const filteredProUsers = revenueMonth === "all"
-    ? allProfiles.filter(p => p.plan === "pro")
-    : allProfiles.filter(p => p.plan === "pro" && p.created_at?.slice(0, 7) === revenueMonth);
+  // Prihod za odabrani period
+  const filteredProUsers = allProfiles.filter(p => {
+    if (p.plan !== "pro") return false;
+    if (!dateRange.from && !dateRange.to) return true;
+    const d = p.created_at?.slice(0, 10) ?? "";
+    if (dateRange.from && d < dateRange.from) return false;
+    if (dateRange.to && d > dateRange.to) return false;
+    return true;
+  });
 
   const revenueAmount = filteredProUsers.length * 990;
+
+  function applyPreset(preset: typeof PRESETS[0]) {
+    setDateRange({ from: preset.from, to: preset.to, label: preset.label });
+    setCustomFrom(preset.from);
+    setCustomTo(preset.to);
+    setDropdownOpen(false);
+  }
+
+  function applyCustom() {
+    if (!customFrom && !customTo) {
+      setDateRange({ from: "", to: "", label: "Svi aktivni" });
+    } else {
+      const fmt = (d: string) => d ? new Date(d).toLocaleDateString("sr-RS", { day: "numeric", month: "short", year: "numeric" }) : "...";
+      setDateRange({ from: customFrom, to: customTo, label: `${fmt(customFrom)} — ${fmt(customTo)}` });
+    }
+    setDropdownOpen(false);
+  }
 
   // Churn ovog mjeseca
   const thisMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
@@ -160,38 +222,90 @@ export default function AdminOverview() {
             PROCIJENJENI PRIHOD / MJESEC
           </div>
 
-          {/* Filter pill dugmad */}
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+          {/* Filter dropdown */}
+          <div ref={dropdownRef} style={{ position: "relative", display: "inline-block", marginBottom: 20 }}>
             <button
-              onClick={() => setRevenueMonth("all")}
+              onClick={() => setDropdownOpen(v => !v)}
               style={{
-                padding: "5px 14px", borderRadius: 999, border: "1px solid",
-                borderColor: revenueMonth === "all" ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.08)",
-                background: revenueMonth === "all" ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.03)",
-                color: revenueMonth === "all" ? "#A78BFA" : "#6B7280",
-                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "7px 14px", borderRadius: 8,
+                border: "1px solid rgba(124,58,237,0.4)",
+                background: "rgba(124,58,237,0.15)",
+                color: "#A78BFA", fontSize: 12, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit",
               }}
             >
-              Svi aktivni
+              📅 {dateRange.label}
+              <span style={{ fontSize: 10, opacity: 0.7 }}>{dropdownOpen ? "▲" : "▼"}</span>
             </button>
-            {months.map(m => (
-              <button
-                key={m.value}
-                onClick={() => setRevenueMonth(m.value)}
-                style={{
-                  padding: "5px 14px", borderRadius: 999, border: "1px solid",
-                  borderColor: revenueMonth === m.value ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.08)",
-                  background: revenueMonth === m.value ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.03)",
-                  color: revenueMonth === m.value ? "#A78BFA" : "#6B7280",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 0.15s",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {m.label}
-              </button>
-            ))}
+
+            {dropdownOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 100,
+                background: "#18181f", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 12, padding: 16, minWidth: 280,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              }}>
+                {/* Presets */}
+                <div style={{ fontSize: 10, color: "#4B5563", fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>BRZI ODABIR</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 16 }}>
+                  {PRESETS.map(p => (
+                    <button key={p.label} onClick={() => applyPreset(p)} style={{
+                      textAlign: "left", padding: "7px 10px", borderRadius: 6, border: "none",
+                      background: dateRange.label === p.label ? "rgba(124,58,237,0.2)" : "transparent",
+                      color: dateRange.label === p.label ? "#A78BFA" : "#9CA3AF",
+                      fontSize: 13, cursor: "pointer", fontFamily: "inherit", fontWeight: dateRange.label === p.label ? 600 : 400,
+                      transition: "all 0.1s",
+                    }}>
+                      {dateRange.label === p.label ? "✓ " : "   "}{p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom range */}
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 14 }}>
+                  <div style={{ fontSize: 10, color: "#4B5563", fontWeight: 700, letterSpacing: "0.08em", marginBottom: 10 }}>PRILAGOĐENI PERIOD</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Od</div>
+                      <input
+                        type="date"
+                        value={customFrom}
+                        onChange={e => setCustomFrom(e.target.value)}
+                        style={{
+                          width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 6, padding: "6px 8px", color: "#F9FAFB", fontSize: 12,
+                          fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+                          colorScheme: "dark",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>Do</div>
+                      <input
+                        type="date"
+                        value={customTo}
+                        onChange={e => setCustomTo(e.target.value)}
+                        style={{
+                          width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 6, padding: "6px 8px", color: "#F9FAFB", fontSize: 12,
+                          fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+                          colorScheme: "dark",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <button onClick={applyCustom} style={{
+                    width: "100%", padding: "8px", borderRadius: 7,
+                    background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
+                    border: "none", color: "#fff", fontSize: 12, fontWeight: 700,
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}>
+                    Primijeni period
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Iznos + konverzija */}
@@ -202,10 +316,8 @@ export default function AdminOverview() {
               </div>
               <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
                 {filteredProUsers.length} Pro korisnik{filteredProUsers.length === 1 ? "" : "a"} × 990 din
-                {revenueMonth !== "all" && (
-                  <span style={{ marginLeft: 8, color: "#A78BFA" }}>
-                    — {months.find(m => m.value === revenueMonth)?.label}
-                  </span>
+                {dateRange.label !== "Svi aktivni" && (
+                  <span style={{ marginLeft: 8, color: "#A78BFA" }}>— {dateRange.label}</span>
                 )}
               </div>
             </div>
