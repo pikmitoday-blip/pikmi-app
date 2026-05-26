@@ -1,10 +1,19 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
 import { LanguageProvider, LOCALES, useLanguage, initLocale, type Locale } from "../../lib/i18n";
+
+interface ViewNotif {
+  id: string;
+  pitch_link_id: string;
+  linkTitle: string;
+  linkSlug: string;
+  viewed_at: string;
+  device: string | null;
+}
 
 // Nav links su definirani unutar komponente da mogu koristiti prijevode
 interface SidebarProfile { firstName: string; lastName: string; initials: string; serviceTitle: string; avatarUrl: string; plan: string; }
@@ -34,6 +43,21 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<SidebarProfile>(getCachedSidebar);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [notifications, setNotifications] = useState<ViewNotif[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showBell, setShowBell] = useState(false);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  // Zatvori bell dropdown klikom van njega
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setShowBell(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   // Inicijalizuj jezik iz localStorage
   useEffect(() => { initLocale(); }, []);
@@ -73,6 +97,37 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             setProfile(updated);
             try { sessionStorage.setItem("pikmi-sidebar", JSON.stringify(updated)); } catch {}
           }
+
+          // Učitaj notifikacije — zadnjih 30 pregleda pitch linkova
+          try {
+            const { data: links } = await supabase
+              .from("pitch_links")
+              .select("id, title, slug")
+              .eq("user_id", user.id);
+            if (links && links.length > 0) {
+              const linkIds = links.map(l => l.id);
+              const { data: viewsData } = await supabase
+                .from("link_views")
+                .select("id, pitch_link_id, viewed_at, device")
+                .in("pitch_link_id", linkIds)
+                .order("viewed_at", { ascending: false })
+                .limit(30);
+              if (viewsData) {
+                const enriched: ViewNotif[] = viewsData.map(v => ({
+                  id: v.id,
+                  pitch_link_id: v.pitch_link_id,
+                  linkTitle: links.find(l => l.id === v.pitch_link_id)?.title || "—",
+                  linkSlug: links.find(l => l.id === v.pitch_link_id)?.slug || "",
+                  viewed_at: v.viewed_at,
+                  device: v.device,
+                }));
+                setNotifications(enriched);
+                // Unread = broj pregleda od poslednjeg otvaranja bell-a
+                const lastSeen = localStorage.getItem("pikmi-bell-seen") || "1970-01-01";
+                setUnreadCount(enriched.filter(n => n.viewed_at > lastSeen).length);
+              }
+            }
+          } catch {}
           return;
         }
       } catch {}
@@ -158,6 +213,36 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     router.push("/login");
   }
+
+  function openBell() {
+    setShowBell(v => !v);
+    if (!showBell) {
+      // Označi sve kao pročitano
+      const now = new Date().toISOString();
+      localStorage.setItem("pikmi-bell-seen", now);
+      setUnreadCount(0);
+    }
+  }
+
+  function timeAgoNotif(d: string) {
+    const diff = Date.now() - new Date(d).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "upravo";
+    if (mins < 60) return `pre ${mins}min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `pre ${hrs}h`;
+    return `pre ${Math.floor(hrs / 24)}d`;
+  }
+
+  // Grupiše notifikacije po linku za prikaz
+  const notifByLink = notifications.reduce((acc, n) => {
+    if (!acc[n.pitch_link_id]) acc[n.pitch_link_id] = { title: n.linkTitle, slug: n.linkSlug, count: 0, last: n.viewed_at };
+    acc[n.pitch_link_id].count++;
+    if (n.viewed_at > acc[n.pitch_link_id].last) acc[n.pitch_link_id].last = n.viewed_at;
+    return acc;
+  }, {} as Record<string, { title: string; slug: string; count: number; last: string }>);
+
+  const notifGroups = Object.entries(notifByLink).sort((a, b) => b[1].last.localeCompare(a[1].last));
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -356,6 +441,113 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           )}
         </div>
       </aside>
+      {/* ── Mobile top header ── */}
+      <header className="mobile-top-header">
+        {/* Logo — samo tekst */}
+        <Link href="/dashboard" style={{ textDecoration: "none" }}>
+          <span style={{ fontWeight: 900, fontSize: 20, background: "linear-gradient(135deg, #7C3AED, #3B82F6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            pikmi
+          </span>
+        </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Bell */}
+          <div ref={bellRef} style={{ position: "relative" }}>
+            <button onClick={openBell} style={{
+              width: 38, height: 38, borderRadius: "50%",
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", fontSize: 17, position: "relative",
+            }}>
+              🔔
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute", top: -2, right: -2,
+                  width: 18, height: 18, borderRadius: "50%",
+                  background: "#EF4444", color: "#fff",
+                  fontSize: 10, fontWeight: 800,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  border: "2px solid var(--bg)",
+                }}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showBell && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 1000,
+                width: 300, maxHeight: 380, overflowY: "auto",
+                background: "var(--surface, #111116)", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+              }}>
+                <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+                  🔔 Pregledi pitch linkova
+                </div>
+
+                {notifGroups.length === 0 ? (
+                  <div style={{ padding: "28px 16px", textAlign: "center", color: "#4B5563", fontSize: 13 }}>
+                    Još nema pregleda.
+                  </div>
+                ) : (
+                  notifGroups.map(([id, g]) => (
+                    <Link key={id} href={`/analytics`} onClick={() => setShowBell(false)} style={{ textDecoration: "none" }}>
+                      <div style={{
+                        padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)",
+                        display: "flex", alignItems: "center", gap: 12,
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                      >
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                          background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 16, fontWeight: 800, color: "#A78BFA",
+                        }}>
+                          {g.count}
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {g.title}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
+                            {g.count === 1 ? "1 pregled" : `${g.count} pregleda`} · {timeAgoNotif(g.last)}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 11, color: "#4B5563", fontFamily: "monospace" }}>/{g.slug}</span>
+                      </div>
+                    </Link>
+                  ))
+                )}
+
+                <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+                  <Link href="/analytics" onClick={() => setShowBell(false)} style={{ fontSize: 12, color: "#A78BFA", textDecoration: "none", fontWeight: 600 }}>
+                    Svi pregledi →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Avatar → /account */}
+          <Link href="/account" style={{ textDecoration: "none" }}>
+            {profile.avatarUrl
+              ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(124,58,237,0.4)" }} />
+              : <div style={{
+                  width: 38, height: 38, borderRadius: "50%",
+                  background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 14, fontWeight: 800, color: "#fff",
+                }}>
+                  {profile.initials || "?"}
+                </div>
+            }
+          </Link>
+        </div>
+      </header>
+
       <main className="main-content">
         {children}
         {/* Policy linkovi — samo mobilna verzija, samo na dashboardu */}
