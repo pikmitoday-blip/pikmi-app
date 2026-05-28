@@ -329,12 +329,29 @@ function BillingContent() {
         </div>
 
         {/* Pro */}
-        <div className="card glow" style={{
-          border: "1px solid rgba(124,58,237,0.35)",
-          background: "rgba(124,58,237,0.06)",
+        <div className="card" style={{
+          border: "1.5px solid rgba(124,58,237,0.6)",
+          background: "linear-gradient(160deg, rgba(124,58,237,0.13) 0%, rgba(59,130,246,0.06) 100%)",
           position: "relative",
+          boxShadow: "0 0 0 1px rgba(124,58,237,0.15), 0 8px 40px rgba(124,58,237,0.22), 0 2px 8px rgba(0,0,0,0.25)",
+          overflow: "visible",
         }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pro</div>
+          {/* Top accent line */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, height: 3,
+            background: "linear-gradient(90deg, #7C3AED, #3B82F6, #7C3AED)",
+            borderRadius: "12px 12px 0 0",
+          }} />
+          {/* Badge */}
+          <div style={{
+            position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)",
+            background: "linear-gradient(90deg, #7C3AED, #6D28D9)",
+            color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+            padding: "4px 14px", borderRadius: 999,
+            boxShadow: "0 4px 12px rgba(124,58,237,0.5)",
+            whiteSpace: "nowrap",
+          }}>✦ PREPORUČENO</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 10 }}>Pro</div>
           <div style={{ fontSize: 38, fontWeight: 900, marginBottom: 4 }}>
             990 din<span style={{ fontSize: 15, fontWeight: 500, color: "var(--text2)" }}>{t("months_per")}</span>
           </div>
@@ -380,12 +397,19 @@ function BillingContent() {
             </div>
           ) : (
             <button
-              className="btn btn-primary"
-              style={{ width: "100%", justifyContent: "center" }}
               onClick={handleSubscribe}
               disabled={checkoutLoading}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                padding: "14px 20px", borderRadius: 12, border: "none", cursor: checkoutLoading ? "wait" : "pointer",
+                background: checkoutLoading ? "rgba(124,58,237,0.5)" : "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
+                color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "inherit",
+                boxShadow: checkoutLoading ? "none" : "0 6px 24px rgba(124,58,237,0.5), 0 2px 8px rgba(0,0,0,0.2)",
+                transition: "all 0.2s",
+                opacity: checkoutLoading ? 0.7 : 1,
+              }}
             >
-              {checkoutLoading ? t("billing_subscribing") : t("billing_subscribe")}
+              {checkoutLoading ? t("billing_subscribing") : <>{t("billing_subscribe")} <span style={{ fontSize: 17 }}>→</span></>}
             </button>
           )}
         </div>
