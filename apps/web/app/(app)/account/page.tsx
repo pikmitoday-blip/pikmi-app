@@ -111,11 +111,27 @@ export default function AccountSettings() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      // Fetch existing profile_data to merge firstName/lastName into it
+      const { data: profileRow } = await supabase.from("profiles").select("profile_data").eq("user_id", user.id).single();
+      const existingPd = (profileRow?.profile_data as Record<string, unknown>) ?? {};
+      const fn = firstName.trim();
+      const ln = lastName.trim();
       await supabase.from("profiles").update({
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
+        first_name: fn,
+        last_name: ln,
+        profile_data: {
+          ...existingPd,
+          firstName: fn,
+          lastName: ln,
+          initials: (fn[0] ?? "").toUpperCase() + (ln[0] ?? "").toUpperCase(),
+        },
       }).eq("user_id", user.id);
-      try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
+      // Clear all profile caches so moj-profil and sidebar reload fresh
+      try {
+        sessionStorage.removeItem("pikmi-sidebar");
+        sessionStorage.removeItem("pikmi-moj-profil");
+        sessionStorage.removeItem("pikmi-profile-edit");
+      } catch {}
       setNameSaved(true);
       setTimeout(() => setNameSaved(false), 2500);
     } catch (e: any) {

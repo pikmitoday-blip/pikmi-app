@@ -371,7 +371,16 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       if (profileData?.email) setFreelancerEmail(profileData.email);
 
       if (profileData?.profile_data && Object.keys(profileData.profile_data).length > 0) {
-        setProfile(profileData.profile_data as Profile);
+        // Always override firstName/lastName from DB columns (not profile_data JSON)
+        // so changes in account settings are reflected immediately
+        const pd = profileData.profile_data as Profile;
+        setProfile({
+          ...pd,
+          firstName: profileData.first_name || pd.firstName || "",
+          lastName: profileData.last_name || pd.lastName || "",
+          initials: (profileData.first_name?.[0] ?? pd.firstName?.[0] ?? "").toUpperCase()
+                  + (profileData.last_name?.[0] ?? pd.lastName?.[0] ?? "").toUpperCase(),
+        });
       } else if (profileData) {
         setProfile({
           csImages: ["", "", "", ""],
