@@ -321,6 +321,7 @@ export default function MojProfil() {
   // ─── Info display (LEFT PANEL on desktop) ─────────────────────────────────
 
   function InfoDisplay() {
+    if (!p) return null;
     return (
       <div style={{ padding: 24 }}>
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
