@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -297,6 +297,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
   const [showContactModal, setShowContactModal] = useState(false);
   const [senderEmail, setSenderEmail] = useState("");
+  // Guard: prevents double-tracking in React 18 StrictMode / concurrent renders
+  const trackedRef = useRef(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -314,41 +316,45 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       if (pitchLink?.is_active) {
         userId = pitchLink.user_id;
 
-        let viewerToken: string | null = null;
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          viewerToken = session?.access_token ?? null;
-        } catch {}
+        // Only track once per component mount — prevents React 18 double-invoke
+        if (!trackedRef.current) {
+          trackedRef.current = true;
 
-        const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
-        const referrer = document.referrer || "";
+          let viewerToken: string | null = null;
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            viewerToken = session?.access_token ?? null;
+          } catch {}
 
-        fetch("/api/track-view", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pitchLinkId: pitchLink.id,
-            ownerUserId: pitchLink.user_id,
-            currentViews: (pitchLink as any).views ?? 0,
-            device, referrer, viewerToken,
-          }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.ok && !data.skipped) {
-              fetch("/api/notify", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  pitchLinkId: pitchLink.id,
-                  pitchLinkTitle: pitchLink.title || slug,
-                  ownerUserId: pitchLink.user_id,
-                  slug, device, referrer,
-                }),
-              }).catch(() => {});
-            }
+          const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+          const referrer = document.referrer || "";
+
+          fetch("/api/track-view", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pitchLinkId: pitchLink.id,
+              ownerUserId: pitchLink.user_id,
+              device, referrer, viewerToken,
+            }),
           })
-          .catch(() => {});
+            .then(res => res.json())
+            .then(data => {
+              if (data.ok && !data.skipped) {
+                fetch("/api/notify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    pitchLinkId: pitchLink.id,
+                    pitchLinkTitle: pitchLink.title || slug,
+                    ownerUserId: pitchLink.user_id,
+                    slug, device, referrer,
+                  }),
+                }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        } // end trackedRef guard
       } else {
         // 2. Proveri profile_url
         const { data: profileByUrl } = await supabase

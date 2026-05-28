@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const { pitchLinkId, ownerUserId, currentViews, device, referrer, viewerToken } = await req.json();
+    const { pitchLinkId, ownerUserId, device, referrer, viewerToken } = await req.json();
     if (!pitchLinkId) return NextResponse.json({ ok: false });
 
     const supabaseAdmin = createClient(
@@ -31,9 +31,16 @@ export async function POST(req: NextRequest) {
       referrer: referrer || null,
     });
 
+    // Read current views from DB (server-side), not from client — prevents stale-value race
+    const { data: linkRow } = await supabaseAdmin
+      .from("pitch_links")
+      .select("views")
+      .eq("id", pitchLinkId)
+      .single();
+
     await supabaseAdmin
       .from("pitch_links")
-      .update({ views: (currentViews ?? 0) + 1 })
+      .update({ views: (linkRow?.views ?? 0) + 1 })
       .eq("id", pitchLinkId);
 
     return NextResponse.json({ ok: true });
