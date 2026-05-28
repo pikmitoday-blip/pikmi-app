@@ -1,49 +1,80 @@
 export default function PikmiLogo({ size = 32 }: { size?: number }) {
+  const h = Math.round(size * 1.2);
   return (
     <svg
       width={size}
-      height={Math.round(size * 1.22)}
-      viewBox="0 0 100 122"
+      height={h}
+      viewBox="0 0 100 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* Main diagonal gradient: hot-pink → purple → blue */}
-        <linearGradient id="pg" x1="5" y1="5" x2="95" y2="118" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#DD44FF" />
-          <stop offset="44%"  stopColor="#8B2FF5" />
-          <stop offset="100%" stopColor="#3B82F6" />
+        {/* Diagonal gradient: hot-pink top-left → cobalt blue bottom-right */}
+        <linearGradient id="pg" x1="0" y1="0" x2="100" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#EE33FF" />
+          <stop offset="48%"  stopColor="#8B28F0" />
+          <stop offset="100%" stopColor="#2563EB" />
         </linearGradient>
-        {/* 3-D highlight: white shimmer top-left only */}
-        <linearGradient id="hl" x1="5" y1="5" x2="54" y2="68" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="rgba(255,255,255,0.30)" />
+        {/* 3-D top-left highlight shimmer */}
+        <linearGradient id="hl" x1="0" y1="0" x2="60" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="rgba(255,255,255,0.35)" />
+          <stop offset="55%"  stopColor="rgba(255,255,255,0.07)" />
           <stop offset="100%" stopColor="rgba(255,255,255,0)"    />
         </linearGradient>
       </defs>
 
-      {/* ── P-shape: thick left stem (full height) ── */}
-      <rect x="7" y="7" width="24" height="107" rx="12" fill="url(#pg)" />
+      {/*
+        ── P STEM ──
+        Full-height vertical bar, thicker (~28px) with rounded ends.
+      */}
+      <rect x="5" y="5" width="28" height="108" rx="14" fill="url(#pg)" />
 
-      {/* ── P-shape: rounded bowl (top ~55% of height) ── */}
-      <rect x="7" y="7" width="86" height="65" rx="21" fill="url(#pg)" />
-
-      {/* ── Speech-bubble tail (bottom-right of stem) ── */}
+      {/*
+        ── P BOWL ──
+        D-shape: flat left edge + cubic-bezier curve on the right that
+        bulges to ~x=94 and comes back, giving a proper round bowl.
+      */}
       <path
-        d="M 23 109 C 26 118, 37 120, 39 122 C 34 125, 21 122, 19 110 Z"
+        d="M 5 6
+           Q 5 5 6 5
+           L 50 5
+           C 96 5, 96 72, 50 72
+           L 6 72
+           Q 5 72 5 71
+           Z"
         fill="url(#pg)"
       />
 
-      {/* ── 3-D highlight overlay ── */}
-      <rect x="7" y="7" width="24" height="107" rx="12" fill="url(#hl)" />
-      <rect x="7" y="7" width="86" height="65" rx="21" fill="url(#hl)" />
+      {/*
+        ── SPEECH BUBBLE TAIL ──
+        Small curved pointer at bottom-right of stem, like a chat bubble.
+      */}
+      <path
+        d="M 25 109
+           C 27 120, 40 120, 43 114
+           C 40 108, 25 107, 25 109
+           Z"
+        fill="url(#pg)"
+      />
 
-      {/* ── Dark inner cutout (speech bubble interior) ── */}
-      <rect x="26" y="18" width="56" height="43" rx="13" fill="#07001A" />
+      {/* 3-D highlight overlay — same shapes, white gradient on top */}
+      <rect x="5" y="5" width="28" height="108" rx="14" fill="url(#hl)" />
+      <path
+        d="M 5 6 Q 5 5 6 5 L 50 5 C 96 5, 96 72, 50 72 L 6 72 Q 5 72 5 71 Z"
+        fill="url(#hl)"
+      />
 
-      {/* ── Three typing dots ── */}
-      <circle cx="41"  cy="39.5" r="5" fill="#C084FC" />
-      <circle cx="54"  cy="39.5" r="5" fill="#A855F7" />
-      <circle cx="67"  cy="39.5" r="5" fill="#9333EA" />
+      {/*
+        ── DARK INNER CUTOUT ──
+        Tall rounded-rect inside the bowl, rx=18 makes it very circular.
+        Offset to the right so the eye reads it as inside the bowl, not the stem.
+      */}
+      <rect x="29" y="17" width="54" height="44" rx="20" fill="#060010" />
+
+      {/* ── THREE TYPING DOTS ── */}
+      <circle cx="43" cy="39" r="5.2" fill="#CC66FF" />
+      <circle cx="56" cy="39" r="5.2" fill="#AA44EE" />
+      <circle cx="69" cy="39" r="5.2" fill="#9333EA" />
     </svg>
   );
 }

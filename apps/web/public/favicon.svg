@@ -1,32 +1,35 @@
-<svg width="100" height="122" viewBox="0 0 100 122" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="100" height="120" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pg" x1="5" y1="5" x2="95" y2="118" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#DD44FF" />
-      <stop offset="44%"  stop-color="#8B2FF5" />
-      <stop offset="100%" stop-color="#3B82F6" />
+    <linearGradient id="pg" x1="0" y1="0" x2="100" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#EE33FF" />
+      <stop offset="48%"  stop-color="#8B28F0" />
+      <stop offset="100%" stop-color="#2563EB" />
     </linearGradient>
-    <linearGradient id="hl" x1="5" y1="5" x2="54" y2="68" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.30)" />
+    <linearGradient id="hl" x1="0" y1="0" x2="60" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.35)" />
+      <stop offset="55%"  stop-color="rgba(255,255,255,0.07)" />
       <stop offset="100%" stop-color="rgba(255,255,255,0)"    />
     </linearGradient>
   </defs>
 
-  <!-- Stem (full height) -->
-  <rect x="7" y="7" width="24" height="107" rx="12" fill="url(#pg)" />
-  <!-- Bowl (top section) -->
-  <rect x="7" y="7" width="86" height="65" rx="21" fill="url(#pg)" />
+  <!-- P Stem -->
+  <rect x="5" y="5" width="28" height="108" rx="14" fill="url(#pg)" />
+
+  <!-- P Bowl (D-shape) -->
+  <path d="M 5 6 Q 5 5 6 5 L 50 5 C 96 5, 96 72, 50 72 L 6 72 Q 5 72 5 71 Z" fill="url(#pg)" />
+
   <!-- Speech bubble tail -->
-  <path d="M 23 109 C 26 118, 37 120, 39 122 C 34 125, 21 122, 19 110 Z" fill="url(#pg)" />
+  <path d="M 25 109 C 27 120, 40 120, 43 114 C 40 108, 25 107, 25 109 Z" fill="url(#pg)" />
 
   <!-- 3D highlight -->
-  <rect x="7" y="7" width="24" height="107" rx="12" fill="url(#hl)" />
-  <rect x="7" y="7" width="86" height="65" rx="21" fill="url(#hl)" />
+  <rect x="5" y="5" width="28" height="108" rx="14" fill="url(#hl)" />
+  <path d="M 5 6 Q 5 5 6 5 L 50 5 C 96 5, 96 72, 50 72 L 6 72 Q 5 72 5 71 Z" fill="url(#hl)" />
 
-  <!-- Dark inner -->
-  <rect x="26" y="18" width="56" height="43" rx="13" fill="#07001A" />
+  <!-- Dark inner cutout -->
+  <rect x="29" y="17" width="54" height="44" rx="20" fill="#060010" />
 
   <!-- Three dots -->
-  <circle cx="41"  cy="39.5" r="5" fill="#C084FC" />
-  <circle cx="54"  cy="39.5" r="5" fill="#A855F7" />
-  <circle cx="67"  cy="39.5" r="5" fill="#9333EA" />
+  <circle cx="43" cy="39" r="5.2" fill="#CC66FF" />
+  <circle cx="56" cy="39" r="5.2" fill="#AA44EE" />
+  <circle cx="69" cy="39" r="5.2" fill="#9333EA" />
 </svg>
