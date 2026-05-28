@@ -3,55 +3,92 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 
-interface CaseStudy {
-  industry: string; metric: string; metricLabel: string;
-  client: string; platform: string; bg: string; lightText: boolean;
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+interface ExperienceItem {
+  company: string;
+  role: string;
+  dateFrom: string;
+  dateTo: string;
+  desc: string;
 }
+
+interface CaseStudyItem {
+  client?: string;
+  platform?: string;
+  year?: string;
+  bg?: string;
+  industry?: string;
+  metric?: string;
+  metricLabel?: string;
+  lightText?: boolean;
+}
+
 interface PricingTier { name: string; price: string; desc: string; green?: boolean; }
+
 interface Profile {
   csImages: string[];
   avatarUrl: string;
   firstName: string; lastName: string; initials: string; city: string;
-  openStatus: string; badge: string;
+  openStatus: string; badge: string; badge2?: string;
   metric1Value: string; metric1Label: string;
   metric2Value: string; metric2Label: string;
+  metric3Value?: string; metric3Label?: string;
   serviceTitle: string; servicePrice: string; servicePriceLabel: string; serviceDesc: string;
-  caseStudies: CaseStudy[];
+  caseStudies: CaseStudyItem[];
   pricing: PricingTier[];
   stack: string;
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
+  experience?: ExperienceItem[];
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl?: string;
 }
+
+// ─── Design tokens ───────────────────────────────────────────────────────────
+
+const C = {
+  accent:      "#7C3AED",
+  accentLight: "#F5F1FE",
+  accentMuted: "#A78BFA",
+  dark:        "#0B0F19",
+  text:        "#374151",
+  muted:       "#6B7280",
+  border:      "#E5E7EB",
+  divider:     "#F3F4F6",
+  sectionBg:   "#FAFAFB",
+  tagGrayBg:   "#F3F4F6",
+  tagGrayText: "#374151",
+  green:       "#22C55E",
+};
+
+const CS_GRADIENTS = [
+  "linear-gradient(135deg,#7C3AED,#3B82F6)",
+  "linear-gradient(135deg,#EC4899,#7C3AED)",
+  "linear-gradient(135deg,#3B82F6,#0B0F19)",
+  "linear-gradient(135deg,#7C3AED,#EC4899)",
+];
 
 const DEFAULT_PROFILE: Profile = {
   csImages: ["", "", "", ""],
   avatarUrl: "",
   firstName: "", lastName: "", initials: "", city: "",
-  openStatus: "OTVOREN ZA RETAINER", badge: "TOP 5%",
+  openStatus: "DOSTUPAN", badge: "", badge2: "",
   metric1Value: "", metric1Label: "",
   metric2Value: "", metric2Label: "",
-  serviceTitle: "", servicePrice: "", servicePriceLabel: "/mes retainer", serviceDesc: "",
-  caseStudies: [
-    { industry: "", metric: "", metricLabel: "", client: "", platform: "", bg: "linear-gradient(135deg,#2B4FFF,#1A33B3)", lightText: true },
-    { industry: "", metric: "", metricLabel: "", client: "", platform: "", bg: "linear-gradient(135deg,#1AA877,#0F6E56)", lightText: true },
-    { industry: "", metric: "", metricLabel: "", client: "", platform: "", bg: "linear-gradient(135deg,#0F1419,#2A323C)", lightText: true },
-    { industry: "", metric: "", metricLabel: "", client: "", platform: "", bg: "linear-gradient(135deg,#7AE5C5,#1AA877)", lightText: false },
-  ],
-  pricing: [
-    { name: "", price: "", desc: "" },
-    { name: "", price: "", desc: "" },
-    { name: "", price: "", desc: "", green: false },
-  ],
+  metric3Value: "", metric3Label: "",
+  serviceTitle: "", servicePrice: "", servicePriceLabel: "sat", serviceDesc: "",
+  caseStudies: [{}, {}, {}, {}],
+  pricing: [],
   stack: "",
   detailCapacity: "", detailResponse: "", detailMinBudget: "", detailLanguages: "",
   testimonialQuote: "", testimonialName: "", testimonialTitle: "",
-  ctaTitle: "", ctaHighlight: "", ctaBtn1: "Zakaži strategy poziv →", ctaBtn2: "Preuzmi case study (PDF)",
+  experience: [],
+  ctaTitle: "", ctaHighlight: "", ctaBtn1: "Zakaži besplatan poziv", ctaBtn2: "",
   pdfUrl: "",
 };
 
-function getCachedProfile(): Profile | null {
+function getCached(): Profile | null {
   try {
     const c = sessionStorage.getItem("pikmi-moj-profil");
     if (c) return JSON.parse(c);
@@ -59,27 +96,79 @@ function getCachedProfile(): Profile | null {
   return null;
 }
 
-function Divider() {
-  return <div style={{ height: "0.5px", background: "#E4EBE4", margin: "24px 0" }} />;
+// ─── Shared input style ──────────────────────────────────────────────────────
+
+const INP: React.CSSProperties = {
+  width: "100%", padding: "9px 11px", borderRadius: 8, fontSize: 13,
+  border: `1.5px solid ${C.border}`, background: "#FAFAFA",
+  fontFamily: "inherit", color: C.dark, outline: "none",
+  boxSizing: "border-box", marginBottom: 8,
+};
+const LBL: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px",
+  display: "block", marginBottom: 3, textTransform: "uppercase",
+};
+
+// ─── Section separator ───────────────────────────────────────────────────────
+
+function SectionSep() {
+  return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "10px 12px", borderRadius: 8, fontSize: 13,
-  border: "1.5px solid #E0E6FF", background: "#F7F9FF", fontFamily: "inherit",
-  color: "#1E1E1E", outline: "none", boxSizing: "border-box", marginBottom: 8,
-};
-const labelStyle: React.CSSProperties = {
-  fontSize: 11, fontWeight: 700, color: "#6B6B6B", letterSpacing: "0.5px",
-  display: "block", marginBottom: 4, textTransform: "uppercase",
-};
+// ─── Section header with edit button ─────────────────────────────────────────
+
+function SectionHead({
+  number, text, section, onEdit,
+}: { number: string; text: string; section: string; onEdit: (s: string) => void }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
+        {number} — {text}
+      </p>
+      <button
+        onClick={() => onEdit(section)}
+        style={{
+          padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+          background: C.accentLight, color: C.accent, border: "none", cursor: "pointer",
+        }}
+      >
+        Uredi
+      </button>
+    </div>
+  );
+}
+
+// ─── Edit action bar ─────────────────────────────────────────────────────────
+
+function EditActions({ onSave, onCancel, saving }: {
+  onSave: () => void; onCancel: () => void; saving: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 8, paddingTop: 14, borderTop: `1px solid ${C.border}`, marginTop: 14 }}>
+      <button
+        onClick={onSave} disabled={saving}
+        style={{ padding: "9px 18px", background: C.accent, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+      >
+        {saving ? "Čuvam..." : "Sačuvaj"}
+      </button>
+      <button
+        onClick={onCancel}
+        style={{ padding: "9px 14px", background: "#F7F7F5", color: C.muted, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, cursor: "pointer" }}
+      >
+        Otkaži
+      </button>
+    </div>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
 
 export default function MojProfil() {
   const { t } = useLanguage();
-  const [p, setP] = useState<Profile | null>(() => getCachedProfile());
+  const [p, setP] = useState<Profile | null>(() => getCached());
   const [userId, setUserId] = useState<string>("");
   const [profileUrl, setProfileUrl] = useState<string>("");
-  const [loading, setLoading] = useState(!getCachedProfile());
-
+  const [loading, setLoading] = useState(!getCached());
   const [editSection, setEditSection] = useState<string | null>(null);
   const [draft, setDraft] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
@@ -88,7 +177,7 @@ export default function MojProfil() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    async function loadProfile() {
+    async function load() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -100,24 +189,24 @@ export default function MojProfil() {
             .single();
           if (data) {
             const pd = (data.profile_data as Record<string, any>) || {};
-            const updated: Profile = {
+            const merged: Profile = {
               ...DEFAULT_PROFILE, ...pd,
               firstName: data.first_name || "",
               lastName: data.last_name || "",
               initials: (data.first_name?.[0] ?? "") + (data.last_name?.[0] ?? ""),
               csImages: pd.csImages ?? ["", "", "", ""],
-              caseStudies: pd.caseStudies ?? DEFAULT_PROFILE.caseStudies,
-              pricing: pd.pricing ?? DEFAULT_PROFILE.pricing,
+              caseStudies: pd.caseStudies ?? [{}, {}, {}, {}],
+              experience: pd.experience ?? [],
             };
-            setP(updated);
-            try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
+            setP(merged);
+            try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
             if (data.profile_url) setProfileUrl(data.profile_url);
           }
         }
       } catch {}
       setLoading(false);
     }
-    loadProfile();
+    load();
   }, []);
 
   function startEdit(section: string) {
@@ -125,33 +214,48 @@ export default function MojProfil() {
     setDraft(p ? { ...p } : null);
   }
   function cancelEdit() { setEditSection(null); setDraft(null); }
+
   function setD<K extends keyof Profile>(key: K, value: Profile[K]) {
     setDraft(prev => prev ? { ...prev, [key]: value } : null);
   }
-  function setDraft_cs(i: number, key: keyof CaseStudy, value: string | boolean) {
+  function setDraftCS(i: number, key: keyof CaseStudyItem, value: string) {
     if (!draft) return;
-    const cs = [...draft.caseStudies];
+    const cs = [...(draft.caseStudies ?? [{}, {}, {}, {}])];
     cs[i] = { ...cs[i], [key]: value };
     setDraft(prev => prev ? { ...prev, caseStudies: cs } : null);
   }
-  function setDraft_tier(i: number, key: keyof PricingTier, value: string | boolean) {
+  function setDraftExp(i: number, key: keyof ExperienceItem, value: string) {
     if (!draft) return;
-    const tiers = [...draft.pricing];
-    tiers[i] = { ...tiers[i], [key]: value };
-    setDraft(prev => prev ? { ...prev, pricing: tiers } : null);
+    const exp = [...(draft.experience ?? [])];
+    exp[i] = { ...exp[i], [key]: value };
+    setDraft(prev => prev ? { ...prev, experience: exp } : null);
+  }
+  function addExp() {
+    setDraft(prev => prev ? {
+      ...prev,
+      experience: [...(prev.experience ?? []), { company: "", role: "", dateFrom: "", dateTo: "", desc: "" }]
+    } : null);
+  }
+  function removeExp(i: number) {
+    setDraft(prev => {
+      if (!prev) return null;
+      const exp = [...(prev.experience ?? [])];
+      exp.splice(i, 1);
+      return { ...prev, experience: exp };
+    });
   }
 
   async function saveSection() {
     if (!draft || !userId) return;
     setSaving(true);
     try {
-      const csImagesClean = draft.csImages.map(img => img.startsWith("data:") ? "" : img);
+      const csImagesClean = (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img);
       const toSave = { ...draft, csImages: csImagesClean };
       await supabase.from("profiles").upsert({
         user_id: userId,
         first_name: draft.firstName,
         last_name: draft.lastName,
-        service_title: draft.serviceTitle.split("\n")[0].trim(),
+        service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
         profile_data: toSave,
       }, { onConflict: "user_id" });
       setP(toSave);
@@ -189,91 +293,55 @@ export default function MojProfil() {
       const path = `${userId}/project-${i}-${Date.now()}.${ext}`;
       await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: true });
       const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
-      const imgs = [...(draft?.csImages ?? ["","","",""])];
+      const imgs = [...(draft?.csImages ?? ["", "", "", ""])];
       imgs[i] = publicUrl;
       setDraft(prev => prev ? { ...prev, csImages: imgs } : null);
     } catch {}
     setUploading(null);
   }
 
-  // Pencil button — inline uz section header
-  function SectionHeader({ label, section, light = false }: { label: string; section: string; light?: boolean }) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: light ? "rgba(255,255,255,0.5)" : "#6B6B6B", letterSpacing: "1.2px", textTransform: "uppercase" }}>
-          {label}
-        </div>
-        <button
-          onClick={() => startEdit(section)}
-          style={{
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "4px 10px", borderRadius: 6, cursor: "pointer",
-            fontSize: 11, fontWeight: 700, border: "none",
-            background: light ? "rgba(255,255,255,0.2)" : "#EEF2FF",
-            color: light ? "#fff" : "#1F57C3",
-            transition: "all 0.15s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.35)" : "#DBEAFE"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = light ? "rgba(255,255,255,0.2)" : "#EEF2FF"; }}
-        >
-          {t("profile_edit_btn")}
-        </button>
-      </div>
-    );
-  }
-
-  // Save/Cancel bar
-  function EditActions() {
-    return (
-      <div style={{ display: "flex", gap: 8, marginTop: 16, paddingTop: 16, borderTop: "1px solid #E4EBE4" }}>
-        <button
-          onClick={saveSection}
-          disabled={saving}
-          style={{ padding: "10px 20px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-        >
-          {saving ? t("profile_saving") : t("profile_save_btn")}
-        </button>
-        <button
-          onClick={cancelEdit}
-          style={{ padding: "10px 16px", background: "#F7F7F5", color: "#6B6B6B", border: "1px solid #E4EBE4", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
-        >
-          {t("profile_cancel")}
-        </button>
-      </div>
-    );
-  }
-
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-      <div style={{ color: "var(--text3)", fontSize: 14 }}>{t("profile_loading")}</div>
-    </div>
-  );
-  if (!p) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-      <div style={{ color: "var(--text3)", fontSize: 14 }}>{t("profile_not_found")}</div>
+      <div style={{ fontSize: 14, color: C.muted }}>Učitavanje profila...</div>
     </div>
   );
 
-  const stackTags = p.stack.split(",").map(s => s.trim()).filter(Boolean);
+  if (!p) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
+      <div style={{ fontSize: 14, color: C.muted }}>Profil nije pronađen</div>
+    </div>
+  );
+
+  const stackTags = (p.stack || "").split(",").map(s => s.trim()).filter(Boolean);
+  const stats = [
+    { value: p.metric1Value, label: p.metric1Label },
+    { value: p.metric2Value, label: p.metric2Label },
+    ...(p.metric3Value ? [{ value: p.metric3Value!, label: p.metric3Label ?? "" }] : []),
+  ].filter(m => m.value);
+
+  const csSlots = [0, 1, 2, 3].filter(i =>
+    (p.csImages?.[i] || p.caseStudies?.[i]?.client)
+  );
+  const hasWork = csSlots.length > 0;
 
   return (
     <div>
+      {/* ── Page header ── */}
       <div className="flex items-center justify-between page-header">
         <div>
           <h1 className="page-title">{t("profile_page_title")}</h1>
           <p className="page-subtitle">{t("profile_page_sub")}</p>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {savedMsg && <span style={{ fontSize: 13, color: "#14A800", fontWeight: 600 }}>{t("profile_saved")}</span>}
+          {savedMsg && <span style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Sačuvano ✓</span>}
           {profileUrl && (
             <a
               href={`https://www.pikmi.today/${profileUrl}`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-primary btn-sm"
-              style={{ gap: 8 }}
             >
-              <span style={{ fontSize: 15 }}>👁</span>
+              <span style={{ fontSize: 14 }}>👁</span>
               {t("profile_view_live")}
               <span style={{ fontSize: 12, opacity: 0.8 }}>↗</span>
             </a>
@@ -281,332 +349,497 @@ export default function MojProfil() {
         </div>
       </div>
 
-      <div className="profile-upwork-wrapper" style={{ background: "#F7F7F5", borderRadius: 16, overflow: "hidden", border: "1px solid #E4EBE4", marginBottom: 48, fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
-        <div className="profile-layout" style={{ display: "grid", gridTemplateColumns: "300px 1fr", alignItems: "start" }}>
+      {/* ── Profile card ── */}
+      <div style={{ display: "flex", justifyContent: "center", paddingBottom: 60 }}>
+        <div style={{
+          width: "100%", maxWidth: 480,
+          background: "#fff",
+          borderRadius: 24,
+          border: `0.5px solid ${C.border}`,
+          overflow: "hidden",
+          fontFamily: "'Inter', -apple-system, sans-serif",
+        }}>
 
-          {/* ── SIDEBAR ── */}
-          <div className="profile-sidebar" style={{ background: "#fff", borderRight: "1px solid #E4EBE4", padding: "32px 28px", position: "sticky", top: 0 }}>
-            <div>
-              {editSection === "sidebar" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_sidebar")} section="sidebar" />
-
-                  {/* Avatar */}
-                  <label style={labelStyle}>{t("profile_avatar_label")}</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    {draft.avatarUrl
-                      ? <img src={draft.avatarUrl} alt="" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover" }} />
-                      : <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#1F57C3", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{draft.initials}</div>
-                    }
-                    <label style={{ padding: "8px 14px", background: "#F0F4FF", border: "1px solid #D0DCFF", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#1F57C3", fontWeight: 600 }}>
-                      {uploadingAvatar ? t("profile_uploading") : t("profile_change_img")}
-                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadAvatar(e.target.files[0]); }} />
-                    </label>
-                  </div>
-
-                  <label style={labelStyle}>{t("profile_first_name")}</label>
-                  <input style={inputStyle} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" />
-                  <label style={labelStyle}>{t("profile_last_name")}</label>
-                  <input style={inputStyle} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" />
-                  <label style={labelStyle}>{t("profile_city")}</label>
-                  <input style={inputStyle} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
-                  <label style={labelStyle}>{t("profile_availability")}</label>
-                  <input style={inputStyle} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="OTVOREN ZA RETAINER" />
-                  <label style={labelStyle}>{t("profile_badge")}</label>
-                  <input style={inputStyle} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="TOP 5%" />
-                  <label style={labelStyle}>{t("profile_metric1_val")}</label>
-                  <input style={inputStyle} value={draft.metric1Value} onChange={e => setD("metric1Value", e.target.value)} placeholder="€840k" />
-                  <label style={labelStyle}>{t("profile_metric1_lbl")}</label>
-                  <input style={inputStyle} value={draft.metric1Label} onChange={e => setD("metric1Label", e.target.value)} placeholder="UPRAVLJANO AD SPEND" />
-                  <label style={labelStyle}>{t("profile_metric2_val")}</label>
-                  <input style={inputStyle} value={draft.metric2Value} onChange={e => setD("metric2Value", e.target.value)} placeholder="4.1×" />
-                  <label style={labelStyle}>{t("profile_metric2_lbl")}</label>
-                  <input style={inputStyle} value={draft.metric2Label} onChange={e => setD("metric2Label", e.target.value)} placeholder="PROS. ROAS" />
-                  <label style={labelStyle}>{t("profile_retainer_price")}</label>
-                  <input style={inputStyle} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€1.800" />
-                  <label style={labelStyle}>{t("profile_price_label")}</label>
-                  <input style={inputStyle} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="/mes retainer" />
-                  <label style={labelStyle}>{t("profile_capacity")}</label>
-                  <input style={inputStyle} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="2 retainer slota" />
-                  <label style={labelStyle}>{t("profile_response")}</label>
-                  <input style={inputStyle} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" />
-                  <label style={labelStyle}>{t("profile_min_budget")}</label>
-                  <input style={inputStyle} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="€5k/mes" />
-                  <label style={labelStyle}>{t("profile_languages")}</label>
-                  <input style={inputStyle} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" />
-                  <label style={labelStyle}>{t("profile_cta_btn1")}</label>
-                  <input style={inputStyle} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} />
-                  <label style={labelStyle}>{t("profile_cta_btn2")}</label>
-                  <input style={inputStyle} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} />
-                  <EditActions />
-                </div>
-              ) : (
-                <>
-                  <div style={{ marginBottom: 12 }}>
-                    <SectionHeader label={t("profile_sec_info")} section="sidebar" />
-                  </div>
-                  <div style={{ textAlign: "center", marginBottom: 24 }}>
-                    {p.avatarUrl
-                      ? <img src={p.avatarUrl} alt="avatar" style={{ width: 100, height: 100, borderRadius: "50%", objectFit: "cover", margin: "0 auto 16px", display: "block", boxShadow: "0 4px 16px rgba(31,87,195,0.25)" }} />
-                      : <div style={{ width: 100, height: 100, borderRadius: "50%", background: "linear-gradient(135deg,#1F57C3,#0D3B8C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 700, color: "#fff", margin: "0 auto 16px", boxShadow: "0 4px 16px rgba(31,87,195,0.25)" }}>{p.initials}</div>
-                    }
-                    <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E1E", marginBottom: 4 }}>{p.firstName} {p.lastName}</div>
-                    <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 8 }}>📍 {p.city}</div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 20, background: "#F0FAF0", border: "1px solid #B8E6A8" }}>
-                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#14A800", flexShrink: 0 }} />
-                        <span style={{ fontSize: 11, color: "#14A800", fontWeight: 600 }}>{p.openStatus}</span>
-                      </div>
-                      <div style={{ padding: "5px 10px", background: "#FFEEE0", color: "#D97706", fontSize: 11, fontWeight: 700, borderRadius: 20, border: "1px solid #FCD9A0" }}>★ TOP RATED</div>
-                      {p.badge && <div style={{ padding: "5px 10px", background: "#E8F5E3", color: "#14A800", fontSize: 11, fontWeight: 700, borderRadius: 20, border: "1px solid #B8E6A8" }}>{p.badge}</div>}
-                    </div>
-                    <button style={{ width: "100%", padding: "12px", background: "#1F57C3", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 2px 8px rgba(31,87,195,0.3)" }}>{p.ctaBtn1}</button>
-                    <button style={{ width: "100%", padding: "11px", background: "transparent", color: "#1F57C3", border: "1.5px solid #1F57C3", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 8 }}>{p.ctaBtn2}</button>
-                  </div>
-                  <Divider />
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, color: "#6B6B6B", letterSpacing: "0.5px", marginBottom: 4 }}>{t("profile_retainer_lbl")}</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: "#1E1E1E" }}>{p.servicePrice}<span style={{ fontSize: 14, fontWeight: 400, color: "#6B6B6B" }}> {p.servicePriceLabel}</span></div>
-                  </div>
-                  <Divider />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-                    <div style={{ textAlign: "center", padding: "14px 8px", background: "#F7F7F5", borderRadius: 10, border: "1px solid #E4EBE4" }}>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: "#1F57C3" }}>{p.metric1Value}</div>
-                      <div style={{ fontSize: 9, color: "#6B6B6B", letterSpacing: "0.5px", marginTop: 4 }}>{p.metric1Label}</div>
-                    </div>
-                    <div style={{ textAlign: "center", padding: "14px 8px", background: "#F7F7F5", borderRadius: 10, border: "1px solid #E4EBE4" }}>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: "#14A800" }}>{p.metric2Value}</div>
-                      <div style={{ fontSize: 9, color: "#6B6B6B", letterSpacing: "0.5px", marginTop: 4 }}>{p.metric2Label}</div>
-                    </div>
-                  </div>
-                  <Divider />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {[
-                      { icon: "⚡", label: t("profile_response_lbl"), value: p.detailResponse },
-                      { icon: "👥", label: t("profile_capacity"),     value: p.detailCapacity },
-                      { icon: "💰", label: t("profile_min_budget_lbl"), value: p.detailMinBudget },
-                      { icon: "🌐", label: t("profile_languages"),    value: p.detailLanguages },
-                    ].map((d, i) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 13, color: "#6B6B6B" }}>{d.icon} {d.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#1E1E1E" }}>{d.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Divider />
-                  <div style={{ textAlign: "center", fontSize: 11, color: "#ADADAD" }}>
-                    {t("profile_on_pikmi")} <a href="https://www.pikmi.today/" target="_blank" rel="noopener noreferrer" style={{ color: "#1F57C3", fontWeight: 600, textDecoration: "none" }}>pikmi.today</a>
-                  </div>
-                </>
-              )}
+          {/* ─── Nav ─────────────────────────────────────────────────────── */}
+          <div style={{
+            padding: "14px 20px",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            borderBottom: `0.5px solid ${C.divider}`,
+          }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>
+              pik<span style={{ color: C.accent }}>mi</span>
+            </p>
+            <div style={{
+              width: 30, height: 30, borderRadius: "50%", background: C.divider,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, color: C.muted,
+            }}>
+              ×
             </div>
           </div>
 
-          {/* ── MAIN CONTENT ── */}
-          <div className="profile-main" style={{ padding: "32px 40px" }}>
-
-            {/* 01 — Šta radim */}
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              {editSection === "service" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_01")} section="service" />
-                  <label style={labelStyle}>{t("profile_service_lbl")}</label>
-                  <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Npr. Meta i TikTok Ads za e-commerce brendove." />
-                  <label style={labelStyle}>{t("profile_service_desc")}</label>
-                  <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga i specijalizacija..." />
-                  <EditActions />
-                </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_01")} section="service" />
-                  <h2 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 700, color: "#1E1E1E", lineHeight: 1.25, letterSpacing: "-0.3px", whiteSpace: "pre-line" }}>{p.serviceTitle}</h2>
-                  <p style={{ margin: 0, fontSize: 15, color: "#3C3C3C", lineHeight: 1.8 }}>{p.serviceDesc}</p>
-                </>
-              )}
-            </div>
-
-            {/* 02 — Portfolio */}
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              {editSection === "portfolio" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_02")} section="portfolio" />
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-                    {[0, 1, 2, 3].map(i => (
-                      <div key={i}>
-                        <label style={labelStyle}>{t("profile_project_img")} {i + 1}</label>
-                        <div style={{ aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "1.5px dashed #D0D8FF", background: "#F7F9FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8, position: "relative" }}>
-                          {draft.csImages[i]
-                            ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            : <div style={{ textAlign: "center", color: "#ADADAD" }}>
-                                <div style={{ fontSize: 24, marginBottom: 4 }}>📁</div>
-                                <div style={{ fontSize: 10 }}>{t("profile_project")} {i + 1}</div>
-                              </div>
-                          }
-                        </div>
-                        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          <span style={{ padding: "7px 14px", background: "#F0F4FF", border: "1px solid #D0DCFF", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#1F57C3", fontWeight: 600, whiteSpace: "nowrap" }}>
-                            {uploading === i ? t("profile_uploading") : t("profile_upload_btn")}
-                          </span>
-                          <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
-                          {draft.csImages[i] && (
-                            <button onClick={() => { const imgs = [...draft.csImages]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
-                              style={{ padding: "7px 10px", background: "none", border: "1px solid #FECACA", borderRadius: 8, cursor: "pointer", fontSize: 12, color: "#EF4444" }}>
-                              {t("profile_remove")}
-                            </button>
-                          )}
-                        </label>
+          {/* ─── Header: Avatar + Name + Badges + Stats ──────────────────── */}
+          <div style={{ padding: 20 }}>
+            {editSection === "info" && draft ? (
+              <div>
+                {/* Avatar */}
+                <p style={{ ...LBL, marginBottom: 8 }}>PROFILNA SLIKA</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                  {draft.avatarUrl
+                    ? <img src={draft.avatarUrl} alt="" style={{ width: 60, height: 60, borderRadius: 14, objectFit: "cover" }} />
+                    : <div style={{ width: 60, height: 60, borderRadius: 14, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#fff" }}>
+                        {draft.initials || "?"}
                       </div>
-                    ))}
-                  </div>
-                  <EditActions />
+                  }
+                  <label style={{ padding: "7px 13px", background: C.accentLight, color: C.accent, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                    {uploadingAvatar ? "Otpremam..." : "Promeni sliku"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadAvatar(e.target.files[0]); }} />
+                  </label>
                 </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_02")} section="portfolio" />
-                  <div className="profile-cs-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-                    {[0, 1, 2, 3].map(i => (
-                      <div key={i} style={{ aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: p.csImages[i] ? "1px solid #E4EBE4" : "1.5px dashed #D0D0C8", background: p.csImages[i] ? "transparent" : "#F7F7F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {p.csImages[i]
-                          ? <img src={p.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          : <div style={{ textAlign: "center" }}>
-                              <div style={{ fontSize: 20, opacity: 0.25, marginBottom: 4 }}>📁</div>
-                              <div style={{ fontSize: 9, color: "#ADADAD", letterSpacing: "0.5px" }}>{t("profile_pkg_label")} {i + 1}</div>
-                            </div>
-                        }
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
 
-            {/* 03 — Paketi */}
-            <div style={{ position: "relative", background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              {editSection === "pricing" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_03")} section="pricing" />
-                  {draft.pricing.map((tier, i) => (
-                    <div key={i} style={{ padding: "16px", background: "#F7F9FF", borderRadius: 10, marginBottom: 12, border: "1px solid #E0E6FF" }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10 }}>{t("profile_pkg_label")} {i + 1}</div>
-                      <label style={labelStyle}>{t("profile_name")}</label>
-                      <input style={inputStyle} value={tier.name} onChange={e => setDraft_tier(i, "name", e.target.value)} placeholder="Naziv paketa" />
-                      <label style={labelStyle}>{t("profile_price")}</label>
-                      <input style={inputStyle} value={tier.price} onChange={e => setDraft_tier(i, "price", e.target.value)} placeholder="€600" />
-                      <label style={labelStyle}>{t("profile_desc")}</label>
-                      <input style={inputStyle} value={tier.desc} onChange={e => setDraft_tier(i, "desc", e.target.value)} placeholder="Kratki opis..." />
-                      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6B6B6B", cursor: "pointer" }}>
-                        <input type="checkbox" checked={!!tier.green} onChange={e => setDraft_tier(i, "green", e.target.checked)} />
-                        {t("profile_green_price")}
-                      </label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 4 }}>
+                  <div>
+                    <label style={LBL}>IME</label>
+                    <input style={INP} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" />
+                  </div>
+                  <div>
+                    <label style={LBL}>PREZIME</label>
+                    <input style={INP} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" />
+                  </div>
+                </div>
+
+                <label style={LBL}>GRAD, ZEMLJA</label>
+                <input style={INP} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
+
+                <label style={LBL}>STATUS (DOSTUPNOST)</label>
+                <input style={INP} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="DOSTUPAN" />
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <label style={LBL}>BEDŽ 1</label>
+                    <input style={INP} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="100% USPEH" />
+                  </div>
+                  <div>
+                    <label style={LBL}>BEDŽ 2</label>
+                    <input style={INP} value={draft.badge2 ?? ""} onChange={e => setD("badge2", e.target.value)} placeholder="★ TOP" />
+                  </div>
+                </div>
+
+                <p style={{ margin: "12px 0 8px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>STATISTIKE</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {[
+                    { vKey: "metric1Value" as const, lKey: "metric1Label" as const, vPh: "47", lPh: "PROJEKATA" },
+                    { vKey: "metric2Value" as const, lKey: "metric2Label" as const, vPh: "3.2×", lPh: "PROS. ROAS" },
+                    { vKey: "metric3Value" as const, lKey: "metric3Label" as const, vPh: "23", lPh: "BRENDOVA" },
+                  ].map(({ vKey, lKey, vPh, lPh }) => (
+                    <div key={vKey}>
+                      <label style={LBL}>BROJ ({lPh})</label>
+                      <input style={INP} value={(draft as any)[vKey] ?? ""} onChange={e => setD(vKey, e.target.value)} placeholder={vPh} />
+                      <label style={LBL}>LABELA</label>
+                      <input style={INP} value={(draft as any)[lKey] ?? ""} onChange={e => setD(lKey, e.target.value)} placeholder={lPh} />
                     </div>
                   ))}
-                  <EditActions />
                 </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_03")} section="pricing" />
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {p.pricing.map((tier, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 0", borderBottom: i < p.pricing.length - 1 ? "1px solid #F0F0EB" : "none" }}>
-                        <div>
-                          <div style={{ fontSize: 15, fontWeight: 600, color: "#1E1E1E", marginBottom: 4 }}>{tier.name}</div>
-                          <div style={{ fontSize: 13, color: "#6B6B6B" }}>{tier.desc}</div>
-                        </div>
-                        <div style={{ fontSize: 20, fontWeight: 800, color: tier.green ? "#14A800" : "#1F57C3", flexShrink: 0, marginLeft: 24 }}>{tier.price}</div>
+
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                {/* Info header button */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                  <button
+                    onClick={() => startEdit("info")}
+                    style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}
+                  >
+                    Uredi
+                  </button>
+                </div>
+
+                {/* Avatar + Name */}
+                <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
+                  {p.avatarUrl
+                    ? <img src={p.avatarUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }} />
+                    : <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, fontWeight: 700, color: "#fff", boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
+                        {p.initials || "?"}
+                      </div>
+                  }
+                  <div style={{ flex: 1, paddingTop: 4 }}>
+                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1 }}>{p.firstName || "Ime"}</p>
+                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
+                    {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
+                  </div>
+                </div>
+
+                {/* Badges */}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                  <div style={{ padding: "5px 11px", background: C.dark, color: "#fff", fontSize: 10, borderRadius: 999, display: "flex", alignItems: "center", gap: 5, fontWeight: 500 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />
+                    {(p.openStatus || "DOSTUPAN").toUpperCase()}
+                  </div>
+                  {p.badge && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge}</div>}
+                  {p.badge2 && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge2}</div>}
+                </div>
+
+                {/* Stats */}
+                {stats.length > 0 && (
+                  <div style={{ display: "flex", gap: 18, paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
+                    {stats.map((s, i) => (
+                      <div key={i}>
+                        <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: i === 0 ? C.accent : C.dark }}>{s.value}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{s.label}</p>
                       </div>
                     ))}
                   </div>
-                </>
-              )}
-            </div>
+                )}
+              </>
+            )}
+          </div>
 
-            {/* 04 — Stack */}
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              {editSection === "stack" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_04")} section="stack" />
-                  <label style={labelStyle}>{t("profile_tools_skills")}</label>
-                  <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Meta Ads, TikTok Ads, Klaviyo, GA4..." />
-                  <EditActions />
+          {/* ─── 01 — Šta radim ──────────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "service" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
+                <label style={LBL}>NASLOV USLUGE</label>
+                <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Video editor za e-commerce" />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <label style={LBL}>CENA (npr. €85)</label>
+                    <input style={INP} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€85" />
+                  </div>
+                  <div>
+                    <label style={LBL}>JEDINICA (npr. sat)</label>
+                    <input style={INP} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="sat" />
+                  </div>
                 </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_04")} section="stack" />
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <label style={LBL}>OPIS</label>
+                <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga..." />
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="01" text="ŠTA RADIM" section="service" onEdit={startEdit} />
+                {p.serviceTitle
+                  ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
+                  : <p style={{ margin: "0 0 12px", fontSize: 14, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
+                }
+                {p.servicePrice && (
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
+                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: C.accent }}>{p.servicePrice}</p>
+                    {p.servicePriceLabel && <p style={{ margin: 0, fontSize: 12, color: C.muted }}>/{p.servicePriceLabel}</p>}
+                  </div>
+                )}
+                {p.serviceDesc && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.65 }}>{p.serviceDesc}</p>}
+              </>
+            )}
+          </div>
+
+          {/* ─── 02 — Rad ────────────────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "portfolio" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 14, marginBottom: 12 }}>
+                    <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
+                    {/* Slika */}
+                    <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {draft.csImages?.[i]
+                        ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez slike</span>
+                      }
+                    </div>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                      <label style={{ padding: "6px 12px", background: C.accentLight, color: C.accent, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                        {uploading === i ? "Otpremam..." : "Dodaj sliku"}
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
+                      </label>
+                      {draft.csImages?.[i] && (
+                        <button onClick={() => { const imgs = [...(draft.csImages ?? ["","","",""])]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
+                          style={{ padding: "6px 10px", background: "none", border: `1px solid #FECACA`, borderRadius: 6, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>
+                          Ukloni
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px", gap: 6 }}>
+                      <div>
+                        <label style={LBL}>KLIJENT</label>
+                        <input style={INP} value={draft.caseStudies?.[i]?.client ?? ""} onChange={e => setDraftCS(i, "client", e.target.value)} placeholder="Naziv klijenta" />
+                      </div>
+                      <div>
+                        <label style={LBL}>TIP</label>
+                        <input style={INP} value={draft.caseStudies?.[i]?.platform ?? ""} onChange={e => setDraftCS(i, "platform", e.target.value)} placeholder="Brand film" />
+                      </div>
+                      <div>
+                        <label style={LBL}>GODINA</label>
+                        <input style={INP} value={draft.caseStudies?.[i]?.year ?? ""} onChange={e => setDraftCS(i, "year", e.target.value)} placeholder="2024" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="02" text="RAD" section="portfolio" onEdit={startEdit} />
+                {hasWork ? (
+                  <>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                      {csSlots.map(i => {
+                        const img = p.csImages?.[i];
+                        const cs = p.caseStudies?.[i];
+                        return (
+                          <div key={i}>
+                            <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
+                              {img && <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
+                            </div>
+                            {cs?.client && <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>{cs.client}</p>}
+                            {(cs?.platform || cs?.year) && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{[cs.platform, cs.year].filter(Boolean).join(" · ")}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
+                      <div style={{ width: 18, height: 4, borderRadius: 999, background: C.accent }} />
+                      <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
+                      <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
+                    </div>
+                  </>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema projekata — klikni Uredi</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ─── 03 — Veštine ────────────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "stack" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
+                <label style={LBL}>ALATI I VEŠTINE (odvojene zarezom)</label>
+                <textarea style={{ ...INP, minHeight: 80, resize: "vertical" } as React.CSSProperties} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Premiere Pro, After Effects, DaVinci Resolve..." />
+                <p style={{ margin: "-4px 0 8px", fontSize: 11, color: C.muted }}>Prve 2 veštine se prikazuju istaknuto (ljubičasto), ostale sivo.</p>
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="03" text="VEŠTINE" section="stack" onEdit={startEdit} />
+                {stackTags.length > 0 ? (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {stackTags.map((tag, i) => (
-                      <span key={i} style={{ fontSize: 13, padding: "7px 16px", borderRadius: 20, background: "#F0F4FF", color: "#1F57C3", border: "1px solid #D0DCFF", fontWeight: 500 }}>{tag}</span>
+                      <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: 999, fontWeight: i < 2 ? 500 : 400 }}>
+                        {tag}
+                      </span>
                     ))}
                   </div>
-                </>
-              )}
-            </div>
-
-            {/* 06 — Testimonial */}
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4EBE4", padding: "28px 32px", marginBottom: 20 }}>
-              {editSection === "testimonial" && draft ? (
-                <div>
-                  <SectionHeader label={t("profile_sec_06")} section="testimonial" />
-                  <label style={labelStyle}>{t("profile_client_quote")}</label>
-                  <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder="Npr. Stefan je za 6 meseci skalirao naš ad spend 4×..." />
-                  <label style={labelStyle}>{t("profile_client_name")}</label>
-                  <input style={inputStyle} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Ana Lukić" />
-                  <label style={labelStyle}>{t("profile_title_company")}</label>
-                  <input style={inputStyle} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="CEO, Lumea Beauty" />
-                  <EditActions />
-                </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_06")} section="testimonial" />
-                  <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-                    {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#14A800", fontSize: 16 }}>★</span>)}
-                    <span style={{ fontSize: 13, color: "#6B6B6B", marginLeft: 6, alignSelf: "center" }}>5.0 / 5.0</span>
-                  </div>
-                  <p style={{ margin: "0 0 20px", fontSize: 16, color: "#1E1E1E", lineHeight: 1.7, fontStyle: "italic" }}>"{p.testimonialQuote}"</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#1F57C3,#0D3B8C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
-                      {p.testimonialName?.[0]}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#1E1E1E" }}>{p.testimonialName}</div>
-                      <div style={{ fontSize: 12, color: "#6B6B6B" }}>{p.testimonialTitle}</div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* 07 — CTA */}
-            <div style={{ position: "relative", borderRadius: 12, padding: "32px", background: "linear-gradient(135deg, #1F57C3 0%, #0D3B8C 100%)" }}>
-              {editSection === "cta" && draft ? (
-                <div style={{ background: "#fff", borderRadius: 10, padding: 20 }}>
-                  <SectionHeader label={t("profile_sec_07_edit")} section="cta" />
-                  <label style={labelStyle}>{t("profile_cta_title_lbl")}</label>
-                  <input style={inputStyle} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Spreman da skaliraš" />
-                  <label style={labelStyle}>{t("profile_highlighted")}</label>
-                  <input style={inputStyle} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="profitabilno" />
-                  <label style={labelStyle}>{t("profile_btn1_txt")}</label>
-                  <input style={inputStyle} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} />
-                  <label style={labelStyle}>{t("profile_btn2_txt")}</label>
-                  <input style={inputStyle} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} />
-                  <EditActions />
-                </div>
-              ) : (
-                <>
-                  <SectionHeader label={t("profile_sec_07")} section="cta" light={true} />
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "1.5px", marginBottom: 10 }}>{t("profile_sec_07")}</div>
-                  <h3 style={{ margin: "0 0 20px", fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
-                    {p.ctaTitle} <em style={{ fontStyle: "italic", color: "#93C5FD" }}>{p.ctaHighlight}</em>?
-                  </h3>
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <button style={{ padding: "14px 28px", background: "#fff", color: "#1F57C3", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{p.ctaBtn1}</button>
-                    <button style={{ padding: "14px 28px", background: "transparent", color: "#fff", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{p.ctaBtn2}</button>
-                  </div>
-                </>
-              )}
-            </div>
-
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema veština — klikni Uredi</p>
+                )}
+              </>
+            )}
           </div>
-        </div>
+
+          {/* ─── 04 — Detalji ────────────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "details" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>04 — DETALJI</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <label style={LBL}>DOSTUPNOST</label>
+                    <input style={INP} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="30+ h/ned" />
+                  </div>
+                  <div>
+                    <label style={LBL}>ODGOVOR</label>
+                    <input style={INP} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" />
+                  </div>
+                  <div>
+                    <label style={LBL}>JEZICI</label>
+                    <input style={INP} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" />
+                  </div>
+                  <div>
+                    <label style={LBL}>RETAINER</label>
+                    <input style={INP} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="Otvoren" />
+                  </div>
+                </div>
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="04" text="DETALJI" section="details" onEdit={startEdit} />
+                {(p.detailCapacity || p.detailResponse || p.detailLanguages || p.detailMinBudget) ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
+                    {[
+                      { label: "DOSTUPNOST", value: p.detailCapacity },
+                      { label: "ODGOVOR",    value: p.detailResponse },
+                      { label: "JEZICI",     value: p.detailLanguages },
+                      { label: "RETAINER",   value: p.detailMinBudget },
+                    ].filter(d => d.value).map((d, i) => (
+                      <div key={i}>
+                        <p style={{ margin: 0, fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{d.label}</p>
+                        <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 500 }}>{d.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema detalja — klikni Uredi</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ─── 05 — Iskustvo ───────────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "experience" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>05 — ISKUSTVO</p>
+                {(draft.experience ?? []).map((exp, i) => (
+                  <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>Iskustvo {i + 1}</span>
+                      <button onClick={() => removeExp(i)} style={{ padding: "3px 8px", background: "none", border: `1px solid #FECACA`, borderRadius: 5, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>Ukloni</button>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={LBL}>KOMPANIJA</label>
+                        <input style={INP} value={exp.company} onChange={e => setDraftExp(i, "company", e.target.value)} placeholder="Magična Azbuka" />
+                      </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={LBL}>ULOGA / POZICIJA</label>
+                        <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder="Senior Video Editor" />
+                      </div>
+                      <div>
+                        <label style={LBL}>OD (npr. '23)</label>
+                        <input style={INP} value={exp.dateFrom} onChange={e => setDraftExp(i, "dateFrom", e.target.value)} placeholder="'23" />
+                      </div>
+                      <div>
+                        <label style={LBL}>DO (npr. danas)</label>
+                        <input style={INP} value={exp.dateTo} onChange={e => setDraftExp(i, "dateTo", e.target.value)} placeholder="danas" />
+                      </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={LBL}>OPIS</label>
+                        <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder="Brand film + 8 ad creative-a · ROAS 3.2×" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={addExp} style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                  + Dodaj iskustvo
+                </button>
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="05" text="ISKUSTVO" section="experience" onEdit={startEdit} />
+                {(p.experience ?? []).length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {(p.experience ?? []).map((exp, i) => (
+                      <div key={i} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 ? C.accent : C.border}` }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                          <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
+                          {(exp.dateFrom || exp.dateTo) && (
+                            <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>
+                              {exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}
+                            </p>
+                          )}
+                        </div>
+                        {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: i === 0 ? C.accent : C.muted }}>{exp.role}</p>}
+                        {exp.desc && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{exp.desc}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema iskustva — klikni Uredi</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ─── 06 — Reči klijenata ─────────────────────────────────────── */}
+          <SectionSep />
+          <div style={{ padding: "24px 20px" }}>
+            {editSection === "testimonial" && draft ? (
+              <div>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>06 — REČI KLIJENATA</p>
+                <label style={LBL}>CITAT KLIJENTA</label>
+                <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder='"Bojan je promenio kako razmišljamo o video sadržaju..."' />
+                <label style={LBL}>IME KLIJENTA</label>
+                <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Marko Petrović" />
+                <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                <input style={INP} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="Magična Azbuka" />
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <SectionHead number="06" text="REČI KLIJENATA" section="testimonial" onEdit={startEdit} />
+                {p.testimonialQuote ? (
+                  <div style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
+                    <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{p.testimonialQuote}"</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
+                      <div>
+                        <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{p.testimonialName}</p>
+                        {p.testimonialTitle && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{p.testimonialTitle}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema recenzije — klikni Uredi</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ─── 07 — Kontakt ────────────────────────────────────────────── */}
+          <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
+            {editSection === "cta" && draft ? (
+              <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
+                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>07 — KONTAKT</p>
+                <label style={LBL}>NASLOV (npr. Da napravimo)</label>
+                <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Da napravimo" />
+                <label style={LBL}>ISTAKNUTA REČ (ljubičasto, npr. sledeći hit)</label>
+                <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="sledeći hit" />
+                <label style={LBL}>TEKST DUGMETA 1 (primarno)</label>
+                <input style={INP} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} placeholder="Zakaži besplatan poziv" />
+                <label style={LBL}>TEKST DUGMETA 2 (sekundarno)</label>
+                <input style={INP} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} placeholder="Pošalji poruku" />
+                <label style={LBL}>PDF URL (opciono)</label>
+                <input style={INP} value={draft.pdfUrl ?? ""} onChange={e => setD("pdfUrl", e.target.value)} placeholder="https://..." />
+                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <p style={{ margin: 0, fontSize: 9, color: C.accentMuted, letterSpacing: "1.5px", fontWeight: 600 }}>07 — KONTAKT</p>
+                  <button onClick={() => startEdit("cta")} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.1)", color: "#fff", border: "none", cursor: "pointer" }}>Uredi</button>
+                </div>
+                <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
+                  {(p.ctaTitle || p.ctaHighlight) ? (
+                    <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
+                  ) : (
+                    <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
+                  )}
+                </h2>
+                <button style={{ width: "100%", background: C.accent, color: "#fff", border: "none", padding: 15, borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 8, cursor: "default", boxShadow: "0 6px 20px rgba(124,58,237,0.4)" }}>
+                  {p.ctaBtn1 || "Zakaži besplatan poziv"} →
+                </button>
+                <button style={{ width: "100%", background: "transparent", color: "#fff", border: "0.5px solid rgba(255,255,255,0.25)", padding: 14, borderRadius: 999, fontSize: 12, cursor: "default" }}>
+                  {p.ctaBtn2 || "Pošalji poruku"}
+                </button>
+                <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
+                  PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
+                </p>
+              </>
+            )}
+          </div>
+
+        </div>{/* end card */}
       </div>
     </div>
   );
