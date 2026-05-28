@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -297,9 +297,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
   const [showContactModal, setShowContactModal] = useState(false);
   const [senderEmail, setSenderEmail] = useState("");
-  // Guard: prevents double-tracking in React 18 StrictMode / concurrent renders
-  const trackedRef = useRef(false);
-
   useEffect(() => {
     async function loadProfile() {
       const slug = params.profileUrl;
@@ -316,9 +313,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       if (pitchLink?.is_active) {
         userId = pitchLink.user_id;
 
-        // Only track once per component mount — prevents React 18 double-invoke
-        if (!trackedRef.current) {
-          trackedRef.current = true;
+        // sessionStorage key unique per pitch link — survives React remounts and StrictMode
+        const ssKey = `pikmi-tracked-${pitchLink.id}`;
+        const alreadyTracked = sessionStorage.getItem(ssKey);
+
+        if (!alreadyTracked) {
+          sessionStorage.setItem(ssKey, "1");
 
           let viewerToken: string | null = null;
           try {
@@ -354,7 +354,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               }
             })
             .catch(() => {});
-        } // end trackedRef guard
+        } // end sessionStorage guard
       } else {
         // 2. Proveri profile_url
         const { data: profileByUrl } = await supabase
