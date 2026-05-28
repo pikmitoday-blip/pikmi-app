@@ -4,7 +4,7 @@ import AuthHashHandler from "./components/AuthHashHandler";
 export const metadata = {
   title: "pikmi",
   description: "Tailored portfolios. Real connections.",
-  icons: { icon: "/favicon.svg" },
+  icons: { icon: "/pikmilogo.jpg" },
 };
 
 export const viewport = {
