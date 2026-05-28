@@ -43,10 +43,9 @@ export async function POST(req: NextRequest) {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
-    const deviceLabel = device === "mobile" ? "📱 Mobilni" : device === "desktop" ? "🖥️ Desktop" : "Nepoznat";
-    const referrerLabel = referrer
-      ? (() => { try { return new URL(referrer).hostname; } catch { return referrer; } })()
-      : "Direktan posjet";
+    const isHotLead = totalViews >= 2;
+    const deviceLabel = device === "mobile" ? "Telefon" : device === "desktop" ? "Desktop" : "Nepoznat";
+    const deviceIcon  = device === "mobile" ? "📱" : "🖥️";
 
     const from = process.env.RESEND_FROM ?? "pikmi <onboarding@resend.dev>";
 
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from,
         to: ownerEmail,
-        subject: `👁 Neko je otvorio "${pitchLinkTitle}"`,
+        subject: `Klijent gleda tvoj link`,
         html: `
 <!DOCTYPE html>
 <html>
@@ -79,10 +78,8 @@ export async function POST(req: NextRequest) {
         <!-- Body -->
         <tr>
           <td style="padding:32px;">
-            <div style="font-size:36px;margin-bottom:12px;">👁</div>
-            <h2 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111;">Neko je otvorio tvoj pitch link!</h2>
-            <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">
-              Tvoj link <strong style="color:#7C3AED;">${pitchLinkTitle}</strong> je upravo pogledao novi posjetilac.
+            <p style="margin:0 0 24px;color:#111;font-size:17px;line-height:1.6;">
+              👁 Tvoj portfolio je upravo otvoren od strane <strong style="color:#7C3AED;">${pitchLinkTitle}</strong>${isHotLead ? " 🔥" : ""}
             </p>
 
             <!-- Stats box -->
@@ -91,20 +88,16 @@ export async function POST(req: NextRequest) {
                 <td style="padding:20px 24px;">
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td style="padding:6px 0;font-size:13px;color:#888;">🕐 Kada</td>
-                      <td style="padding:6px 0;font-size:13px;font-weight:600;color:#111;text-align:right;">${now}</td>
+                      <td style="padding:7px 0;font-size:13px;color:#888;border-bottom:1px solid #EDE9FE;">🕐 Kada</td>
+                      <td style="padding:7px 0;font-size:13px;font-weight:600;color:#111;text-align:right;border-bottom:1px solid #EDE9FE;">${now}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;font-size:13px;color:#888;">${deviceLabel.includes("Mobilni") ? "📱" : "🖥️"} Uređaj</td>
-                      <td style="padding:6px 0;font-size:13px;font-weight:600;color:#111;text-align:right;">${deviceLabel.replace("📱 ", "").replace("🖥️ ", "")}</td>
+                      <td style="padding:7px 0;font-size:13px;color:#888;border-bottom:1px solid #EDE9FE;">${deviceIcon} Uređaj</td>
+                      <td style="padding:7px 0;font-size:13px;font-weight:600;color:#111;text-align:right;border-bottom:1px solid #EDE9FE;">${deviceLabel}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;font-size:13px;color:#888;">🔗 Izvor</td>
-                      <td style="padding:6px 0;font-size:13px;font-weight:600;color:#111;text-align:right;">${referrerLabel}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:6px 0;font-size:13px;color:#888;">📊 Ukupno pregleda</td>
-                      <td style="padding:6px 0;font-size:13px;font-weight:600;color:#7C3AED;text-align:right;">${totalViews}</td>
+                      <td style="padding:7px 0;font-size:13px;color:#888;">📊 Ukupno pregleda</td>
+                      <td style="padding:7px 0;font-size:13px;font-weight:600;text-align:right;color:${isHotLead ? "#E11D48" : "#7C3AED"};">${totalViews}${isHotLead ? " 🔥" : ""}</td>
                     </tr>
                   </table>
                 </td>
@@ -122,7 +115,7 @@ export async function POST(req: NextRequest) {
                 </td>
               </tr>
               <tr>
-                <td align="center">
+                <td align="center" style="padding-top:8px;">
                   <a href="https://pikmi.today/${slug}"
                      style="font-size:13px;color:#7C3AED;text-decoration:none;">
                     Pogledaj pitch link ↗
