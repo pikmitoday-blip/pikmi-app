@@ -53,13 +53,18 @@ export async function POST(req: NextRequest) {
             const userEmail = userData?.user?.email;
 
             // Dohvati period pretplate iz Stripe-a
-            const sub = await stripe.subscriptions.retrieve(subscriptionId);
-            const subscribedAt = new Date(sub.start_date * 1000).toLocaleString("sr-Latn", {
+            // Cast to any: newer Stripe API versions moved current_period_end
+            // off the top-level Subscription type
+            const sub = await stripe.subscriptions.retrieve(subscriptionId) as any;
+            const periodEnd: number = sub.current_period_end
+              ?? sub.items?.data?.[0]?.current_period_end
+              ?? Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
+            const subscribedAt = new Date((sub.start_date ?? Math.floor(Date.now() / 1000)) * 1000).toLocaleString("sr-Latn", {
               timeZone: "Europe/Belgrade",
               day: "2-digit", month: "2-digit", year: "numeric",
               hour: "2-digit", minute: "2-digit",
             });
-            const validUntil = new Date(sub.current_period_end * 1000).toLocaleString("sr-Latn", {
+            const validUntil = new Date(periodEnd * 1000).toLocaleString("sr-Latn", {
               timeZone: "Europe/Belgrade",
               day: "2-digit", month: "long", year: "numeric",
             });
