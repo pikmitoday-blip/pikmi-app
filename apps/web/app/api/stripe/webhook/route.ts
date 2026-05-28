@@ -39,11 +39,122 @@ export async function POST(req: NextRequest) {
       if (userId && subscriptionId) {
         await supabaseAdmin
           .from("profiles")
-          .update({
-            plan: "pro",
-            stripe_subscription_id: subscriptionId,
-          })
+          .update({ plan: "pro", stripe_subscription_id: subscriptionId })
           .eq("user_id", userId);
+
+        // ── Dobrodošlica email ──────────────────────────────────────────────
+        try {
+          const RESEND_KEY = process.env.RESEND_API_KEY;
+          const from = process.env.RESEND_FROM ?? "pikmi <onboarding@resend.dev>";
+
+          if (RESEND_KEY) {
+            // Dohvati email korisnika
+            const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const userEmail = userData?.user?.email;
+
+            // Dohvati period pretplate iz Stripe-a
+            const sub = await stripe.subscriptions.retrieve(subscriptionId);
+            const subscribedAt = new Date(sub.start_date * 1000).toLocaleString("sr-Latn", {
+              timeZone: "Europe/Belgrade",
+              day: "2-digit", month: "2-digit", year: "numeric",
+              hour: "2-digit", minute: "2-digit",
+            });
+            const validUntil = new Date(sub.current_period_end * 1000).toLocaleString("sr-Latn", {
+              timeZone: "Europe/Belgrade",
+              day: "2-digit", month: "long", year: "numeric",
+            });
+
+            if (userEmail) {
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${RESEND_KEY}`,
+                },
+                body: JSON.stringify({
+                  from,
+                  to: userEmail,
+                  subject: "Dobrodošao u pikmi Pro! ⚡",
+                  html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background:#F5F5F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F5;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#7C3AED,#5B21B6);padding:28px 32px;">
+            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;">pikmi</div>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 32px;">
+            <div style="font-size:42px;margin-bottom:16px;">⚡</div>
+            <h2 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#111;line-height:1.3;">
+              Hvala što si deo Pikmi ekipe.
+            </h2>
+            <p style="margin:0 0 28px;color:#444;font-size:16px;line-height:1.7;">
+              Puno klijenata ti želimo 🙌
+            </p>
+
+            <!-- Detalji pretplate -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8F5FF;border-radius:12px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:20px 24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding:7px 0;font-size:13px;color:#888;border-bottom:1px solid #EDE9FE;">📅 Pretplaćen</td>
+                      <td style="padding:7px 0;font-size:13px;font-weight:600;color:#111;text-align:right;border-bottom:1px solid #EDE9FE;">${subscribedAt}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 0;font-size:13px;color:#888;">⏳ Važi do</td>
+                      <td style="padding:7px 0;font-size:13px;font-weight:600;color:#7C3AED;text-align:right;">${validUntil}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center">
+                  <a href="https://pikmi.today/moj-profil"
+                     style="display:inline-block;background:#7C3AED;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
+                    Otvori pikmi →
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#F8F5FF;padding:16px 32px;text-align:center;border-top:1px solid #EDE9FE;">
+            <p style="margin:0;font-size:11px;color:#AAA;">
+              pikmi.today · Hvala na poverenju
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+                }),
+              });
+            }
+          }
+        } catch (emailErr) {
+          console.error("[webhook] Welcome email error:", emailErr);
+        }
       }
       break;
     }
