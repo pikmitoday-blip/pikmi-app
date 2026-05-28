@@ -40,14 +40,30 @@ function LoginForm() {
         localStorage.removeItem(SESSION_TS_KEY);
       } catch {}
 
-      // Učitaj zapamćene login podatke
+      // Učitaj zapamćene login podatke i odmah prijavi
       try {
         const saved = localStorage.getItem(REMEMBER_KEY);
         if (saved) {
           const { email: savedEmail, password: savedPassword } = JSON.parse(saved);
-          if (savedEmail) setEmail(savedEmail);
-          if (savedPassword) setPassword(savedPassword);
-          setRememberMe(true);
+          if (savedEmail && savedPassword) {
+            setEmail(savedEmail);
+            setPassword(savedPassword);
+            setRememberMe(true);
+            // Auto-login — ne čekaj klik na dugme
+            setLoading(true);
+            const { error } = await supabase.auth.signInWithPassword({
+              email: savedEmail,
+              password: savedPassword,
+            });
+            if (!error) {
+              localStorage.setItem(SESSION_TS_KEY, Date.now().toString());
+              router.replace("/dashboard");
+              return;
+            }
+            // Kredencijali više ne važe — obriši ih
+            localStorage.removeItem(REMEMBER_KEY);
+            setLoading(false);
+          }
         }
       } catch {}
     }
