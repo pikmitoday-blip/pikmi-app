@@ -6,26 +6,13 @@ import { useLanguage } from "../../../lib/i18n";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface ExperienceItem {
-  company: string;
-  role: string;
-  dateFrom: string;
-  dateTo: string;
-  desc: string;
+  company: string; role: string; dateFrom: string; dateTo: string; desc: string;
 }
-
 interface CaseStudyItem {
-  client?: string;
-  platform?: string;
-  year?: string;
-  bg?: string;
-  industry?: string;
-  metric?: string;
-  metricLabel?: string;
-  lightText?: boolean;
+  client?: string; platform?: string; year?: string;
+  bg?: string; industry?: string; metric?: string; metricLabel?: string; lightText?: boolean;
 }
-
 interface PricingTier { name: string; price: string; desc: string; green?: boolean; }
-
 interface Profile {
   csImages: string[];
   avatarUrl: string;
@@ -71,16 +58,12 @@ const CS_GRADIENTS = [
 
 const DEFAULT_PROFILE: Profile = {
   csImages: ["", "", "", ""],
-  avatarUrl: "",
-  firstName: "", lastName: "", initials: "", city: "",
+  avatarUrl: "", firstName: "", lastName: "", initials: "", city: "",
   openStatus: "DOSTUPAN", badge: "", badge2: "",
-  metric1Value: "", metric1Label: "",
-  metric2Value: "", metric2Label: "",
+  metric1Value: "", metric1Label: "", metric2Value: "", metric2Label: "",
   metric3Value: "", metric3Label: "",
   serviceTitle: "", servicePrice: "", servicePriceLabel: "sat", serviceDesc: "",
-  caseStudies: [{}, {}, {}, {}],
-  pricing: [],
-  stack: "",
+  caseStudies: [{}, {}, {}, {}], pricing: [], stack: "",
   detailCapacity: "", detailResponse: "", detailMinBudget: "", detailLanguages: "",
   testimonialQuote: "", testimonialName: "", testimonialTitle: "",
   experience: [],
@@ -89,14 +72,11 @@ const DEFAULT_PROFILE: Profile = {
 };
 
 function getCached(): Profile | null {
-  try {
-    const c = sessionStorage.getItem("pikmi-moj-profil");
-    if (c) return JSON.parse(c);
-  } catch {}
+  try { const c = sessionStorage.getItem("pikmi-moj-profil"); if (c) return JSON.parse(c); } catch {}
   return null;
 }
 
-// ─── Shared input style ──────────────────────────────────────────────────────
+// ─── Shared styles ───────────────────────────────────────────────────────────
 
 const INP: React.CSSProperties = {
   width: "100%", padding: "9px 11px", borderRadius: 8, fontSize: 13,
@@ -109,59 +89,42 @@ const LBL: React.CSSProperties = {
   display: "block", marginBottom: 3, textTransform: "uppercase",
 };
 
-// ─── Section separator ───────────────────────────────────────────────────────
-
 function SectionSep() {
   return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
 }
 
-// ─── Section header with edit button ─────────────────────────────────────────
-
-function SectionHead({
-  number, text, section, onEdit,
-}: { number: string; text: string; section: string; onEdit: (s: string) => void }) {
+function SectionHead({ number, text, section, onEdit }: {
+  number: string; text: string; section: string; onEdit: (s: string) => void;
+}) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
       <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
         {number} — {text}
       </p>
-      <button
-        onClick={() => onEdit(section)}
-        style={{
-          padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-          background: C.accentLight, color: C.accent, border: "none", cursor: "pointer",
-        }}
-      >
+      <button onClick={() => onEdit(section)}
+        style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}>
         Uredi
       </button>
     </div>
   );
 }
 
-// ─── Edit action bar ─────────────────────────────────────────────────────────
-
-function EditActions({ onSave, onCancel, saving }: {
-  onSave: () => void; onCancel: () => void; saving: boolean;
-}) {
+function EditBar({ onSave, onCancel, saving }: { onSave: () => void; onCancel: () => void; saving: boolean }) {
   return (
     <div style={{ display: "flex", gap: 8, paddingTop: 14, borderTop: `1px solid ${C.border}`, marginTop: 14 }}>
-      <button
-        onClick={onSave} disabled={saving}
-        style={{ padding: "9px 18px", background: C.accent, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-      >
+      <button onClick={onSave} disabled={saving}
+        style={{ padding: "9px 18px", background: C.accent, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
         {saving ? "Čuvam..." : "Sačuvaj"}
       </button>
-      <button
-        onClick={onCancel}
-        style={{ padding: "9px 14px", background: "#F7F7F5", color: C.muted, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, cursor: "pointer" }}
-      >
+      <button onClick={onCancel}
+        style={{ padding: "9px 14px", background: "#F7F7F5", color: C.muted, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, cursor: "pointer" }}>
         Otkaži
       </button>
     </div>
   );
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────
 
 export default function MojProfil() {
   const { t } = useLanguage();
@@ -182,11 +145,9 @@ export default function MojProfil() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
-          const { data } = await supabase
-            .from("profiles")
+          const { data } = await supabase.from("profiles")
             .select("first_name, last_name, profile_data, profile_url")
-            .eq("user_id", user.id)
-            .single();
+            .eq("user_id", user.id).single();
           if (data) {
             const pd = (data.profile_data as Record<string, any>) || {};
             const merged: Profile = {
@@ -209,38 +170,30 @@ export default function MojProfil() {
     load();
   }, []);
 
-  function startEdit(section: string) {
-    setEditSection(section);
-    setDraft(p ? { ...p } : null);
-  }
+  function startEdit(s: string) { setEditSection(s); setDraft(p ? { ...p } : null); }
   function cancelEdit() { setEditSection(null); setDraft(null); }
-
-  function setD<K extends keyof Profile>(key: K, value: Profile[K]) {
-    setDraft(prev => prev ? { ...prev, [key]: value } : null);
+  function setD<K extends keyof Profile>(key: K, v: Profile[K]) {
+    setDraft(prev => prev ? { ...prev, [key]: v } : null);
   }
-  function setDraftCS(i: number, key: keyof CaseStudyItem, value: string) {
+  function setDraftCS(i: number, key: keyof CaseStudyItem, v: string) {
     if (!draft) return;
     const cs = [...(draft.caseStudies ?? [{}, {}, {}, {}])];
-    cs[i] = { ...cs[i], [key]: value };
+    cs[i] = { ...cs[i], [key]: v };
     setDraft(prev => prev ? { ...prev, caseStudies: cs } : null);
   }
-  function setDraftExp(i: number, key: keyof ExperienceItem, value: string) {
+  function setDraftExp(i: number, key: keyof ExperienceItem, v: string) {
     if (!draft) return;
     const exp = [...(draft.experience ?? [])];
-    exp[i] = { ...exp[i], [key]: value };
+    exp[i] = { ...exp[i], [key]: v };
     setDraft(prev => prev ? { ...prev, experience: exp } : null);
   }
   function addExp() {
-    setDraft(prev => prev ? {
-      ...prev,
-      experience: [...(prev.experience ?? []), { company: "", role: "", dateFrom: "", dateTo: "", desc: "" }]
-    } : null);
+    setDraft(prev => prev ? { ...prev, experience: [...(prev.experience ?? []), { company: "", role: "", dateFrom: "", dateTo: "", desc: "" }] } : null);
   }
   function removeExp(i: number) {
     setDraft(prev => {
       if (!prev) return null;
-      const exp = [...(prev.experience ?? [])];
-      exp.splice(i, 1);
+      const exp = [...(prev.experience ?? [])]; exp.splice(i, 1);
       return { ...prev, experience: exp };
     });
   }
@@ -249,12 +202,9 @@ export default function MojProfil() {
     if (!draft || !userId) return;
     setSaving(true);
     try {
-      const csImagesClean = (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img);
-      const toSave = { ...draft, csImages: csImagesClean };
+      const toSave = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
       await supabase.from("profiles").upsert({
-        user_id: userId,
-        first_name: draft.firstName,
-        last_name: draft.lastName,
+        user_id: userId, first_name: draft.firstName, last_name: draft.lastName,
         service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
         profile_data: toSave,
       }, { onConflict: "user_id" });
@@ -265,10 +215,7 @@ export default function MojProfil() {
         sessionStorage.removeItem("pikmi-sidebar");
       } catch {}
     } catch (e) { console.error(e); }
-    setSaving(false);
-    setSavedMsg(true);
-    setEditSection(null);
-    setDraft(null);
+    setSaving(false); setSavedMsg(true); setEditSection(null); setDraft(null);
     setTimeout(() => setSavedMsg(false), 2500);
   }
 
@@ -305,7 +252,6 @@ export default function MojProfil() {
       <div style={{ fontSize: 14, color: C.muted }}>Učitavanje profila...</div>
     </div>
   );
-
   if (!p) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
       <div style={{ fontSize: 14, color: C.muted }}>Profil nije pronađen</div>
@@ -318,14 +264,148 @@ export default function MojProfil() {
     { value: p.metric2Value, label: p.metric2Label },
     ...(p.metric3Value ? [{ value: p.metric3Value!, label: p.metric3Label ?? "" }] : []),
   ].filter(m => m.value);
-
-  const csSlots = [0, 1, 2, 3].filter(i =>
-    (p.csImages?.[i] || p.caseStudies?.[i]?.client)
-  );
+  const csSlots = [0, 1, 2, 3].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
   const hasWork = csSlots.length > 0;
+
+  // ─── Edit form helpers ─────────────────────────────────────────────────────
+
+  function InfoEditForm() {
+    if (!draft) return null;
+    return (
+      <div style={{ padding: 24 }}>
+        <p style={{ ...LBL, marginBottom: 10 }}>PROFILNA SLIKA</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+          {draft.avatarUrl
+            ? <img src={draft.avatarUrl} alt="" style={{ width: 60, height: 60, borderRadius: 14, objectFit: "cover" }} />
+            : <div style={{ width: 60, height: 60, borderRadius: 14, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#fff" }}>{draft.initials || "?"}</div>
+          }
+          <label style={{ padding: "7px 13px", background: C.accentLight, color: C.accent, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+            {uploadingAvatar ? "Otpremam..." : "Promeni sliku"}
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadAvatar(e.target.files[0]); }} />
+          </label>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 2 }}>
+          <div><label style={LBL}>IME</label><input style={INP} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" /></div>
+          <div><label style={LBL}>PREZIME</label><input style={INP} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" /></div>
+        </div>
+        <label style={LBL}>GRAD, ZEMLJA</label>
+        <input style={INP} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
+        <label style={LBL}>STATUS</label>
+        <input style={INP} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="DOSTUPAN" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div><label style={LBL}>BEDŽ 1</label><input style={INP} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="100% USPEH" /></div>
+          <div><label style={LBL}>BEDŽ 2</label><input style={INP} value={draft.badge2 ?? ""} onChange={e => setD("badge2", e.target.value)} placeholder="★ TOP" /></div>
+        </div>
+
+        <p style={{ margin: "10px 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>STATISTIKE</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+          {([
+            { vk: "metric1Value", lk: "metric1Label", vph: "47",    lph: "PROJEKATA" },
+            { vk: "metric2Value", lk: "metric2Label", vph: "3.2×",  lph: "PROS. ROAS" },
+            { vk: "metric3Value", lk: "metric3Label", vph: "23",    lph: "BRENDOVA" },
+          ] as const).map(({ vk, lk, vph, lph }) => (
+            <div key={vk}>
+              <label style={LBL}>{lph}</label>
+              <input style={INP} value={(draft as any)[vk] ?? ""} onChange={e => setD(vk as any, e.target.value)} placeholder={vph} />
+              <label style={LBL}>LABELA</label>
+              <input style={INP} value={(draft as any)[lk] ?? ""} onChange={e => setD(lk as any, e.target.value)} placeholder={lph} />
+            </div>
+          ))}
+        </div>
+        <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+      </div>
+    );
+  }
+
+  // ─── Info display (LEFT PANEL on desktop) ─────────────────────────────────
+
+  function InfoDisplay() {
+    return (
+      <div style={{ padding: 24 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+          <button onClick={() => startEdit("info")}
+            style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}>
+            Uredi
+          </button>
+        </div>
+
+        {/* Avatar + Name */}
+        <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
+          {p.avatarUrl
+            ? <img src={p.avatarUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }} />
+            : <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, fontWeight: 700, color: "#fff", boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
+                {p.initials || "?"}
+              </div>
+          }
+          <div style={{ flex: 1, paddingTop: 4 }}>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
+            {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
+          <div style={{ padding: "5px 11px", background: C.dark, color: "#fff", fontSize: 10, borderRadius: 999, display: "flex", alignItems: "center", gap: 5, fontWeight: 500 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />
+            {(p.openStatus || "DOSTUPAN").toUpperCase()}
+          </div>
+          {p.badge  && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge}</div>}
+          {p.badge2 && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge2}</div>}
+        </div>
+
+        {/* Stats */}
+        {stats.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 20px", paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
+            {stats.map((s, i) => (
+              <div key={i}>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: i === 0 ? C.accent : C.dark }}>{s.value}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div>
+      {/* ── Responsive CSS ── */}
+      <style>{`
+        .pp-card {
+          width: 100%;
+          max-width: 480px;
+          margin: 0 auto;
+          background: #fff;
+          border-radius: 24px;
+          border: 0.5px solid ${C.border};
+          overflow: hidden;
+          font-family: 'Inter', -apple-system, sans-serif;
+          color: ${C.dark};
+        }
+        .pp-grid { display: block; }
+        .pp-left { }
+        .pp-right { }
+        @media (min-width: 769px) {
+          .pp-card { max-width: 960px; }
+          .pp-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            align-items: start;
+          }
+          .pp-left {
+            border-right: 1px solid ${C.divider};
+            position: sticky;
+            top: 0;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+          }
+          .pp-right-section { padding: 24px 28px !important; }
+        }
+      `}</style>
+
       {/* ── Page header ── */}
       <div className="flex items-center justify-between page-header">
         <div>
@@ -335,512 +415,335 @@ export default function MojProfil() {
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {savedMsg && <span style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Sačuvano ✓</span>}
           {profileUrl && (
-            <a
-              href={`https://www.pikmi.today/${profileUrl}`}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-primary btn-sm"
-            >
-              <span style={{ fontSize: 14 }}>👁</span>
-              {t("profile_view_live")}
-              <span style={{ fontSize: 12, opacity: 0.8 }}>↗</span>
+            <a href={`https://www.pikmi.today/${profileUrl}`} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+              <span style={{ fontSize: 14 }}>👁</span>{t("profile_view_live")}<span style={{ fontSize: 12, opacity: 0.8 }}>↗</span>
             </a>
           )}
         </div>
       </div>
 
-      {/* ── Profile card ── */}
-      <div style={{ display: "flex", justifyContent: "center", paddingBottom: 60 }}>
-        <div style={{
-          width: "100%", maxWidth: 480,
-          background: "#fff",
-          borderRadius: 24,
-          border: `0.5px solid ${C.border}`,
-          overflow: "hidden",
-          fontFamily: "'Inter', -apple-system, sans-serif",
-        }}>
+      {/* ── Card ── */}
+      <div className="pp-card" style={{ marginBottom: 60 }}>
 
-          {/* ─── Nav ─────────────────────────────────────────────────────── */}
-          <div style={{
-            padding: "14px 20px",
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            borderBottom: `0.5px solid ${C.divider}`,
-          }}>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>
-              pik<span style={{ color: C.accent }}>mi</span>
-            </p>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%", background: C.divider,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, color: C.muted,
-            }}>
-              ×
+        {/* Nav */}
+        <div style={{ padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `0.5px solid ${C.divider}` }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>
+            pik<span style={{ color: C.accent }}>mi</span>
+          </p>
+          <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.divider, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: C.muted }}>×</div>
+        </div>
+
+        {/* Grid: left + right */}
+        <div className="pp-grid">
+
+          {/* ── LEFT PANEL (info) ── */}
+          <div className="pp-left">
+            {editSection === "info" ? <InfoEditForm /> : <InfoDisplay />}
+          </div>
+
+          {/* ── RIGHT PANEL (sections 01–07) ── */}
+          <div className="pp-right">
+
+            {/* 01 — Šta radim */}
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "service" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
+                  <label style={LBL}>NASLOV USLUGE</label>
+                  <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Video editor za e-commerce" />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <div><label style={LBL}>CENA (npr. €85)</label><input style={INP} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€85" /></div>
+                    <div><label style={LBL}>JEDINICA (npr. sat)</label><input style={INP} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="sat" /></div>
+                  </div>
+                  <label style={LBL}>OPIS</label>
+                  <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga..." />
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <SectionHead number="01" text="ŠTA RADIM" section="service" onEdit={startEdit} />
+                  {p.serviceTitle
+                    ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
+                    : <p style={{ margin: "0 0 12px", fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
+                  }
+                  {p.servicePrice && (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
+                      <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: C.accent }}>{p.servicePrice}</p>
+                      {p.servicePriceLabel && <p style={{ margin: 0, fontSize: 12, color: C.muted }}>/{p.servicePriceLabel}</p>}
+                    </div>
+                  )}
+                  {p.serviceDesc && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.65 }}>{p.serviceDesc}</p>}
+                </>
+              )}
             </div>
-          </div>
 
-          {/* ─── Header: Avatar + Name + Badges + Stats ──────────────────── */}
-          <div style={{ padding: 20 }}>
-            {editSection === "info" && draft ? (
-              <div>
-                {/* Avatar */}
-                <p style={{ ...LBL, marginBottom: 8 }}>PROFILNA SLIKA</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                  {draft.avatarUrl
-                    ? <img src={draft.avatarUrl} alt="" style={{ width: 60, height: 60, borderRadius: 14, objectFit: "cover" }} />
-                    : <div style={{ width: 60, height: 60, borderRadius: 14, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#fff" }}>
-                        {draft.initials || "?"}
-                      </div>
-                  }
-                  <label style={{ padding: "7px 13px", background: C.accentLight, color: C.accent, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-                    {uploadingAvatar ? "Otpremam..." : "Promeni sliku"}
-                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadAvatar(e.target.files[0]); }} />
-                  </label>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 4 }}>
-                  <div>
-                    <label style={LBL}>IME</label>
-                    <input style={INP} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" />
-                  </div>
-                  <div>
-                    <label style={LBL}>PREZIME</label>
-                    <input style={INP} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" />
-                  </div>
-                </div>
-
-                <label style={LBL}>GRAD, ZEMLJA</label>
-                <input style={INP} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
-
-                <label style={LBL}>STATUS (DOSTUPNOST)</label>
-                <input style={INP} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="DOSTUPAN" />
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <div>
-                    <label style={LBL}>BEDŽ 1</label>
-                    <input style={INP} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="100% USPEH" />
-                  </div>
-                  <div>
-                    <label style={LBL}>BEDŽ 2</label>
-                    <input style={INP} value={draft.badge2 ?? ""} onChange={e => setD("badge2", e.target.value)} placeholder="★ TOP" />
-                  </div>
-                </div>
-
-                <p style={{ margin: "12px 0 8px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>STATISTIKE</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  {[
-                    { vKey: "metric1Value" as const, lKey: "metric1Label" as const, vPh: "47", lPh: "PROJEKATA" },
-                    { vKey: "metric2Value" as const, lKey: "metric2Label" as const, vPh: "3.2×", lPh: "PROS. ROAS" },
-                    { vKey: "metric3Value" as const, lKey: "metric3Label" as const, vPh: "23", lPh: "BRENDOVA" },
-                  ].map(({ vKey, lKey, vPh, lPh }) => (
-                    <div key={vKey}>
-                      <label style={LBL}>BROJ ({lPh})</label>
-                      <input style={INP} value={(draft as any)[vKey] ?? ""} onChange={e => setD(vKey, e.target.value)} placeholder={vPh} />
-                      <label style={LBL}>LABELA</label>
-                      <input style={INP} value={(draft as any)[lKey] ?? ""} onChange={e => setD(lKey, e.target.value)} placeholder={lPh} />
-                    </div>
-                  ))}
-                </div>
-
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                {/* Info header button */}
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-                  <button
-                    onClick={() => startEdit("info")}
-                    style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}
-                  >
-                    Uredi
-                  </button>
-                </div>
-
-                {/* Avatar + Name */}
-                <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
-                  {p.avatarUrl
-                    ? <img src={p.avatarUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }} />
-                    : <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, fontWeight: 700, color: "#fff", boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
-                        {p.initials || "?"}
-                      </div>
-                  }
-                  <div style={{ flex: 1, paddingTop: 4 }}>
-                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1 }}>{p.firstName || "Ime"}</p>
-                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
-                    {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
-                  </div>
-                </div>
-
-                {/* Badges */}
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-                  <div style={{ padding: "5px 11px", background: C.dark, color: "#fff", fontSize: 10, borderRadius: 999, display: "flex", alignItems: "center", gap: 5, fontWeight: 500 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />
-                    {(p.openStatus || "DOSTUPAN").toUpperCase()}
-                  </div>
-                  {p.badge && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge}</div>}
-                  {p.badge2 && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge2}</div>}
-                </div>
-
-                {/* Stats */}
-                {stats.length > 0 && (
-                  <div style={{ display: "flex", gap: 18, paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
-                    {stats.map((s, i) => (
-                      <div key={i}>
-                        <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: i === 0 ? C.accent : C.dark }}>{s.value}</p>
-                        <p style={{ margin: "2px 0 0", fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ─── 01 — Šta radim ──────────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "service" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
-                <label style={LBL}>NASLOV USLUGE</label>
-                <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Video editor za e-commerce" />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <div>
-                    <label style={LBL}>CENA (npr. €85)</label>
-                    <input style={INP} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€85" />
-                  </div>
-                  <div>
-                    <label style={LBL}>JEDINICA (npr. sat)</label>
-                    <input style={INP} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="sat" />
-                  </div>
-                </div>
-                <label style={LBL}>OPIS</label>
-                <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga..." />
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="01" text="ŠTA RADIM" section="service" onEdit={startEdit} />
-                {p.serviceTitle
-                  ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
-                  : <p style={{ margin: "0 0 12px", fontSize: 14, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
-                }
-                {p.servicePrice && (
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
-                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: C.accent }}>{p.servicePrice}</p>
-                    {p.servicePriceLabel && <p style={{ margin: 0, fontSize: 12, color: C.muted }}>/{p.servicePriceLabel}</p>}
-                  </div>
-                )}
-                {p.serviceDesc && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.65 }}>{p.serviceDesc}</p>}
-              </>
-            )}
-          </div>
-
-          {/* ─── 02 — Rad ────────────────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "portfolio" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
-                {[0, 1, 2, 3].map(i => (
-                  <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 14, marginBottom: 12 }}>
-                    <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
-                    {/* Slika */}
-                    <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {draft.csImages?.[i]
-                        ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                        : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez slike</span>
-                      }
-                    </div>
-                    <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-                      <label style={{ padding: "6px 12px", background: C.accentLight, color: C.accent, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
-                        {uploading === i ? "Otpremam..." : "Dodaj sliku"}
-                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
-                      </label>
-                      {draft.csImages?.[i] && (
-                        <button onClick={() => { const imgs = [...(draft.csImages ?? ["","","",""])]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
-                          style={{ padding: "6px 10px", background: "none", border: `1px solid #FECACA`, borderRadius: 6, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>
-                          Ukloni
-                        </button>
-                      )}
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px", gap: 6 }}>
-                      <div>
-                        <label style={LBL}>KLIJENT</label>
-                        <input style={INP} value={draft.caseStudies?.[i]?.client ?? ""} onChange={e => setDraftCS(i, "client", e.target.value)} placeholder="Naziv klijenta" />
-                      </div>
-                      <div>
-                        <label style={LBL}>TIP</label>
-                        <input style={INP} value={draft.caseStudies?.[i]?.platform ?? ""} onChange={e => setDraftCS(i, "platform", e.target.value)} placeholder="Brand film" />
-                      </div>
-                      <div>
-                        <label style={LBL}>GODINA</label>
-                        <input style={INP} value={draft.caseStudies?.[i]?.year ?? ""} onChange={e => setDraftCS(i, "year", e.target.value)} placeholder="2024" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="02" text="RAD" section="portfolio" onEdit={startEdit} />
-                {hasWork ? (
-                  <>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                      {csSlots.map(i => {
-                        const img = p.csImages?.[i];
-                        const cs = p.caseStudies?.[i];
-                        return (
-                          <div key={i}>
-                            <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
-                              {img && <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
-                            </div>
-                            {cs?.client && <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>{cs.client}</p>}
-                            {(cs?.platform || cs?.year) && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{[cs.platform, cs.year].filter(Boolean).join(" · ")}</p>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
-                      <div style={{ width: 18, height: 4, borderRadius: 999, background: C.accent }} />
-                      <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
-                      <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
-                    </div>
-                  </>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema projekata — klikni Uredi</p>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ─── 03 — Veštine ────────────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "stack" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
-                <label style={LBL}>ALATI I VEŠTINE (odvojene zarezom)</label>
-                <textarea style={{ ...INP, minHeight: 80, resize: "vertical" } as React.CSSProperties} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Premiere Pro, After Effects, DaVinci Resolve..." />
-                <p style={{ margin: "-4px 0 8px", fontSize: 11, color: C.muted }}>Prve 2 veštine se prikazuju istaknuto (ljubičasto), ostale sivo.</p>
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="03" text="VEŠTINE" section="stack" onEdit={startEdit} />
-                {stackTags.length > 0 ? (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {stackTags.map((tag, i) => (
-                      <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: 999, fontWeight: i < 2 ? 500 : 400 }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema veština — klikni Uredi</p>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ─── 04 — Detalji ────────────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "details" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>04 — DETALJI</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <div>
-                    <label style={LBL}>DOSTUPNOST</label>
-                    <input style={INP} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="30+ h/ned" />
-                  </div>
-                  <div>
-                    <label style={LBL}>ODGOVOR</label>
-                    <input style={INP} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" />
-                  </div>
-                  <div>
-                    <label style={LBL}>JEZICI</label>
-                    <input style={INP} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" />
-                  </div>
-                  <div>
-                    <label style={LBL}>RETAINER</label>
-                    <input style={INP} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="Otvoren" />
-                  </div>
-                </div>
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="04" text="DETALJI" section="details" onEdit={startEdit} />
-                {(p.detailCapacity || p.detailResponse || p.detailLanguages || p.detailMinBudget) ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
-                    {[
-                      { label: "DOSTUPNOST", value: p.detailCapacity },
-                      { label: "ODGOVOR",    value: p.detailResponse },
-                      { label: "JEZICI",     value: p.detailLanguages },
-                      { label: "RETAINER",   value: p.detailMinBudget },
-                    ].filter(d => d.value).map((d, i) => (
-                      <div key={i}>
-                        <p style={{ margin: 0, fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{d.label}</p>
-                        <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 500 }}>{d.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema detalja — klikni Uredi</p>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ─── 05 — Iskustvo ───────────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "experience" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>05 — ISKUSTVO</p>
-                {(draft.experience ?? []).map((exp, i) => (
-                  <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>Iskustvo {i + 1}</span>
-                      <button onClick={() => removeExp(i)} style={{ padding: "3px 8px", background: "none", border: `1px solid #FECACA`, borderRadius: 5, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>Ukloni</button>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={LBL}>KOMPANIJA</label>
-                        <input style={INP} value={exp.company} onChange={e => setDraftExp(i, "company", e.target.value)} placeholder="Magična Azbuka" />
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={LBL}>ULOGA / POZICIJA</label>
-                        <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder="Senior Video Editor" />
-                      </div>
-                      <div>
-                        <label style={LBL}>OD (npr. '23)</label>
-                        <input style={INP} value={exp.dateFrom} onChange={e => setDraftExp(i, "dateFrom", e.target.value)} placeholder="'23" />
-                      </div>
-                      <div>
-                        <label style={LBL}>DO (npr. danas)</label>
-                        <input style={INP} value={exp.dateTo} onChange={e => setDraftExp(i, "dateTo", e.target.value)} placeholder="danas" />
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={LBL}>OPIS</label>
-                        <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder="Brand film + 8 ad creative-a · ROAS 3.2×" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button onClick={addExp} style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
-                  + Dodaj iskustvo
-                </button>
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="05" text="ISKUSTVO" section="experience" onEdit={startEdit} />
-                {(p.experience ?? []).length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {(p.experience ?? []).map((exp, i) => (
-                      <div key={i} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 ? C.accent : C.border}` }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                          <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
-                          {(exp.dateFrom || exp.dateTo) && (
-                            <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>
-                              {exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}
-                            </p>
+            {/* 02 — Rad */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "portfolio" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {[0, 1, 2, 3].map(i => (
+                      <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 12 }}>
+                        <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
+                        <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          {draft.csImages?.[i]
+                            ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez slike</span>
+                          }
+                        </div>
+                        <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                          <label style={{ padding: "5px 10px", background: C.accentLight, color: C.accent, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                            {uploading === i ? "..." : "Dodaj sliku"}
+                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
+                          </label>
+                          {draft.csImages?.[i] && (
+                            <button onClick={() => { const imgs = [...(draft.csImages ?? ["","","",""])]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
+                              style={{ padding: "5px 8px", background: "none", border: "1px solid #FECACA", borderRadius: 5, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>
+                              Ukloni
+                            </button>
                           )}
                         </div>
-                        {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: i === 0 ? C.accent : C.muted }}>{exp.role}</p>}
-                        {exp.desc && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{exp.desc}</p>}
+                        <input style={{ ...INP, marginBottom: 4 }} value={draft.caseStudies?.[i]?.client ?? ""} onChange={e => setDraftCS(i, "client", e.target.value)} placeholder="Klijent" />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 60px", gap: 4 }}>
+                          <input style={{ ...INP, marginBottom: 0 }} value={draft.caseStudies?.[i]?.platform ?? ""} onChange={e => setDraftCS(i, "platform", e.target.value)} placeholder="Tip" />
+                          <input style={{ ...INP, marginBottom: 0 }} value={draft.caseStudies?.[i]?.year ?? ""} onChange={e => setDraftCS(i, "year", e.target.value)} placeholder="2024" />
+                        </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema iskustva — klikni Uredi</p>
-                )}
-              </>
-            )}
-          </div>
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <SectionHead number="02" text="RAD" section="portfolio" onEdit={startEdit} />
+                  {hasWork ? (
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                        {csSlots.map(i => {
+                          const img = p.csImages?.[i]; const cs = p.caseStudies?.[i];
+                          return (
+                            <div key={i}>
+                              <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
+                                {img && <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
+                              </div>
+                              {cs?.client && <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>{cs.client}</p>}
+                              {(cs?.platform || cs?.year) && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{[cs.platform, cs.year].filter(Boolean).join(" · ")}</p>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
+                        <div style={{ width: 18, height: 4, borderRadius: 999, background: C.accent }} />
+                        <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
+                        <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
+                      </div>
+                    </>
+                  ) : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema projekata — klikni Uredi</p>}
+                </>
+              )}
+            </div>
 
-          {/* ─── 06 — Reči klijenata ─────────────────────────────────────── */}
-          <SectionSep />
-          <div style={{ padding: "24px 20px" }}>
-            {editSection === "testimonial" && draft ? (
-              <div>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>06 — REČI KLIJENATA</p>
-                <label style={LBL}>CITAT KLIJENTA</label>
-                <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder='"Bojan je promenio kako razmišljamo o video sadržaju..."' />
-                <label style={LBL}>IME KLIJENTA</label>
-                <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Marko Petrović" />
-                <label style={LBL}>KOMPANIJA / POZICIJA</label>
-                <input style={INP} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="Magična Azbuka" />
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <SectionHead number="06" text="REČI KLIJENATA" section="testimonial" onEdit={startEdit} />
-                {p.testimonialQuote ? (
-                  <div style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
-                    <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{p.testimonialQuote}"</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
-                      <div>
-                        <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{p.testimonialName}</p>
-                        {p.testimonialTitle && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{p.testimonialTitle}</p>}
+            {/* 03 — Veštine */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "stack" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
+                  <label style={LBL}>ALATI I VEŠTINE (odvojene zarezom)</label>
+                  <textarea style={{ ...INP, minHeight: 80, resize: "vertical" } as React.CSSProperties} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Premiere Pro, After Effects, DaVinci Resolve..." />
+                  <p style={{ margin: "-4px 0 8px", fontSize: 11, color: C.muted }}>Prve 2 veštine prikazuju se istaknuto (ljubičasto).</p>
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <SectionHead number="03" text="VEŠTINE" section="stack" onEdit={startEdit} />
+                  {stackTags.length > 0
+                    ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {stackTags.map((tag, i) => (
+                          <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: 999, fontWeight: i < 2 ? 500 : 400 }}>{tag}</span>
+                        ))}
+                      </div>
+                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema veština — klikni Uredi</p>
+                  }
+                </>
+              )}
+            </div>
+
+            {/* 04 — Detalji */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "details" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>04 — DETALJI</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <div><label style={LBL}>DOSTUPNOST</label><input style={INP} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="30+ h/ned" /></div>
+                    <div><label style={LBL}>ODGOVOR</label><input style={INP} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" /></div>
+                    <div><label style={LBL}>JEZICI</label><input style={INP} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" /></div>
+                    <div><label style={LBL}>RETAINER</label><input style={INP} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="Otvoren" /></div>
+                  </div>
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <SectionHead number="04" text="DETALJI" section="details" onEdit={startEdit} />
+                  {(p.detailCapacity || p.detailResponse || p.detailLanguages || p.detailMinBudget)
+                    ? <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
+                        {[
+                          { label: "DOSTUPNOST", value: p.detailCapacity },
+                          { label: "ODGOVOR",    value: p.detailResponse },
+                          { label: "JEZICI",     value: p.detailLanguages },
+                          { label: "RETAINER",   value: p.detailMinBudget },
+                        ].filter(d => d.value).map((d, i) => (
+                          <div key={i}>
+                            <p style={{ margin: 0, fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{d.label}</p>
+                            <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 500 }}>{d.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema detalja — klikni Uredi</p>
+                  }
+                </>
+              )}
+            </div>
+
+            {/* 05 — Iskustvo */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "experience" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>05 — ISKUSTVO</p>
+                  {(draft.experience ?? []).map((exp, i) => (
+                    <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>Iskustvo {i + 1}</span>
+                        <button onClick={() => removeExp(i)} style={{ padding: "3px 8px", background: "none", border: "1px solid #FECACA", borderRadius: 5, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>Ukloni</button>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={LBL}>KOMPANIJA</label>
+                          <input style={INP} value={exp.company} onChange={e => setDraftExp(i, "company", e.target.value)} placeholder="Magična Azbuka" />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={LBL}>ULOGA</label>
+                          <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder="Senior Video Editor" />
+                        </div>
+                        <div><label style={LBL}>OD</label><input style={INP} value={exp.dateFrom} onChange={e => setDraftExp(i, "dateFrom", e.target.value)} placeholder="'23" /></div>
+                        <div><label style={LBL}>DO</label><input style={INP} value={exp.dateTo} onChange={e => setDraftExp(i, "dateTo", e.target.value)} placeholder="danas" /></div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={LBL}>OPIS</label>
+                          <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder="Brand film + 8 ad creative-a · ROAS 3.2×" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema recenzije — klikni Uredi</p>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ─── 07 — Kontakt ────────────────────────────────────────────── */}
-          <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
-            {editSection === "cta" && draft ? (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
-                <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>07 — KONTAKT</p>
-                <label style={LBL}>NASLOV (npr. Da napravimo)</label>
-                <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Da napravimo" />
-                <label style={LBL}>ISTAKNUTA REČ (ljubičasto, npr. sledeći hit)</label>
-                <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="sledeći hit" />
-                <label style={LBL}>TEKST DUGMETA 1 (primarno)</label>
-                <input style={INP} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} placeholder="Zakaži besplatan poziv" />
-                <label style={LBL}>TEKST DUGMETA 2 (sekundarno)</label>
-                <input style={INP} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} placeholder="Pošalji poruku" />
-                <label style={LBL}>PDF URL (opciono)</label>
-                <input style={INP} value={draft.pdfUrl ?? ""} onChange={e => setD("pdfUrl", e.target.value)} placeholder="https://..." />
-                <EditActions onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-              </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <p style={{ margin: 0, fontSize: 9, color: C.accentMuted, letterSpacing: "1.5px", fontWeight: 600 }}>07 — KONTAKT</p>
-                  <button onClick={() => startEdit("cta")} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.1)", color: "#fff", border: "none", cursor: "pointer" }}>Uredi</button>
+                  ))}
+                  <button onClick={addExp} style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                    + Dodaj iskustvo
+                  </button>
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
                 </div>
-                <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
-                  {(p.ctaTitle || p.ctaHighlight) ? (
-                    <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
-                  ) : (
-                    <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
-                  )}
-                </h2>
-                <button style={{ width: "100%", background: C.accent, color: "#fff", border: "none", padding: 15, borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 8, cursor: "default", boxShadow: "0 6px 20px rgba(124,58,237,0.4)" }}>
-                  {p.ctaBtn1 || "Zakaži besplatan poziv"} →
-                </button>
-                <button style={{ width: "100%", background: "transparent", color: "#fff", border: "0.5px solid rgba(255,255,255,0.25)", padding: 14, borderRadius: 999, fontSize: 12, cursor: "default" }}>
-                  {p.ctaBtn2 || "Pošalji poruku"}
-                </button>
-                <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
-                  PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
-                </p>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <SectionHead number="05" text="ISKUSTVO" section="experience" onEdit={startEdit} />
+                  {(p.experience ?? []).length > 0
+                    ? <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {(p.experience ?? []).map((exp, i) => (
+                          <div key={i} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 ? C.accent : C.border}` }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                              <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
+                              {(exp.dateFrom || exp.dateTo) && <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>{exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}</p>}
+                            </div>
+                            {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: i === 0 ? C.accent : C.muted }}>{exp.role}</p>}
+                            {exp.desc && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{exp.desc}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema iskustva — klikni Uredi</p>
+                  }
+                </>
+              )}
+            </div>
 
-        </div>{/* end card */}
-      </div>
+            {/* 06 — Reči klijenata */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "testimonial" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>06 — REČI KLIJENATA</p>
+                  <label style={LBL}>CITAT KLIJENTA</label>
+                  <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder='"Bojan je promenio kako razmišljamo o video sadržaju..."' />
+                  <label style={LBL}>IME KLIJENTA</label>
+                  <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Marko Petrović" />
+                  <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                  <input style={INP} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="Magična Azbuka" />
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <SectionHead number="06" text="REČI KLIJENATA" section="testimonial" onEdit={startEdit} />
+                  {p.testimonialQuote
+                    ? <div style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
+                        <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{p.testimonialQuote}"</p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
+                          <div>
+                            <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{p.testimonialName}</p>
+                            {p.testimonialTitle && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{p.testimonialTitle}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema recenzije — klikni Uredi</p>
+                  }
+                </>
+              )}
+            </div>
+
+            {/* 07 — Kontakt */}
+            <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
+              {editSection === "cta" && draft ? (
+                <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
+                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>07 — KONTAKT</p>
+                  <label style={LBL}>NASLOV (npr. Da napravimo)</label>
+                  <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Da napravimo" />
+                  <label style={LBL}>ISTAKNUTA REČ (ljubičasto)</label>
+                  <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="sledeći hit" />
+                  <label style={LBL}>DUGME 1 (primarno)</label>
+                  <input style={INP} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} placeholder="Zakaži besplatan poziv" />
+                  <label style={LBL}>DUGME 2 (sekundarno)</label>
+                  <input style={INP} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} placeholder="Pošalji poruku" />
+                  <label style={LBL}>PDF URL (opciono)</label>
+                  <input style={INP} value={draft.pdfUrl ?? ""} onChange={e => setD("pdfUrl", e.target.value)} placeholder="https://..." />
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <p style={{ margin: 0, fontSize: 9, color: C.accentMuted, letterSpacing: "1.5px", fontWeight: 600 }}>07 — KONTAKT</p>
+                    <button onClick={() => startEdit("cta")} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.12)", color: "#fff", border: "none", cursor: "pointer" }}>Uredi</button>
+                  </div>
+                  <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
+                    {(p.ctaTitle || p.ctaHighlight)
+                      ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
+                      : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
+                    }
+                  </h2>
+                  <button style={{ width: "100%", background: C.accent, color: "#fff", border: "none", padding: 15, borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 8, cursor: "default", boxShadow: "0 6px 20px rgba(124,58,237,0.4)" }}>
+                    {p.ctaBtn1 || "Zakaži besplatan poziv"} →
+                  </button>
+                  <button style={{ width: "100%", background: "transparent", color: "#fff", border: "0.5px solid rgba(255,255,255,0.25)", padding: 14, borderRadius: 999, fontSize: 12, cursor: "default" }}>
+                    {p.ctaBtn2 || "Pošalji poruku"}
+                  </button>
+                  <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
+                    PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
+                  </p>
+                </>
+              )}
+            </div>
+
+          </div>{/* end pp-right */}
+        </div>{/* end pp-grid */}
+      </div>{/* end pp-card */}
     </div>
   );
 }
