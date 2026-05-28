@@ -101,7 +101,7 @@ export default function Home() {
             { icon: "✉️", title: "Outreach kit", desc: "Cold DM, email i follow-up šabloni za svaku profesiju. Samo popuni i pošalji.", color: "rgba(249,115,22,0.15)" },
             { icon: "⚡", title: "Brzo podešavanje", desc: "Profil spreman za 5 minuta. Bez dizajnera, bez tehničkog znanja.", color: "rgba(234,179,8,0.15)" },
           ].map((f) => (
-            <div key={f.title} className="card card-hover">
+            <div key={f.title} className="card">
               <div style={{ width: 48, height: 48, borderRadius: 12, background: f.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 16 }}>
                 {f.icon}
               </div>
