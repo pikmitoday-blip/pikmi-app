@@ -427,19 +427,28 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
             <button onClick={handleLogout} title={t("nav_logout")} style={{
-              background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.25)",
-              cursor: "pointer", color: "#F87171", fontSize: 14, padding: "6px 8px",
-              borderRadius: 8, transition: "all 0.15s", fontWeight: 600,
+              background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)",
+              cursor: "pointer", color: "#F87171", fontSize: 11, fontWeight: 700,
+              padding: "5px 10px", borderRadius: 8, transition: "all 0.15s",
+              display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
+              letterSpacing: "0.02em",
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.25)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.5)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.2)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.45)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.12)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.25)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.1)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.2)";
             }}
-            >⏻</button>
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Odjava
+            </button>
           </div>
 
           {/* Policy linkovi — samo na dashboardu */}
