@@ -287,6 +287,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/pitch-link",   label: t("mob_links"),     icon: "🔗" },
     { href: "/analytics",    label: t("mob_analytics"), icon: "📊" },
     { href: "/outreach",     label: t("mob_outreach"),  icon: "✉️" },
+    { href: "/billing",      label: t("nav_billing"),   icon: "💳" },
   ];
 
   const currentLocale = LOCALES.find(l => l.value === locale)!;
