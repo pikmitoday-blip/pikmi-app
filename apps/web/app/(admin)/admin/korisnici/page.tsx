@@ -12,6 +12,7 @@ interface User {
   profile_url: string | null;
   stripe_subscription_id: string | null;
   linkCount?: number;
+  lastActive?: string | null;
 }
 
 export default function AdminKorisnici() {
@@ -36,10 +37,26 @@ export default function AdminKorisnici() {
         .from("pitch_links")
         .select("user_id");
 
+      const { data: sessions } = await supabase
+        .from("user_sessions")
+        .select("user_id, last_active");
+
       const linkCounts: Record<string, number> = {};
       (links ?? []).forEach(l => { linkCounts[l.user_id] = (linkCounts[l.user_id] ?? 0) + 1; });
 
-      setUsers((profiles ?? []).map(p => ({ ...p, linkCount: linkCounts[p.user_id] ?? 0 })));
+      // Poslednji aktivan timestamp po korisniku
+      const lastActiveMap: Record<string, string> = {};
+      (sessions ?? []).forEach(s => {
+        if (!lastActiveMap[s.user_id] || s.last_active > lastActiveMap[s.user_id]) {
+          lastActiveMap[s.user_id] = s.last_active;
+        }
+      });
+
+      setUsers((profiles ?? []).map(p => ({
+        ...p,
+        linkCount: linkCounts[p.user_id] ?? 0,
+        lastActive: lastActiveMap[p.user_id] ?? null,
+      })));
     } catch {}
     setLoading(false);
   }
@@ -163,7 +180,7 @@ export default function AdminKorisnici() {
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Korisnik", "Plan", "Linkovi", "Registrovan", "Akcije"].map(h => (
+                {["Korisnik", "Plan", "Linkovi", "Registrovan", "Poslednji login", "Akcije"].map(h => (
                   <th key={h} style={{ padding: "11px 20px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#4B5563", letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                 ))}
               </tr>
@@ -215,6 +232,15 @@ export default function AdminKorisnici() {
                   </td>
                   <td style={{ padding: "13px 20px", fontSize: 12, color: "#4B5563" }}>
                     {timeAgo(u.created_at)} ago
+                  </td>
+                  <td style={{ padding: "13px 20px" }}>
+                    {u.lastActive ? (
+                      <span style={{ fontSize: 12, color: "#6B7280" }} title={new Date(u.lastActive).toLocaleString("sr-RS")}>
+                        {timeAgo(u.lastActive)} ago
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 12, color: "#374151" }}>—</span>
+                    )}
                   </td>
                   <td style={{ padding: "13px 20px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
