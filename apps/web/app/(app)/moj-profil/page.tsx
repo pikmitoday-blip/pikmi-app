@@ -342,18 +342,16 @@ export default function MojProfil() {
         </div>
 
         {/* Avatar + Name */}
-        <div style={{ display: "flex", gap: 14, marginBottom: 16 }}>
+        <div style={{ marginBottom: 16 }}>
           {p.avatarUrl
-            ? <img src={p.avatarUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }} />
-            : <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, fontWeight: 700, color: "#fff", boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
+            ? <img src={p.avatarUrl} alt="" style={{ width: "100%", maxWidth: 220, height: 200, borderRadius: 20, objectFit: "cover", display: "block", marginBottom: 14, boxShadow: "0 8px 20px rgba(124,58,237,0.2)" }} />
+            : <div style={{ width: 88, height: 88, borderRadius: 20, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 14, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
                 {p.initials || "?"}
               </div>
           }
-          <div style={{ flex: 1, paddingTop: 4 }}>
-            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
-            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
-            {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
-          </div>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
+          <p style={{ margin: "2px 0 0", fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
+          {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
         </div>
 
         {/* Badges */}
@@ -387,8 +385,6 @@ export default function MojProfil() {
       <style>{`
         .pp-card {
           width: 100%;
-          max-width: 480px;
-          margin: 0 auto;
           background: #fff;
           border-radius: 24px;
           border: 0.5px solid ${C.border};
@@ -398,12 +394,11 @@ export default function MojProfil() {
         }
         .pp-grid { display: block; }
         .pp-left { }
-        .pp-right { }
+        .pp-right { min-width: 0; }
         @media (min-width: 769px) {
-          .pp-card { max-width: 960px; }
           .pp-grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 320px 1fr;
             align-items: start;
           }
           .pp-left {
@@ -413,7 +408,11 @@ export default function MojProfil() {
             max-height: calc(100vh - 80px);
             overflow-y: auto;
           }
-          .pp-right-section { padding: 24px 28px !important; }
+          .pp-right-section { padding: 28px 36px !important; }
+          .pp-cs-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        }
+        @media (max-width: 768px) {
+          .pp-card { max-width: 480px; margin: 0 auto; }
         }
       `}</style>
 
@@ -531,7 +530,7 @@ export default function MojProfil() {
                   <SectionHead number="02" text="RAD" section="portfolio" onEdit={startEdit} />
                   {hasWork ? (
                     <>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                      <div className="pp-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                         {csSlots.map(i => {
                           const img = p.csImages?.[i]; const cs = p.caseStudies?.[i];
                           return (
