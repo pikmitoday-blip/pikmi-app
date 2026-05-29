@@ -129,16 +129,36 @@ export default async function BlogPostPage(
         height: 60,
         display: "flex",
         alignItems: "center",
+        justifyContent: "space-between",
         gap: 16,
       }}>
-        <Link href="/" style={{ textDecoration: "none" }}>
+        <Link href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
           <span style={{ fontWeight: 800, fontSize: 18, background: "linear-gradient(135deg, #7C3AED, #3B82F6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             pikmi
           </span>
         </Link>
-        <span style={{ color: "#374151" }}>·</span>
-        <Link href="/blog" style={{ fontSize: 13, color: "#6B7280", textDecoration: "none" }}>
-          ← Blog
+        <div style={{ display: "flex", alignItems: "center", gap: 24, flex: 1, justifyContent: "center" }}>
+          {[
+            { href: "/#features", label: "Features" },
+            { href: "/#how",      label: "Kako funkcioniše" },
+            { href: "/#pricing",  label: "Cene" },
+            { href: "/blog",      label: "Blog" },
+          ].map(l => (
+            <a key={l.href} href={l.href} style={{
+              fontSize: 14, color: l.href === "/blog" ? "#A78BFA" : "rgba(255,255,255,0.65)",
+              textDecoration: "none", fontWeight: l.href === "/blog" ? 700 : 400,
+              transition: "color 0.15s",
+            }}>
+              {l.label}
+            </a>
+          ))}
+        </div>
+        <Link href="/register" style={{
+          padding: "8px 18px", borderRadius: 8, flexShrink: 0,
+          background: "linear-gradient(135deg, #7C3AED, #3B82F6)",
+          color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700,
+        }}>
+          Kreiraj profil
         </Link>
       </nav>
 
