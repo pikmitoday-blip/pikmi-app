@@ -37,6 +37,13 @@ export default function AccountSettings() {
   const [cancelling, setCancelling] = useState(false);
   const [cancelledUntil, setCancelledUntil] = useState<string | null>(null);
   const [subError, setSubError] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [subDetails, setSubDetails] = useState<{
+    status: string; cancelAtPeriodEnd: boolean; cancelAt: string | null;
+    currentPeriodEnd: string; amount: number; currency: string;
+    card: { brand: string; last4: string; expMonth: number; expYear: number } | null;
+    lastInvoiceAmount: number | null; lastInvoiceDate: string | null; lastInvoicePdf: string | null;
+  } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -54,9 +61,23 @@ export default function AccountSettings() {
         if (data) {
           setFirstName(data.first_name ?? "");
           setLastName(data.last_name ?? "");
-          setPlan(data.plan ?? "free");
+          const currentPlan = data.plan ?? "free";
+          setPlan(currentPlan);
           const pd = data.profile_data as Record<string, string> | null;
           if (pd?.avatarUrl) setAvatarUrl(pd.avatarUrl);
+
+          // Dohvati detalje pretplate za Pro korisnike
+          if (currentPlan === "pro") {
+            try {
+              const subRes = await fetch("/api/stripe/subscription", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user.id }),
+              });
+              const subData = await subRes.json();
+              if (subData.subscription) setSubDetails(subData.subscription);
+            } catch {}
+          }
         }
       } catch {}
       setSubLoading(false);
@@ -166,6 +187,20 @@ export default function AccountSettings() {
       setPassError(e.message || "Error changing password.");
     }
     setPassSaving(false);
+  }
+
+  async function handleCheckout() {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, userEmail: email }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch {}
+    setCheckoutLoading(false);
   }
 
   async function openPortal() {
@@ -398,36 +433,91 @@ export default function AccountSettings() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Trenutni plan */}
-          <div className="card">
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
-              {t("sub_plan_label")}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="card" style={{
+            background: plan === "pro" ? "rgba(124,58,237,0.06)" : "var(--card)",
+            border: plan === "pro" ? "1px solid rgba(124,58,237,0.3)" : "1px solid var(--border)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{
-                padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700,
-                background: plan === "pro" ? "rgba(124,58,237,0.15)" : "rgba(255,255,255,0.06)",
-                border: `1px solid ${plan === "pro" ? "rgba(124,58,237,0.4)" : "rgba(255,255,255,0.1)"}`,
-                color: plan === "pro" ? "#A78BFA" : "#6B7280",
+                width: 46, height: 46, borderRadius: 12, flexShrink: 0,
+                background: plan === "pro" ? "linear-gradient(135deg,#7C3AED,#3B82F6)" : "var(--surface)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
               }}>
-                {plan === "pro" ? `⚡ ${t("sub_plan_pro")}` : t("sub_plan_free")}
+                {plan === "pro" ? "⚡" : "🎯"}
               </div>
-              {plan === "free" && (
-                <button className="btn btn-primary btn-sm" onClick={() => router.push("/billing")}>
-                  {t("sub_upgrade_btn")}
-                </button>
-              )}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
+                  {plan === "pro" ? t("billing_pro") : t("billing_free")}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text3)" }}>
+                  {plan === "pro" ? t("billing_access_all") : t("billing_trial_expired")}
+                </div>
+              </div>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+                background: plan === "pro" ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)",
+                color: plan === "pro" ? "#4ADE80" : "#6B7280",
+                border: `1px solid ${plan === "pro" ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.1)"}`,
+              }}>
+                {plan === "pro" ? "✓ Pro" : "Free"}
+              </span>
             </div>
           </div>
+
+          {/* Detalji pretplate — samo Pro */}
+          {plan === "pro" && subDetails && (
+            <div className="card">
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
+                {t("billing_details")}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: subDetails.card ? 10 : 0 }}>
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 10, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>
+                    {subDetails.cancelAtPeriodEnd ? t("billing_expires_on") : t("billing_next")}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: subDetails.cancelAtPeriodEnd ? "#FCD34D" : "var(--text)" }}>
+                    {new Date(subDetails.currentPeriodEnd).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
+                  </div>
+                </div>
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 10, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>{t("billing_amount")}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>
+                    {subDetails.amount ? `${(subDetails.amount / 100).toLocaleString("sr-RS")} ${subDetails.currency.toUpperCase()}` : "—"}
+                    <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text3)" }}>{t("months_per")}</span>
+                  </div>
+                </div>
+              </div>
+              {subDetails.card && (
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>💳</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, textTransform: "capitalize" as const }}>
+                      {subDetails.card.brand} •••• {subDetails.card.last4}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text3)" }}>
+                      {t("billing_card_exp")} {subDetails.card.expMonth}/{subDetails.card.expYear}
+                    </div>
+                  </div>
+                  {subDetails.lastInvoicePdf && (
+                    <a href={subDetails.lastInvoicePdf} target="_blank" rel="noopener noreferrer"
+                      style={{ marginLeft: "auto", fontSize: 11, color: "#A78BFA", textDecoration: "none", fontWeight: 600 }}>
+                      {t("billing_pdf")} ↗
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Promena kartice — samo za Pro */}
           {plan === "pro" && (
             <div className="card">
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA" }} />
                 {t("sub_manage_card")}
               </div>
-              <p style={{ fontSize: 13, color: "var(--text2)", marginBottom: 16, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--text2)", marginBottom: 14, lineHeight: 1.6 }}>
                 {t("sub_manage_card_desc")}
               </p>
               <button className="btn btn-ghost" onClick={openPortal} disabled={portalLoading}>
@@ -439,44 +529,65 @@ export default function AccountSettings() {
           {/* Otkazivanje — samo za Pro */}
           {plan === "pro" && (
             <div className="card" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#F87171", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#F87171", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F87171" }} />
                 {t("sub_cancel_title")}
               </div>
-              <p style={{ fontSize: 13, color: "var(--text2)", marginBottom: 16, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--text2)", marginBottom: 14, lineHeight: 1.6 }}>
                 {t("sub_cancel_desc")}
               </p>
-
               {cancelledUntil ? (
                 <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24", fontSize: 13 }}>
                   ⚠️ {t("sub_cancelled")} {cancelledUntil}
                 </div>
               ) : (
-                <button
-                  onClick={cancelSubscription}
-                  disabled={cancelling}
-                  style={{
-                    padding: "9px 20px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)",
-                    background: "rgba(239,68,68,0.08)", color: "#F87171",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    opacity: cancelling ? 0.6 : 1,
-                  }}>
+                <button onClick={cancelSubscription} disabled={cancelling} style={{
+                  padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.3)",
+                  background: "rgba(239,68,68,0.08)", color: "#F87171",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  opacity: cancelling ? 0.6 : 1,
+                }}>
                   {cancelling ? t("sub_cancelling") : t("sub_cancel_btn")}
                 </button>
               )}
-
               {subError && (
-                <div style={{ padding: "10px 14px", borderRadius: 8, marginTop: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#F87171", fontSize: 13 }}>
+                <div style={{ padding: "10px 14px", borderRadius: 8, marginTop: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#F87171", fontSize: 13 }}>
                   ⚠️ {subError}
                 </div>
               )}
             </div>
           )}
 
-          {/* Free plan — nema šta za upravljati */}
+          {/* Free → Pro upgrade kartica */}
           {plan === "free" && !subLoading && (
-            <div style={{ padding: "20px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 13, color: "#4B5563", textAlign: "center" }}>
-              {t("sub_no_sub")}
+            <div className="card" style={{
+              border: "1.5px solid rgba(124,58,237,0.5)",
+              background: "linear-gradient(160deg,rgba(124,58,237,0.1) 0%,rgba(59,130,246,0.05) 100%)",
+              position: "relative", overflow: "visible",
+              boxShadow: "0 4px 24px rgba(124,58,237,0.18)",
+            }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#7C3AED,#3B82F6,#7C3AED)", borderRadius: "12px 12px 0 0" }} />
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#A78BFA", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10, marginTop: 4 }}>Pro plan</div>
+              <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 2 }}>990 din<span style={{ fontSize: 14, fontWeight: 500, color: "var(--text3)" }}>/mes</span></div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                {["Neograničeno pitch linkova", "Real-time tracking i notifikacije", "Outreach kit", "Prioritetna podrška"].map(f => (
+                  <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>
+                    <span style={{ color: "#A78BFA", fontSize: 11 }}>✦</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={handleCheckout} disabled={checkoutLoading} style={{
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                padding: "12px 20px", borderRadius: 10, border: "none",
+                background: checkoutLoading ? "rgba(124,58,237,0.5)" : "linear-gradient(135deg,#7C3AED,#6D28D9)",
+                color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                cursor: checkoutLoading ? "wait" : "pointer",
+                boxShadow: checkoutLoading ? "none" : "0 4px 16px rgba(124,58,237,0.45)",
+                transition: "all 0.2s", opacity: checkoutLoading ? 0.7 : 1,
+              }}>
+                {checkoutLoading ? "Učitavanje..." : <>{t("billing_subscribe")} <span style={{ fontSize: 16 }}>→</span></>}
+              </button>
             </div>
           )}
         </div>
