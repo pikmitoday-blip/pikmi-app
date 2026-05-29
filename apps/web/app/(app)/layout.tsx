@@ -410,39 +410,41 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          <div className="sidebar-user" style={{ marginTop: 8 }}>
-            <Link href="/account" title="Podešavanja naloga" style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, textDecoration: "none", minWidth: 0,
-              padding: "4px 6px", borderRadius: 8, transition: "background 0.15s",
+          <div className="sidebar-user" style={{ marginTop: 8, flexDirection: "column", gap: 4 }}>
+            {/* Profil link — cela širina */}
+            <Link href="/account" title="Podešavanja naloga" style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%",
+              textDecoration: "none", padding: "6px 8px", borderRadius: 8, transition: "background 0.15s",
             }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
             >
               {profile.avatarUrl
-                ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                : <div className="avatar" style={{ width: 30, height: 30, fontSize: 12, flexShrink: 0 }}>{profile.initials}</div>
+                ? <img src={profile.avatarUrl} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                : <div className="avatar" style={{ width: 32, height: 32, fontSize: 12, flexShrink: 0 }}>{profile.initials}</div>
               }
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile.firstName} {profile.lastName}</div>
                 <div style={{ fontSize: 11, color: "var(--text3)" }}>{profile.plan === "pro" ? t("pro_plan") : t("free_plan")}</div>
               </div>
             </Link>
-            <button onClick={handleLogout} title={t("nav_logout")} style={{
-              background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)",
-              cursor: "pointer", color: "#F87171", fontSize: 11, fontWeight: 700,
-              padding: "5px 10px", borderRadius: 8, transition: "all 0.15s",
-              display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
-              letterSpacing: "0.02em",
+            {/* Odjava dugme — cela širina ispod profila */}
+            <button onClick={handleLogout} style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.18)",
+              cursor: "pointer", color: "#F87171", fontSize: 12, fontWeight: 600,
+              padding: "7px 12px", borderRadius: 8, transition: "all 0.15s", fontFamily: "inherit",
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.2)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.45)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.18)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.4)";
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.1)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.2)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.18)";
             }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
