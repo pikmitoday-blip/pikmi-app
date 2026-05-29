@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
 import { LanguageProvider, LOCALES, useLanguage, initLocale, type Locale } from "../../lib/i18n";
+import { UserProvider } from "../../lib/UserContext";
 
 interface ViewNotif {
   id: string;
@@ -30,7 +31,9 @@ function getCachedSidebar(): SidebarProfile {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
-      <AppLayoutInner>{children}</AppLayoutInner>
+      <UserProvider>
+        <AppLayoutInner>{children}</AppLayoutInner>
+      </UserProvider>
     </LanguageProvider>
   );
 }
@@ -68,7 +71,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
     async function loadSidebarProfile() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
         if (user) {
           const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "").split(",").map(e => e.trim().toLowerCase());
           if (adminEmails.includes(user.email?.toLowerCase() ?? "")) setIsAdmin(true);
@@ -135,7 +139,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
     async function manageSession() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
         if (!user) return;
 
         // Provjeri da li postoji STARI session_id u localStorage (prije nego što kreiramo novi)
@@ -195,7 +200,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     try {
       const sessionId = localStorage.getItem("pikmi-session-id");
       if (sessionId) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
         if (user) {
           await supabase.from("user_sessions")
             .delete()

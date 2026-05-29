@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import { useUser } from "../../../lib/UserContext";
 
 interface PitchLink {
   id: string;
@@ -13,10 +14,39 @@ interface PitchLink {
   created_at: string;
 }
 
+const CACHE_KEY = "pikmi-dashboard";
+const CACHE_TTL = 30_000; // 30 sekundi — svježi podaci, ali instant prikaz pri povratku
+
+function getCached(): PitchLink[] | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw) as { data: PitchLink[]; ts: number };
+    // Vrati keširane podatke bez obzira na starost — koristimo stale-while-revalidate
+    return data;
+  } catch { return null; }
+}
+
+function isCacheStale(): boolean {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return true;
+    const { ts } = JSON.parse(raw);
+    return Date.now() - ts > CACHE_TTL;
+  } catch { return true; }
+}
+
+function setCache(data: PitchLink[]) {
+  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
+
 export default function Dashboard() {
   const { t } = useLanguage();
-  const [links, setLinks] = useState<PitchLink[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { userId } = useUser();
+
+  // Instant render iz cache-a — nema bljeskanja praznog ekrana
+  const [links, setLinks] = useState<PitchLink[]>(() => getCached() ?? []);
+  const [loading, setLoading] = useState(() => getCached() === null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
@@ -31,18 +61,24 @@ export default function Dashboard() {
     localStorage.setItem("pikmi-theme", next);
   }
 
-  useEffect(() => { loadDashboard(); }, []);
+  useEffect(() => {
+    if (!userId) return;
+    // Ako je cache svježi, ne treba nam novi fetch
+    if (!isCacheStale()) return;
+    loadDashboard(userId);
+  }, [userId]);
 
-  async function loadDashboard() {
+  async function loadDashboard(uid: string) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
       const { data } = await supabase
         .from("pitch_links")
         .select("id, title, slug, views, is_active, created_at")
-        .eq("user_id", user.id)
+        .eq("user_id", uid)
         .order("created_at", { ascending: false });
-      if (data) setLinks(data);
+      if (data) {
+        setLinks(data);
+        setCache(data);
+      }
     } catch {}
     setLoading(false);
   }

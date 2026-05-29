@@ -3,6 +3,18 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import { useUser } from "../../../lib/UserContext";
+
+const BILLING_CACHE_KEY = "pikmi-billing";
+function getBillingCache(): BillingProfile | null {
+  try { const c = sessionStorage.getItem(BILLING_CACHE_KEY); return c ? JSON.parse(c) : null; } catch { return null; }
+}
+function setBillingCache(data: BillingProfile) {
+  try { sessionStorage.setItem(BILLING_CACHE_KEY, JSON.stringify(data)); } catch {}
+}
+function clearBillingCache() {
+  try { sessionStorage.removeItem(BILLING_CACHE_KEY); } catch {}
+}
 
 interface BillingProfile {
   plan: "free" | "pro";
@@ -26,15 +38,16 @@ interface SubDetails {
 
 function BillingContent() {
   const { t } = useLanguage();
+  const { userId } = useUser();
   const searchParams = useSearchParams();
-  const [profile, setProfile] = useState<BillingProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Instant render iz cache-a
+  const [profile, setProfile] = useState<BillingProfile | null>(() => getBillingCache());
+  const [loading, setLoading] = useState<boolean>(() => getBillingCache() === null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelAt, setCancelAt] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
   const [subDetails, setSubDetails] = useState<SubDetails | null>(null);
 
@@ -56,20 +69,21 @@ function BillingContent() {
   }, []);
 
   useEffect(() => {
+    if (!userId) return;
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
-      setUserId(user.id);
-      setUserEmail(user.email ?? "");
+      // Email dohvatamo iz Supabase session (nema network call za getSession)
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserEmail(session?.user?.email ?? "");
 
       const { data } = await supabase
         .from("profiles")
         .select("plan, trial_ends_at, stripe_subscription_id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .single();
 
-      const profileData = data as BillingProfile ?? { plan: "free", trial_ends_at: null, stripe_subscription_id: null };
+      const profileData = (data as BillingProfile) ?? { plan: "free", trial_ends_at: null, stripe_subscription_id: null };
       setProfile(profileData);
+      setBillingCache(profileData);
 
       // Fetch subscription details if Pro
       if (profileData?.plan === "pro" && profileData?.stripe_subscription_id) {
@@ -77,7 +91,7 @@ function BillingContent() {
           const subRes = await fetch("/api/stripe/subscription", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.id }),
+            body: JSON.stringify({ userId }),
           });
           const subData = await subRes.json();
           if (subData.subscription) {
@@ -92,7 +106,7 @@ function BillingContent() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [userId]);
 
   async function handlePortal() {
     setPortalLoading(true);
@@ -133,6 +147,7 @@ function BillingContent() {
 
   async function handleSubscribe() {
     setCheckoutLoading(true);
+    clearBillingCache(); // Nakon plaćanja plan se menja — briši cache
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -145,8 +160,6 @@ function BillingContent() {
       setCheckoutLoading(false);
     }
   }
-
-  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>{t("loading")}</div>;
 
   const isPro = profile?.plan === "pro";
   const trialEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
@@ -190,6 +203,17 @@ function BillingContent() {
       )}
 
       {/* Current plan card */}
+      {loading && !profile ? (
+        <div className="card mb-8" style={{ minHeight: 88 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ height: 16, width: "35%", background: "rgba(255,255,255,0.07)", borderRadius: 6, marginBottom: 8 }} />
+              <div style={{ height: 12, width: "55%", background: "rgba(255,255,255,0.04)", borderRadius: 6 }} />
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="card mb-8" style={{
         background: isPro ? "rgba(124,58,237,0.06)" : "var(--card)",
         border: isPro ? "1px solid rgba(124,58,237,0.3)" : "1px solid var(--border)",
@@ -222,6 +246,7 @@ function BillingContent() {
           </span>
         </div>
       </div>
+      )} {/* end plan card conditional */}
 
       {/* Subscription details (Pro only) */}
       {isPro && subDetails && (
@@ -301,6 +326,19 @@ function BillingContent() {
       )}
 
       {/* Plans */}
+      {loading && !profile ? (
+        <div className="grid-2" style={{ gap: 24 }}>
+          {[0, 1].map(i => (
+            <div key={i} className="card" style={{ minHeight: 320, opacity: i === 1 ? 0.7 : 1 }}>
+              <div style={{ height: 12, width: "20%", background: "rgba(255,255,255,0.06)", borderRadius: 5, marginBottom: 16 }} />
+              <div style={{ height: 36, width: "40%", background: "rgba(255,255,255,0.07)", borderRadius: 8, marginBottom: 20 }} />
+              {[80, 65, 75, 60, 70].map((w, j) => (
+                <div key={j} style={{ height: 11, width: `${w}%`, background: "rgba(255,255,255,0.04)", borderRadius: 5, marginBottom: 10 }} />
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="grid-2" style={{ gap: 24 }}>
         {/* Free */}
         <div className="card" style={{ opacity: isPro ? 0.5 : 1 }}>
@@ -414,6 +452,7 @@ function BillingContent() {
           )}
         </div>
       </div>
+      )} {/* end plans conditional */}
 
       {/* FAQ */}
       <div style={{ marginTop: 40 }}>

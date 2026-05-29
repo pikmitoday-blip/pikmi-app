@@ -36,7 +36,8 @@ export default function PitchLink() {
   async function loadLinks() {
     setLoadingLinks(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (!user) return;
       const [linksRes, profileRes] = await Promise.all([
         supabase.from("pitch_links").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),

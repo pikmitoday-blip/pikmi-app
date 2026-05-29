@@ -2,6 +2,33 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import { useUser } from "../../../lib/UserContext";
+
+const CACHE_KEY = "pikmi-analytics";
+const CACHE_TTL = 60_000; // 60 sekundi
+
+interface AnalyticsCache { links: LinkStat[]; views: ViewRecord[]; ts: number; }
+
+function getCached(): AnalyticsCache | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as AnalyticsCache;
+  } catch { return null; }
+}
+
+function isCacheStale(): boolean {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return true;
+    const { ts } = JSON.parse(raw);
+    return Date.now() - ts > CACHE_TTL;
+  } catch { return true; }
+}
+
+function setCache(links: LinkStat[], views: ViewRecord[]) {
+  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ links, views, ts: Date.now() })); } catch {}
+}
 
 interface LinkStat {
   id: string;
@@ -30,28 +57,31 @@ type Timeline = "7" | "30" | "90" | "all";
 
 export default function Analytics() {
   const { t } = useLanguage();
-  const [links, setLinks] = useState<LinkStat[]>([]);
-  const [views, setViews] = useState<ViewRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { userId } = useUser();
+
+  // Instant render iz cache-a — čita sessionStorage samo jednom pri mountu
+  const [links, setLinks] = useState<LinkStat[]>(() => getCached()?.links ?? []);
+  const [views, setViews] = useState<ViewRecord[]>(() => getCached()?.views ?? []);
+  const [loading, setLoading] = useState<boolean>(() => getCached() === null);
   const [selectedLink, setSelectedLink] = useState<string>("all");
   const [timeline, setTimeline] = useState<Timeline>("7");
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!userId) return;
+    if (!isCacheStale()) return;
+    loadData(userId);
+  }, [userId]);
 
-  async function loadData() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
+  async function loadData(uid: string) {
     const { data: linksData } = await supabase
       .from("pitch_links")
       .select("id, title, slug, views, is_active, created_at")
-      .eq("user_id", user.id)
+      .eq("user_id", uid)
       .order("views", { ascending: false });
 
     if (linksData) setLinks(linksData);
 
+    let enrichedViews: ViewRecord[] = [];
     if (linksData && linksData.length > 0) {
       const linkIds = linksData.map(l => l.id);
       const { data: viewsData } = await supabase
@@ -62,15 +92,16 @@ export default function Analytics() {
         .limit(2000);
 
       if (viewsData) {
-        const enriched = viewsData.map(v => ({
+        enrichedViews = viewsData.map(v => ({
           ...v,
           linkTitle: linksData.find(l => l.id === v.pitch_link_id)?.title || "—",
           linkSlug: linksData.find(l => l.id === v.pitch_link_id)?.slug || "",
         }));
-        setViews(enriched);
+        setViews(enrichedViews);
       }
     }
 
+    if (linksData) setCache(linksData, enrichedViews);
     setLoading(false);
   }
 
@@ -174,8 +205,6 @@ export default function Analytics() {
     if (hrs < 24) return `${hrs}h`;
     return `${Math.floor(hrs / 24)}d`;
   }
-
-  if (loading) return <div style={{ padding: 40, color: "var(--text3)" }}>{t("loading")}</div>;
 
   return (
     <div>
