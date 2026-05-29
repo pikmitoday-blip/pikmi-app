@@ -465,6 +465,11 @@ export default function AccountSettings() {
           </div>
 
           {/* Detalji pretplate — samo Pro */}
+          {plan === "pro" && !subDetails && !subLoading && (
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text3)" }}>
+              Detalji pretplate nisu dostupni za ovaj nalog.
+            </div>
+          )}
           {plan === "pro" && subDetails && (
             <div className="card">
               <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
@@ -557,6 +562,23 @@ export default function AccountSettings() {
               )}
             </div>
           )}
+
+          {/* FAQ */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", marginBottom: 10 }}>{t("billing_faq")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {([
+                { q: t("billing_faq_q1"), a: t("billing_faq_a1") },
+                { q: t("billing_faq_q2"), a: t("billing_faq_a2") },
+                { q: t("billing_faq_q3"), a: t("billing_faq_a3") },
+              ]).map(item => (
+                <div key={item.q} className="card" style={{ padding: "14px 16px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{item.q}</div>
+                  <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.6 }}>{item.a}</div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Free → Pro upgrade kartica */}
           {plan === "free" && !subLoading && (
