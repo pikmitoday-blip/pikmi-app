@@ -225,9 +225,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("pikmi-session-id");
       }
     } catch {}
-    // Resetuj temu i obrisi cache pri odjavljivanju
+    // Resetuj temu i obrisi sve keširane podatke pri odjavljivanju
     localStorage.removeItem("pikmi-theme");
     localStorage.removeItem("pikmi-session-ts");
+    localStorage.removeItem("pikmi-remember"); // sprečava auto-login pri sledećem posetu /login
     document.documentElement.dataset.theme = "dark";
     try { sessionStorage.clear(); } catch {}
     await supabase.auth.signOut();
