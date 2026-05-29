@@ -213,7 +213,16 @@ export default function MojProfil() {
       try {
         sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(toSave));
         sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(toSave));
-        sessionStorage.removeItem("pikmi-sidebar");
+        // Instant update sidebara — bez refresha
+        window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
+          detail: {
+            firstName: toSave.firstName,
+            lastName: toSave.lastName,
+            initials: (toSave.firstName?.[0] ?? "").toUpperCase() + (toSave.lastName?.[0] ?? "").toUpperCase(),
+            avatarUrl: toSave.avatarUrl,
+            serviceTitle: (toSave.serviceTitle || "").split("\n")[0].trim(),
+          },
+        }));
       } catch {}
     } catch (e) { console.error(e); }
     setSaving(false); setSavedMsg(true); setEditSection(null); setDraft(null);

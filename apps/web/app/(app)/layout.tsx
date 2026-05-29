@@ -62,6 +62,20 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Instant sync kada korisnik sačuva ime/avatar/podatke na bilo kojoj stranici
+  useEffect(() => {
+    function onProfileChanged(e: Event) {
+      const detail = (e as CustomEvent<Partial<SidebarProfile>>).detail;
+      setProfile(prev => {
+        const updated = { ...prev, ...detail };
+        try { sessionStorage.setItem("pikmi-sidebar", JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+    }
+    window.addEventListener("pikmi-profile-changed", onProfileChanged);
+    return () => window.removeEventListener("pikmi-profile-changed", onProfileChanged);
+  }, []);
+
   // Inicijalizuj jezik iz localStorage
   useEffect(() => { initLocale(); }, []);
 

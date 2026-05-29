@@ -98,7 +98,11 @@ export default function AccountSettings() {
         return;
       }
       setAvatarUrl(urlWithCacheBust);
-      try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
+      try {
+        window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
+          detail: { avatarUrl: urlWithCacheBust },
+        }));
+      } catch {}
     } catch (e: any) {
       setAvatarError(e.message || "Upload error.");
     }
@@ -127,9 +131,12 @@ export default function AccountSettings() {
           initials: (fn[0] ?? "").toUpperCase() + (ln[0] ?? "").toUpperCase(),
         },
       }).eq("user_id", user.id);
-      // Clear all profile caches so moj-profil and sidebar reload fresh
+      // Instant update sidebara — bez refresha
       try {
-        sessionStorage.removeItem("pikmi-sidebar");
+        const initials = (fn[0] ?? "").toUpperCase() + (ln[0] ?? "").toUpperCase();
+        window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
+          detail: { firstName: fn, lastName: ln, initials },
+        }));
         sessionStorage.removeItem("pikmi-moj-profil");
         sessionStorage.removeItem("pikmi-profile-edit");
       } catch {}
@@ -267,7 +274,11 @@ export default function AccountSettings() {
                         const existing = (profileRow?.profile_data as Record<string, unknown>) ?? {};
                         await supabase.from("profiles").update({ profile_data: { ...existing, avatarUrl: "" } }).eq("user_id", user.id);
                         setAvatarUrl("");
-                        try { sessionStorage.removeItem("pikmi-sidebar"); } catch {}
+                        try {
+                          window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
+                            detail: { avatarUrl: "" },
+                          }));
+                        } catch {}
                       }}>
                       {t("account_avatar_remove")}
                     </button>
