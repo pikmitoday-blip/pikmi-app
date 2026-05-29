@@ -142,7 +142,7 @@ export default function Home() {
         <div className="grid-2" style={{ gap: 24 }}>
           <div className="card">
             <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", marginBottom: 12 }}>FREE</div>
-            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>0€</div>
+            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>0 din</div>
             <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>zauvek besplatno</div>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {["1 pitch link", "Osnovni profil", "Statistika pregleda"].map(f => (
@@ -176,8 +176,8 @@ export default function Home() {
               whiteSpace: "nowrap",
             }}>✦ PREPORUČENO</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: 10 }}>Pro</div>
-            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>8€<span style={{ fontSize: 16, fontWeight: 500, color: "var(--text2)" }}>/mes</span></div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>ili 72€/godišnje</div>
+            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>990 din<span style={{ fontSize: 16, fontWeight: 500, color: "var(--text2)" }}>/mes</span></div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>otkaži kada hoćeš</div>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {["Neograničeno pitch linkova", "Sve sekcije profila", "Real-time tracking i notifikacije", "Outreach kit", "Custom boje i fontovi", "Prioritetna podrška"].map(f => (
                 <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text)" }}>
