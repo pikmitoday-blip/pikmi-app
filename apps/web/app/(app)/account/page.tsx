@@ -482,8 +482,8 @@ export default function AccountSettings() {
         </div>
       )}
 
-      {/* ── Odjava ── */}
-      <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+      {/* ── Odjava — samo mobilna verzija ── */}
+      <div className="mobile-only" style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
         <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Odjava</h2>
         <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16 }}>
           Odjavićeš se sa svog pikmi naloga na ovom uređaju.
