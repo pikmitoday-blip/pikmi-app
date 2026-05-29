@@ -286,7 +286,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/moj-profil",   label: t("mob_profile"),   icon: "👤" },
     { href: "/pitch-link",   label: t("mob_links"),     icon: "🔗" },
     { href: "/analytics",    label: t("mob_analytics"), icon: "📊" },
-    { href: "/billing",      label: t("nav_billing"),   icon: "💳" },
+    { href: "/outreach",     label: t("mob_outreach"),  icon: "✉️" },
   ];
 
   const currentLocale = LOCALES.find(l => l.value === locale)!;
@@ -610,20 +610,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             <span>{l.label}</span>
           </Link>
         ))}
-        <button
-          onClick={handleLogout}
-          className="mobile-nav-item"
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#F87171", padding: 0 }}
-        >
-          <div className="mobile-nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-          </div>
-          <span>{t("nav_logout")}</span>
-        </button>
       </nav>
     </div>
   );

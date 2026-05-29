@@ -481,6 +481,58 @@ export default function AccountSettings() {
           )}
         </div>
       )}
+
+      {/* ── Odjava ── */}
+      <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Odjava</h2>
+        <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16 }}>
+          Odjavićeš se sa svog pikmi naloga na ovom uređaju.
+        </p>
+        <button
+          onClick={async () => {
+            try {
+              const sessionId = localStorage.getItem("pikmi-session-id");
+              if (sessionId) {
+                const { data: { session } } = await supabase.auth.getSession();
+                const user = session?.user ?? null;
+                if (user) {
+                  await supabase.from("user_sessions").delete().eq("user_id", user.id).eq("session_id", sessionId);
+                }
+                localStorage.removeItem("pikmi-session-id");
+              }
+            } catch {}
+            localStorage.removeItem("pikmi-theme");
+            localStorage.removeItem("pikmi-session-ts");
+            localStorage.removeItem("pikmi-remember");
+            document.documentElement.dataset.theme = "dark";
+            try { sessionStorage.clear(); } catch {}
+            await supabase.auth.signOut();
+            router.push("/login");
+          }}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 20px", borderRadius: 10,
+            background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+            color: "#F87171", fontSize: 13, fontWeight: 600,
+            cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.18)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.4)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(248,113,113,0.08)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(248,113,113,0.2)";
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Odjavi se
+        </button>
+      </div>
     </div>
   );
 }
