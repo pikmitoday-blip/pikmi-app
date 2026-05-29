@@ -40,10 +40,18 @@ export default function CheckoutButton() {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="btn btn-primary w-full"
-      style={{ justifyContent: "center", opacity: loading ? 0.7 : 1 }}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        padding: "14px 20px", borderRadius: 12, border: "none",
+        cursor: loading ? "wait" : "pointer",
+        background: loading ? "rgba(124,58,237,0.5)" : "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
+        color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "inherit",
+        boxShadow: loading ? "none" : "0 6px 24px rgba(124,58,237,0.5), 0 2px 8px rgba(0,0,0,0.2)",
+        transition: "all 0.2s",
+        opacity: loading ? 0.7 : 1,
+      }}
     >
-      {loading ? "Učitavanje..." : "Pretplati se na Pro"}
+      {loading ? "Učitavanje..." : <>Pretplati se na Pro <span style={{ fontSize: 17 }}>→</span></>}
     </button>
   );
 }

@@ -153,17 +153,35 @@ export default function Home() {
             </ul>
             <Link href="/register" className="btn btn-ghost w-full" style={{ justifyContent: "center" }}>Počni besplatno</Link>
           </div>
-          <div className="card glow" style={{ border: "1px solid rgba(124,58,237,0.35)", background: "rgba(124,58,237,0.08)" }}>
-            <div className="flex items-center justify-between mb-3">
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#A78BFA" }}>PRO</div>
-              <span className="badge badge-purple">Popularno</span>
-            </div>
+          <div className="card" style={{
+            border: "1.5px solid rgba(124,58,237,0.6)",
+            background: "linear-gradient(160deg, rgba(124,58,237,0.13) 0%, rgba(59,130,246,0.06) 100%)",
+            position: "relative",
+            boxShadow: "0 0 0 1px rgba(124,58,237,0.15), 0 8px 40px rgba(124,58,237,0.22), 0 2px 8px rgba(0,0,0,0.25)",
+            overflow: "visible",
+          }}>
+            {/* Top accent line */}
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, height: 3,
+              background: "linear-gradient(90deg, #7C3AED, #3B82F6, #7C3AED)",
+              borderRadius: "12px 12px 0 0",
+            }} />
+            {/* Badge */}
+            <div style={{
+              position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)",
+              background: "linear-gradient(90deg, #7C3AED, #6D28D9)",
+              color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+              padding: "4px 14px", borderRadius: 999,
+              boxShadow: "0 4px 12px rgba(124,58,237,0.5)",
+              whiteSpace: "nowrap",
+            }}>✦ PREPORUČENO</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: 10 }}>Pro</div>
             <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>8€<span style={{ fontSize: 16, fontWeight: 500, color: "var(--text2)" }}>/mes</span></div>
             <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>ili 72€/godišnje</div>
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {["Neograničeno pitch linkova", "Sve sekcije profila", "Real-time tracking i notifikacije", "Outreach kit", "Custom boje i fontovi", "Prioritetna podrška"].map(f => (
-                <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text2)" }}>
-                  <span style={{ color: "#A78BFA" }}>✦</span> {f}
+                <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text)" }}>
+                  <span style={{ color: "#A78BFA", fontSize: 12 }}>✦</span> {f}
                 </li>
               ))}
             </ul>
