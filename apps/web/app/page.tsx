@@ -164,7 +164,7 @@ export default async function Home() {
 
         <div style={{ display: "flex", gap: 8 }}>
           <Link href="/login" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.15s" }} className="landing-btn-ghost">Login</Link>
-          <Link href="/register" style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Get started</Link>
+          <Link href="/register" style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Napravi profil</Link>
         </div>
       </nav>
       <div style={{ height: 1, background: "rgba(139,92,246,0.06)" }} />
