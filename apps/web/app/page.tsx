@@ -136,7 +136,7 @@ export default async function Home() {
           .features-grid { grid-template-columns: 1fr !important; }
           .nav-links-desktop { display: none !important; }
           .hero-title { font-size: 34px !important; letter-spacing: -1px !important; }
-          section { padding-left: 16px !important; padding-right: 16px !important; padding-top: 40px !important; }
+          section { padding-left: 16px !important; padding-right: 16px !important; padding-top: 56px !important; padding-bottom: 56px !important; }
           nav { padding-left: 16px !important; padding-right: 16px !important; }
           footer { padding: 24px 16px !important; }
           footer > div { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; }
@@ -309,7 +309,7 @@ export default async function Home() {
       </div> {/* end features full-width bg */}
 
       {/* ══ HOW IT WORKS ══ */}
-      <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "64px 48px", textAlign: "center" }}>
+      <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 48px", textAlign: "center" }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Kako funkcioniše</div>
         <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 56, fontFamily: fontHeading }}>
           {g("how_title", "3 koraka do prvog klijenta")}
