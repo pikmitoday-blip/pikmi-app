@@ -611,6 +611,18 @@ export default function AccountSettings() {
           )}
         </div>
       )}
+      {/* ── Uslovi i privatnost ── */}
+      <div style={{ display: "flex", gap: 16, justifyContent: "center", paddingTop: 32, paddingBottom: 8 }}>
+        <a href="/uslovi" target="_blank" rel="noopener noreferrer"
+          style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
+          Uslovi korišćenja
+        </a>
+        <span style={{ fontSize: 12, color: "var(--text3)" }}>·</span>
+        <a href="/privatnost" target="_blank" rel="noopener noreferrer"
+          style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
+          Politika privatnosti
+        </a>
+      </div>
     </div>
   );
 }

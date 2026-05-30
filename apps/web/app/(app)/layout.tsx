@@ -452,24 +452,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
-          {/* Policy linkovi — samo na dashboardu */}
-          {path === "/dashboard" && (
-          <div style={{ display: "flex", gap: 10, paddingTop: 10, justifyContent: "center" }}>
-            <a href="/uslovi" target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: "var(--text3)", textDecoration: "none" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--text2)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}>
-              Uslovi
-            </a>
-            <span style={{ fontSize: 11, color: "var(--text3)" }}>·</span>
-            <a href="/privatnost" target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: "var(--text3)", textDecoration: "none" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--text2)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--text3)")}>
-              Privatnost
-            </a>
-          </div>
-          )}
         </div>
       </aside>
       {/* ── Mobile top header ── */}
@@ -581,20 +563,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
       <main className="main-content">
         {children}
-        {/* Policy linkovi — samo mobilna verzija, samo na dashboardu */}
-        {path === "/dashboard" && (
-        <div className="mobile-only" style={{ textAlign: "center", padding: "8px 0 24px", display: "flex", justifyContent: "center", gap: 16 }}>
-          <a href="/uslovi" target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
-            Uslovi korišćenja
-          </a>
-          <span style={{ fontSize: 12, color: "var(--text3)" }}>·</span>
-          <a href="/privatnost" target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
-            Politika privatnosti
-          </a>
-        </div>
-        )}
       </main>
 
       {/* ── Mobile bottom nav ── */}
