@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import Checkout3MButton from "../../components/Checkout3MButton";
 
 export default function AccountSettings() {
   const { t } = useLanguage();
@@ -495,15 +496,7 @@ export default function AccountSettings() {
                   <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>/3 mes</span>
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginBottom: 14 }}>~830 din mesečno · ušteda ~480 din</div>
-                <a href="/billing" style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "11px 0", width: "100%",
-                  background: "#10B981", border: "none", borderRadius: 10,
-                  color: "#08080F", fontSize: 13, fontWeight: 700,
-                  textDecoration: "none", boxShadow: "0 4px 16px rgba(16,185,129,0.25)",
-                }}>
-                  Pređi na 3-mesečni plan →
-                </a>
+                <Checkout3MButton label="Pređi na 3-mesečni plan →" style={{ borderRadius: 10, padding: "11px 0", fontSize: 13 }} />
               </div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>
                 Trenutni mesečni plan ostaje aktivan do kraja perioda
