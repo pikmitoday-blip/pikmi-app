@@ -502,7 +502,7 @@ export default function AccountSettings() {
                   color: "#08080F", fontSize: 13, fontWeight: 700,
                   textDecoration: "none", boxShadow: "0 4px 16px rgba(16,185,129,0.25)",
                 }}>
-                  Preći na 3-mesečni plan →
+                  Pređi na 3-mesečni plan →
                 </a>
               </div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>
