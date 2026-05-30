@@ -85,14 +85,21 @@ export default async function Home() {
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
         .landing-feature-card:hover { border-color: rgba(139,92,246,0.2) !important; background: rgba(139,92,246,0.05) !important; }
         @media (max-width: 768px) {
-          .hero-grid { flex-direction: column !important; }
-          .hero-mockup { display: none !important; }
-          .hero-text { max-width: 100% !important; }
-          .how-grid { flex-direction: column !important; }
+          .hero-grid { flex-direction: column !important; align-items: center !important; }
+          .hero-mockup { display: block !important; width: 100% !important; max-width: 420px !important; margin: 0 auto !important; }
+          .hero-text { max-width: 100% !important; text-align: center !important; }
+          .hero-text p { margin-left: auto !important; margin-right: auto !important; }
+          .hero-text div { justify-content: center !important; }
+          .how-grid { flex-direction: column !important; align-items: center !important; text-align: center !important; }
+          .how-grid > div { align-items: center !important; }
           .pricing-grid { flex-direction: column !important; }
           .features-grid { grid-template-columns: 1fr !important; }
           .nav-links-desktop { display: none !important; }
-          .hero-title { font-size: 36px !important; }
+          .hero-title { font-size: 36px !important; letter-spacing: -1px !important; }
+          section { padding-left: 20px !important; padding-right: 20px !important; }
+          nav { padding-left: 20px !important; padding-right: 20px !important; }
+          footer { padding-left: 20px !important; padding-right: 20px !important; }
+          footer > div { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; }
         }
       `}</style>
 
