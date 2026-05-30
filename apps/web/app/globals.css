@@ -218,7 +218,10 @@ textarea.input { resize: vertical; min-height: 90px; }
   background: var(--surface); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; padding: 20px 12px; z-index: 50;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.sidebar::-webkit-scrollbar { display: none; }
 .sidebar-footer { flex-shrink: 0; }
 .sidebar-logo {
   display: flex; align-items: center; gap: 8px;
