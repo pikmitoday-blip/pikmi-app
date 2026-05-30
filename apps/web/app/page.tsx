@@ -162,13 +162,10 @@ export default async function Home() {
             <p style={{ fontSize: 17, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
               {heroSubtitle}
             </p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+            <div style={{ display: "flex", marginBottom: 14 }}>
               <Link href="/register" style={{ padding: "15px 32px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)", letterSpacing: -0.2 }}>
                 {heroCta1}
               </Link>
-              <a href="/#how" style={{ padding: "15px 28px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.5)", fontSize: 15, fontWeight: 600, textDecoration: "none", letterSpacing: -0.2 }}>
-                ▷ Kako funkcioniše
-              </a>
             </div>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{heroNote}</p>
           </div>
