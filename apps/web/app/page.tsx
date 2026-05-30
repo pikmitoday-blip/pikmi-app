@@ -223,7 +223,8 @@ export default async function Home() {
       </section>
 
       {/* ══ FEATURES ══ */}
-      <section id="features" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
+      <div style={{ background: "linear-gradient(180deg,rgba(139,92,246,0.04) 0%,transparent 100%)", width: "100%" }}>
+      <section id="features" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 48px" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Features</div>
           <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, fontFamily: fontHeading }}>Sve što ti treba da<br />zatvoriš posao</h2>
@@ -304,6 +305,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </div> {/* end features full-width bg */}
 
       {/* ══ HOW IT WORKS ══ */}
       <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "64px 48px", textAlign: "center" }}>
@@ -325,7 +327,8 @@ export default async function Home() {
       </section>
 
       {/* ══ PRICING ══ */}
-      <section id="pricing" style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
+      <div style={{ background: "linear-gradient(180deg,rgba(139,92,246,0.04) 0%,transparent 100%)", width: "100%" }}>
+      <section id="pricing" style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 48px" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Cene</div>
           <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, fontFamily: fontHeading }}>Jednostavna cena.<br />Ozbiljan alat.</h2>
@@ -398,6 +401,7 @@ export default async function Home() {
 
         </div>
       </section>
+      </div> {/* end pricing full-width bg */}
 
       {/* ══ CTA ══ */}
       <section style={{ padding: "80px 48px", textAlign: "center", background: "linear-gradient(180deg,transparent,rgba(139,92,246,0.05))" }}>
