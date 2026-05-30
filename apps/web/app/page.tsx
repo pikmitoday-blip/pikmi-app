@@ -310,7 +310,6 @@ export default async function Home() {
 
           {/* Pro Monthly */}
           <div style={{ flex: 1, background: "linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.05))", border: "1.5px solid rgba(139,92,246,0.3)", borderRadius: 24, padding: "28px 24px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 8px 40px rgba(124,58,237,0.15)" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#7C3AED,#A855F7,#7C3AED)", borderRadius: "24px 24px 0 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "#A855F7" }}>PRO MESEČNO</div>
               <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "linear-gradient(135deg,#7C3AED,#A855F7)", padding: "4px 14px", borderRadius: 999, letterSpacing: "0.05em", boxShadow: "0 2px 12px rgba(124,58,237,0.5)" }}>🔥 NAJPOPULARNIJE</span>
