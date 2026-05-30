@@ -102,7 +102,7 @@ export default function Dashboard() {
     { label: t("dash_total_links"),  value: loading ? "—" : totalLinks,  icon: "🔗", color: "#8B5CF6", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.18)"  },
     { label: t("dash_opens"),        value: loading ? "—" : totalOpens,  icon: "👁",  color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.18)"  },
     { label: t("dash_hot_leads"),    value: loading ? "—" : hotLeads,    icon: "🔥", color: "#EF4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.18)"   },
-    { label: t("dash_active_links"), value: loading ? "—" : activeLinks, icon: "✓",  color: "#10B981", bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.18)"  },
+    { label: t("dash_active_links"), value: loading ? "—" : activeLinks, icon: "✅", color: "#10B981", bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.18)"  },
   ];
 
   // ── Row color by status ───────────────────────────────────────────────────
@@ -125,9 +125,8 @@ export default function Dashboard() {
           <h1 className="page-title">{t("dash_title")}</h1>
           <p className="page-subtitle">{t("dash_overview")}</p>
         </div>
-        {/* Desktop: button in header */}
-        <Link href="/pitch-link" className="btn btn-primary" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
+        {/* Desktop only: button in header */}
+        <Link href="/pitch-link" className="btn btn-primary hide-mobile" style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {t("dash_new_link")}
         </Link>
       </div>
@@ -190,7 +189,6 @@ export default function Dashboard() {
           fontSize: 15, fontWeight: 700, textDecoration: "none",
           boxShadow: "0 4px 24px rgba(124,58,237,0.3)",
         }}>
-          <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
           {t("dash_new_link")}
         </Link>
       </div>
