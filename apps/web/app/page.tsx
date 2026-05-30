@@ -112,7 +112,6 @@ export default async function Home() {
         .landing-nav-link { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s; }
         .landing-nav-link:hover { color: rgba(255,255,255,0.9); }
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
-        .landing-feature-card:hover { border-color: rgba(139,92,246,0.2) !important; background: rgba(139,92,246,0.05) !important; }
         @media (max-width: 768px) {
           * { box-sizing: border-box; }
           body { overflow-x: hidden; }
@@ -235,7 +234,7 @@ export default async function Home() {
 
         <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {/* Feature 1 — Personalization */}
-          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.08)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.08)", borderRadius: 20, padding: "28px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎯</div>
               <div>
@@ -253,7 +252,7 @@ export default async function Home() {
           </div>
 
           {/* Feature 2 — Tracking */}
-          <div className="landing-feature-card" style={{ background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.07)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+          <div className="landing-feature-card" style={{ background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.07)", borderRadius: 20, padding: "28px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(245,158,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👁</div>
               <div>
@@ -274,7 +273,7 @@ export default async function Home() {
           </div>
 
           {/* Feature 3 — Outreach Kit */}
-          <div className="landing-feature-card" style={{ background: "rgba(16,185,129,0.03)", border: "1px solid rgba(16,185,129,0.07)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+          <div className="landing-feature-card" style={{ background: "rgba(16,185,129,0.03)", border: "1px solid rgba(16,185,129,0.07)", borderRadius: 20, padding: "28px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>✉️</div>
               <div>
@@ -299,7 +298,7 @@ export default async function Home() {
           </div>
 
           {/* Feature 4 — Quick Setup */}
-          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.03)", border: "1px solid rgba(139,92,246,0.07)", borderRadius: 20, padding: "28px 24px", display: "flex", alignItems: "flex-start", gap: 16, transition: "all 0.2s" }}>
+          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.03)", border: "1px solid rgba(139,92,246,0.07)", borderRadius: 20, padding: "28px 24px", display: "flex", alignItems: "flex-start", gap: 16 }}>
             <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(250,204,21,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, marginTop: 2 }}>⚡</div>
             <div>
               <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8 }}>{g("feature4_title", "Profil spreman za 5 minuta")}</div>
