@@ -66,7 +66,7 @@ export default function Analytics() {
       const linkIds = linksData.map(l => l.id);
       const { data: viewsData } = await supabase
         .from("link_views")
-        .select("id, pitch_link_id, viewed_at, device, referrer, duration")
+        .select("id, pitch_link_id, viewed_at, device, referrer")
         .in("pitch_link_id", linkIds)
         .order("viewed_at", { ascending: false })
         .limit(2000);
@@ -108,12 +108,8 @@ export default function Analytics() {
   const mobileViews  = filteredViews.filter(v => v.device === "mobile").length;
   const desktopViews = filteredViews.filter(v => v.device === "desktop").length;
 
-  // Prosečno vreme (samo za views koji imaju duration)
-  const viewsWithDuration = filteredViews.filter(v => v.duration && v.duration > 0);
-  const avgDurationSec = viewsWithDuration.length > 0
-    ? Math.round(viewsWithDuration.reduce((sum, v) => sum + (v.duration || 0), 0) / viewsWithDuration.length)
-    : null;
-  const avgDurationStr = avgDurationSec != null ? formatDuration(avgDurationSec) : "—";
+  // Prosečno vreme — biće dostupno kad se doda duration tracking
+  const avgDurationStr = "—";
 
   // ── Trend: danas vs juče (na celom setu filtriranom po linku, ne timeline) ─
   const linkFilteredViews = views.filter(v => selectedLink === "all" || v.pitch_link_id === selectedLink);
@@ -321,8 +317,8 @@ export default function Analytics() {
         ) : (
           <>
             {/* Column headers — desktop */}
-            <div className="dash-link-row-time" style={{ display: "grid", gridTemplateColumns: "1fr 90px 80px 80px 70px", gap: 8, padding: "0 4px 8px", borderBottom: "1px solid rgba(139,92,246,0.06)", marginBottom: 4 }}>
-              {["Pitch link", "Uređaj", "Trajanje", "Vreme", ""].map((h, i) => (
+            <div className="dash-link-row-time" style={{ display: "grid", gridTemplateColumns: "1fr 120px 80px", gap: 8, padding: "0 4px 8px", borderBottom: "1px solid rgba(139,92,246,0.06)", marginBottom: 4 }}>
+              {["Pitch link", "Uređaj", "Vreme"].map((h, i) => (
                 <span key={i} style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{h}</span>
               ))}
             </div>
@@ -354,13 +350,10 @@ export default function Analytics() {
                       </div>
                     </div>
 
-                    {/* Right: device + duration + time */}
+                    {/* Right: device + time */}
                     <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                      <span className="dash-link-row-time" style={{ fontSize: 13, color: "var(--text3)", minWidth: 90 }}>
+                      <span className="dash-link-row-time" style={{ fontSize: 13, color: "var(--text3)", minWidth: 120 }}>
                         {v.device === "mobile" ? "📱 Mobile" : v.device === "desktop" ? "🖥 Desktop" : "—"}
-                      </span>
-                      <span className="dash-link-row-time" style={{ fontSize: 12, color: "#A78BFA", fontFamily: "monospace", minWidth: 80 }}>
-                        {formatDuration(v.duration)}
                       </span>
                       <span style={{ fontSize: 12, color: "var(--text3)", minWidth: 50, textAlign: "right" }}>
                         {timeAgo(v.viewed_at) === t("analytics_just_now") ? t("analytics_just_now") : `${timeAgo(v.viewed_at)} ${t("analytics_ago")}`}
