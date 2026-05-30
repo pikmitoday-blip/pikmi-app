@@ -271,7 +271,7 @@ export default function Analytics() {
       </div>
 
       {/* ── Chart ── */}
-      <div style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 20, padding: "22px 20px", marginBottom: 16 }}>
+      <div style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 20, padding: "22px 20px", marginBottom: 16, minWidth: 0, overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700 }}>{chartTitleMap[timeline]}</h2>
           <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 10, padding: 3 }}>
@@ -287,7 +287,7 @@ export default function Analytics() {
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8, height: 110, overflowX: "auto" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8, height: 110, overflowX: "auto", maxWidth: "100%", WebkitOverflowScrolling: "touch" }}>
           {chartData.map(d => (
             <div key={d.date} style={{ flex: 1, minWidth: timeline === "30" ? 18 : 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)" }}>{d.count > 0 ? d.count : ""}</div>
