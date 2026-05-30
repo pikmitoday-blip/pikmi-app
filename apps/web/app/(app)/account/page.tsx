@@ -475,6 +475,42 @@ export default function AccountSettings() {
             )}
           </div>
 
+          {/* Promeni plan — Pro korisnici */}
+          {plan === "pro" && (
+            <div style={SECTION}>
+              <div style={SECTION_TITLE}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A855F7", display: "inline-block" }} />
+                Promeni plan
+              </div>
+              <div style={{
+                background: "rgba(16,185,129,0.04)", border: "1.5px solid rgba(16,185,129,0.15)",
+                borderRadius: 14, padding: "16px 14px", marginBottom: 10,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#10B981", textTransform: "uppercase" as const, letterSpacing: 1 }}>Pro 3 meseca</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", padding: "3px 10px", borderRadius: 100 }}>Uštedi 17%</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 28, fontWeight: 900, color: "#10B981" }}>2490 din</span>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>/3 mes</span>
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginBottom: 14 }}>~830 din mesečno · ušteda ~480 din</div>
+                <a href="/billing" style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "11px 0", width: "100%",
+                  background: "#10B981", border: "none", borderRadius: 10,
+                  color: "#08080F", fontSize: 13, fontWeight: 700,
+                  textDecoration: "none", boxShadow: "0 4px 16px rgba(16,185,129,0.25)",
+                }}>
+                  Preći na 3-mesečni plan →
+                </a>
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>
+                Trenutni mesečni plan ostaje aktivan do kraja perioda
+              </div>
+            </div>
+          )}
+
           {/* Detalji kartice — Pro */}
           {plan === "pro" && subDetails?.card && (
             <div style={SECTION}>
@@ -494,11 +530,6 @@ export default function AccountSettings() {
                   </a>
                 )}
               </div>
-            </div>
-          )}
-          {plan === "pro" && !subDetails && !subLoading && (
-            <div style={{ padding: "13px 16px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
-              Detalji pretplate nisu dostupni za ovaj nalog.
             </div>
           )}
 
