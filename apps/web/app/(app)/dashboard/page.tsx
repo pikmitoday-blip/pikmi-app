@@ -112,7 +112,7 @@ export default function Dashboard() {
     return "#6B7280";
   }
   function rowStatus(l: PitchLink) {
-    if ((l.views || 0) >= 2) return `🔥 ${t("dash_active")}`;
+    if ((l.views || 0) >= 2) return "Hot lead";
     if (l.is_active) return t("dash_active");
     return t("dash_inactive");
   }
@@ -206,8 +206,8 @@ export default function Dashboard() {
           <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: -0.3 }}>{t("dash_my_links")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{
-              fontSize: 11, fontWeight: 700, color: "#10B981",
-              background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.18)",
+              fontSize: 11, fontWeight: 700, color: "#60A5FA",
+              background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.25)",
               padding: "4px 12px", borderRadius: 100, letterSpacing: 0.5,
             }}>Live</span>
           </div>
