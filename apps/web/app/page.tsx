@@ -76,7 +76,7 @@ export default async function Home() {
   const footerCopy  = g("footer_copy",  "© 2026 pikmi. Sva prava zadržana.");
 
   return (
-    <div style={{ background: "#08080F", minHeight: "100vh", color: "#fff", fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif" }}>
+    <div style={{ background: "#08080F", minHeight: "100vh", color: "#fff", fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif", overflowX: "hidden" }}>
 
       {/* ── Global inline styles ── */}
       <style>{`
@@ -85,20 +85,31 @@ export default async function Home() {
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
         .landing-feature-card:hover { border-color: rgba(139,92,246,0.2) !important; background: rgba(139,92,246,0.05) !important; }
         @media (max-width: 768px) {
-          .hero-grid { flex-direction: column !important; align-items: center !important; }
-          .hero-mockup { display: block !important; width: 100% !important; max-width: 420px !important; margin: 0 auto !important; }
-          .hero-text { max-width: 100% !important; text-align: center !important; }
+          * { box-sizing: border-box; }
+          body { overflow-x: hidden; }
+          .hero-grid { flex-direction: column !important; align-items: stretch !important; width: 100% !important; }
+          .hero-mockup {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            flex-shrink: 1 !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+          }
+          .hero-mockup > div { width: 100% !important; box-sizing: border-box !important; }
+          .hero-text { max-width: 100% !important; text-align: center !important; width: 100% !important; }
           .hero-text p { margin-left: auto !important; margin-right: auto !important; }
-          .hero-text div { justify-content: center !important; }
+          .hero-text > div:last-child { justify-content: center !important; }
           .how-grid { flex-direction: column !important; align-items: center !important; text-align: center !important; }
           .how-grid > div { align-items: center !important; }
           .pricing-grid { flex-direction: column !important; }
           .features-grid { grid-template-columns: 1fr !important; }
           .nav-links-desktop { display: none !important; }
-          .hero-title { font-size: 36px !important; letter-spacing: -1px !important; }
-          section { padding-left: 20px !important; padding-right: 20px !important; }
-          nav { padding-left: 20px !important; padding-right: 20px !important; }
-          footer { padding-left: 20px !important; padding-right: 20px !important; }
+          .hero-title { font-size: 34px !important; letter-spacing: -1px !important; }
+          section { padding-left: 16px !important; padding-right: 16px !important; padding-top: 40px !important; }
+          nav { padding-left: 16px !important; padding-right: 16px !important; }
+          footer { padding: 24px 16px !important; }
           footer > div { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; }
         }
       `}</style>
@@ -163,7 +174,7 @@ export default async function Home() {
           </div>
 
           {/* Right — mockup */}
-          <div className="hero-mockup" style={{ width: 420, flexShrink: 0 }}>
+          <div className="hero-mockup" style={{ width: 420, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
             <LandingMockup
               links={mockupLinks}
               hotleadName={hotleadName}

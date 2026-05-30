@@ -28,12 +28,13 @@ export default function LandingMockup({ links, hotleadName, hotleadViews, hotlea
   }, []);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", width: "100%", boxSizing: "border-box" }}>
       {/* Pitch links card */}
       <div style={{
         background: "linear-gradient(160deg, rgba(20,20,35,0.95), rgba(14,14,24,0.98))",
         border: "1px solid rgba(139,92,246,0.15)",
         borderRadius: 22, padding: "20px 20px 16px",
+        width: "100%", boxSizing: "border-box",
         boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.05)",
         transform: loaded ? "perspective(1000px) rotateX(0deg)" : "perspective(1000px) rotateX(4deg)",
         transition: "transform 0.8s cubic-bezier(0.16,1,0.3,1)",
