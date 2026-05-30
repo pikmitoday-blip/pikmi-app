@@ -128,7 +128,7 @@ export default async function Home() {
           .hero-mockup > div { width: 100% !important; box-sizing: border-box !important; }
           .hero-text { max-width: 100% !important; text-align: center !important; width: 100% !important; }
           .hero-text p { margin-left: auto !important; margin-right: auto !important; }
-          .hero-text > div:last-child { justify-content: center !important; }
+          .hero-cta-wrap { justify-content: center !important; }
           .how-grid { flex-direction: column !important; align-items: center !important; text-align: center !important; }
           .how-grid > div { align-items: center !important; }
           .pricing-grid { flex-direction: column !important; }
@@ -190,7 +190,7 @@ export default async function Home() {
             <p style={{ fontSize: fsSubtitle, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
               {heroSubtitle}
             </p>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <div className="hero-cta-wrap" style={{ display: "flex", justifyContent: "flex-start", marginBottom: 14 }}>
               <Link href="/register" style={{ padding: "15px 36px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)", letterSpacing: -0.2, display: "inline-block" }}>
                 {heroCta1}
               </Link>
