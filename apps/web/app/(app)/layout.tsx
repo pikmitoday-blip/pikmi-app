@@ -278,7 +278,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/pitch-link",   label: t("nav_pitch_links"),  icon: "🔗" },
     { href: "/analytics",    label: t("nav_analytics"),    icon: "📊" },
     { href: "/outreach",     label: t("nav_outreach"),     icon: "✉️" },
-    { href: "/account",      label: t("nav_account") || "Podešavanja", icon: "⚙️" },
   ];
 
   const mobileLinks = [
