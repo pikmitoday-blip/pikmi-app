@@ -75,11 +75,39 @@ export default async function Home() {
   const ctaSub      = g("cta_subtitle", "Kreiraj profil za 5 minuta. Besplatno.");
   const footerCopy  = g("footer_copy",  "© 2026 pikmi. Sva prava zadržana.");
 
+  // ── Tipografija ───────────────────────────────────────────────────────────
+  const FONT_MAP: Record<string, string> = {
+    "system":        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    "inter":         "'Inter', sans-serif",
+    "space-grotesk": "'Space Grotesk', sans-serif",
+    "plus-jakarta":  "'Plus Jakarta Sans', sans-serif",
+    "outfit":        "'Outfit', sans-serif",
+    "geist":         "'Geist', sans-serif",
+  };
+  const GFONTS: Record<string, string> = {
+    "inter":         "Inter:wght@400;600;700;800;900",
+    "space-grotesk": "Space+Grotesk:wght@400;600;700;800",
+    "plus-jakarta":  "Plus+Jakarta+Sans:wght@400;600;700;800;900",
+    "outfit":        "Outfit:wght@400;600;700;800;900",
+  };
+  const fontHeading   = FONT_MAP[g("font_heading", "system")] ?? FONT_MAP["system"];
+  const fontBody      = FONT_MAP[g("font_body",    "system")] ?? FONT_MAP["system"];
+  const fsHero        = parseInt(g("font_size_hero",     "58"))  || 58;
+  const fsSection     = parseInt(g("font_size_section",  "40"))  || 40;
+  const fsSubtitle    = parseInt(g("font_size_subtitle", "17"))  || 17;
+  const fsBody        = parseInt(g("font_size_body",     "14"))  || 14;
+
+  // Google Fonts to import
+  const gfontImports = [...new Set([
+    GFONTS[g("font_heading", "system")],
+    GFONTS[g("font_body",    "system")],
+  ])].filter(Boolean).map(f => `@import url('https://fonts.googleapis.com/css2?family=${f}&display=swap');`).join("\n");
+
   return (
-    <div style={{ background: "#08080F", minHeight: "100vh", color: "#fff", fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif", overflowX: "hidden" }}>
+    <div style={{ background: "#08080F", minHeight: "100vh", color: "#fff", fontFamily: fontBody, overflowX: "hidden" }}>
 
       {/* ── Global inline styles ── */}
-      <style>{`
+      <style>{`${gfontImports}
         .landing-nav-link { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s; }
         .landing-nav-link:hover { color: rgba(255,255,255,0.9); }
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
@@ -151,7 +179,7 @@ export default async function Home() {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 16px", borderRadius: 100, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 28, letterSpacing: 0.3 }}>
               {heroBadge}
             </div>
-            <h1 className="hero-title" style={{ fontSize: 58, fontWeight: 900, letterSpacing: -2, lineHeight: 1.07, marginBottom: 20, color: "#fff" }}>
+            <h1 className="hero-title" style={{ fontSize: fsHero, fontWeight: 900, letterSpacing: -2, lineHeight: 1.07, marginBottom: 20, color: "#fff", fontFamily: fontHeading }}>
               {heroTitle.includes("dok spavaš") ? (
                 <>
                   {heroTitle.split("dok spavaš")[0]}
@@ -159,7 +187,7 @@ export default async function Home() {
                 </>
               ) : heroTitle}
             </h1>
-            <p style={{ fontSize: 17, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
+            <p style={{ fontSize: fsSubtitle, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
               {heroSubtitle}
             </p>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
@@ -198,7 +226,7 @@ export default async function Home() {
       <section id="features" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Features</div>
-          <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1 }}>Sve što ti treba da<br />zatvoriš posao</h2>
+          <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, fontFamily: fontHeading }}>Sve što ti treba da<br />zatvoriš posao</h2>
         </div>
 
         <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -271,7 +299,7 @@ export default async function Home() {
             <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(250,204,21,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, marginTop: 2 }}>⚡</div>
             <div>
               <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8 }}>{g("feature4_title", "Profil spreman za 5 minuta")}</div>
-              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>{g("feature4_desc", "Bez dizajnera. Bez kodiranja. Bez čekanja. Onboarding te vodi korak po korak.")}</div>
+              <div style={{ fontSize: fsBody, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>{g("feature4_desc", "Bez dizajnera. Bez kodiranja. Bez čekanja. Onboarding te vodi korak po korak.")}</div>
             </div>
           </div>
         </div>
@@ -280,7 +308,7 @@ export default async function Home() {
       {/* ══ HOW IT WORKS ══ */}
       <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "64px 48px", textAlign: "center" }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Kako funkcioniše</div>
-        <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 56 }}>
+        <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 56, fontFamily: fontHeading }}>
           {g("how_title", "3 koraka do prvog klijenta")}
         </h2>
         <div className="how-grid" style={{ display: "flex", gap: 32, textAlign: "left" }}>
@@ -289,7 +317,7 @@ export default async function Home() {
               <div style={{ width: 52, height: 52, borderRadius: 16, background: `linear-gradient(135deg,${step.color},${step.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "#fff", boxShadow: `0 6px 20px ${step.color}40` }}>{step.n}</div>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8, color: "#fff" }}>{step.title}</div>
-                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>{step.desc}</div>
+                <div style={{ fontSize: fsBody, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>{step.desc}</div>
               </div>
             </div>
           ))}
@@ -300,7 +328,7 @@ export default async function Home() {
       <section id="pricing" style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Cene</div>
-          <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1 }}>Jednostavna cena.<br />Ozbiljan alat.</h2>
+          <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, fontFamily: fontHeading }}>Jednostavna cena.<br />Ozbiljan alat.</h2>
         </div>
         <div className="pricing-grid" style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
 
@@ -374,7 +402,7 @@ export default async function Home() {
       {/* ══ CTA ══ */}
       <section style={{ padding: "80px 48px", textAlign: "center", background: "linear-gradient(180deg,transparent,rgba(139,92,246,0.05))" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 44, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 14, color: "#fff" }}>
+          <h2 style={{ fontSize: fsSection + 4, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 14, color: "#fff", fontFamily: fontHeading }}>
             {ctaTitle.includes("deal") ? (
               <>
                 {ctaTitle.split("deal")[0]}

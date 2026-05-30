@@ -7,6 +7,10 @@ import { supabase } from "../../../../lib/supabase";
 interface MockupRow { name: string; slug: string; views: number; hot: boolean; }
 
 interface LandingSettings {
+  // Tipografija
+  font_heading: string; font_body: string;
+  font_size_hero: string; font_size_section: string;
+  font_size_subtitle: string; font_size_body: string;
   // Hero
   hero_badge: string; hero_title: string; hero_subtitle: string;
   hero_cta1: string;  hero_note: string;
@@ -38,7 +42,19 @@ type Field = keyof LandingSettings;
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
+const FONTS = [
+  { value: "system",       label: "System (default)",      css: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  { value: "inter",        label: "Inter",                  css: "'Inter', sans-serif" },
+  { value: "space-grotesk",label: "Space Grotesk",          css: "'Space Grotesk', sans-serif" },
+  { value: "plus-jakarta", label: "Plus Jakarta Sans",      css: "'Plus Jakarta Sans', sans-serif" },
+  { value: "outfit",       label: "Outfit",                 css: "'Outfit', sans-serif" },
+  { value: "geist",        label: "Geist",                  css: "'Geist', sans-serif" },
+];
+
 const DEFAULTS: LandingSettings = {
+  font_heading: "system", font_body: "system",
+  font_size_hero: "58", font_size_section: "40",
+  font_size_subtitle: "17", font_size_body: "14",
   hero_badge:    "✦ Tailored portfolios. Real connections.",
   hero_title:    "Portfolio koji zatvara klijente dok spavaš.",
   hero_subtitle: "Personalizovani portfolio link za svakog klijenta. Vidi ko gleda, šta gleda i kada je spreman.",
@@ -248,6 +264,78 @@ CREATE POLICY "Admin only" ON platform_settings USING (true) WITH CHECK (true);`
         <div style={{ padding: 40, textAlign: "center", color: "#4B5563", fontSize: 13 }}>Učitavanje...</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+          {/* ── Tipografija ── */}
+          <div style={{ background: "#111116", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: "#E5E7EB", margin: 0 }}>Tipografija</h2>
+              <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4, marginBottom: 0 }}>Fontovi i veličine teksta na landing stranici</p>
+            </div>
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 20 }}>
+
+              {/* Font porodice */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Font za naslove (H1, H2)</label>
+                  <select value={values.font_heading} onChange={e => update("font_heading", e.target.value)} style={{ ...INP, cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
+                    {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                  <div style={{ marginTop: 8, padding: "10px 12px", background: "rgba(124,58,237,0.08)", borderRadius: 8, border: "1px solid rgba(124,58,237,0.15)" }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: "#A78BFA", fontFamily: FONTS.find(f => f.value === values.font_heading)?.css }}>
+                      Primer naslova
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Font za tekst (body)</label>
+                  <select value={values.font_body} onChange={e => update("font_body", e.target.value)} style={{ ...INP, cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}>
+                    {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                  <div style={{ marginTop: 8, padding: "10px 12px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", fontFamily: FONTS.find(f => f.value === values.font_body)?.css }}>
+                      Primer teksta paragraf
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Veličine */}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 12 }}>Veličine teksta (px)</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+                  {([
+                    { key: "font_size_hero"     as Field, label: "Hero naslov",     hint: "desktop" },
+                    { key: "font_size_section"  as Field, label: "Sekcija naslov",  hint: "Features, Cene..." },
+                    { key: "font_size_subtitle" as Field, label: "Podnaslov hero",  hint: "ispod H1" },
+                    { key: "font_size_body"     as Field, label: "Body tekst",      hint: "stavke, opisi" },
+                  ]).map(f => (
+                    <div key={f.key}>
+                      <label style={{ fontSize: 10, color: "#6B7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 }}>
+                        {f.label}
+                        <span style={{ color: "#374151", fontWeight: 400, marginLeft: 4 }}>({f.hint})</span>
+                      </label>
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type="number" min={10} max={120}
+                          value={values[f.key]}
+                          onChange={e => update(f.key, e.target.value)}
+                          style={{ ...INP, paddingRight: 32 }}
+                        />
+                        <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#4B5563", pointerEvents: "none" }}>px</span>
+                      </div>
+                      <div style={{ marginTop: 6, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                        <span style={{ fontSize: Math.min(parseInt(values[f.key]) * 0.35, 22), fontWeight: 700, color: "rgba(255,255,255,0.3)", fontFamily: FONTS.find(fo => fo.value === values.font_heading)?.css }}>
+                          Aa
+                        </span>
+                        <span style={{ fontSize: 10, color: "#374151", marginLeft: 6 }}>{values[f.key]}px</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
 
           {/* ── Freelancer badges ── */}
           <div style={{ background: "#111116", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden" }}>
