@@ -329,6 +329,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           const device = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
           const referrer = document.referrer || "";
 
+          const trackStart = Date.now();
+
           fetch("/api/track-view", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -341,6 +343,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             .then(res => res.json())
             .then(data => {
               if (data.ok && !data.skipped) {
+                // Notify owner
                 fetch("/api/notify", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -351,6 +354,25 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     slug, device, referrer,
                   }),
                 }).catch(() => {});
+
+                // Duration tracking — pošalji kada korisnik napusti stranicu
+                if (data.viewId) {
+                  const viewId = data.viewId;
+                  const sendDuration = () => {
+                    const duration = Math.round((Date.now() - trackStart) / 1000);
+                    if (duration < 2) return;
+                    // sendBeacon radi čak i kad se stranica zatvori
+                    navigator.sendBeacon(
+                      "/api/track-duration",
+                      JSON.stringify({ viewId, duration })
+                    );
+                  };
+                  const onHide = () => { if (document.visibilityState === "hidden") sendDuration(); };
+                  document.addEventListener("visibilitychange", onHide);
+                  window.addEventListener("beforeunload", sendDuration);
+                  // Cleanup kad se komponenta unmountuje (SPA navigacija)
+                  window.addEventListener("popstate", sendDuration, { once: true });
+                }
               }
             })
             .catch(() => {});

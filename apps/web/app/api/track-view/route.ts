@@ -24,12 +24,13 @@ export async function POST(req: NextRequest) {
       } catch {}
     }
 
-    await supabaseAdmin.from("link_views").insert({
+    const { data: insertedView } = await supabaseAdmin.from("link_views").insert({
       pitch_link_id: pitchLinkId,
       viewed_at: new Date().toISOString(),
       device,
       referrer: referrer || null,
-    });
+    }).select("id").single();
+    const viewId = insertedView?.id ?? null;
 
     // Read current views from DB (server-side), not from client — prevents stale-value race
     const { data: linkRow } = await supabaseAdmin
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
       .update({ views: (linkRow?.views ?? 0) + 1 })
       .eq("id", pitchLinkId);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, viewId });
   } catch (err) {
     console.error("Track view error:", err);
     return NextResponse.json({ ok: false });
