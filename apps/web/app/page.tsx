@@ -159,7 +159,9 @@ export default async function Home() {
           <a href="/#features"  className="landing-nav-link">Features</a>
           <a href="/#how"       className="landing-nav-link">Kako funkcioniše</a>
           <a href="/#pricing"   className="landing-nav-link">Cene</a>
+          {/* Blog — privremeno sakriveno, vratiti kada bude spreman
           <Link href="/blog"    className="landing-nav-link">Blog</Link>
+          */}
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
