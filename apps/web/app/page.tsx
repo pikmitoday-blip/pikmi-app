@@ -1,216 +1,390 @@
 import Link from "next/link";
-import PikmiLogo from "./components/PikmiLogo";
+import { createClient } from "@supabase/supabase-js";
 import CheckoutButton from "./components/CheckoutButton";
+import LandingMockup, { MockupLink } from "./components/LandingMockup";
 
-export default function Home() {
+export const revalidate = 300; // 5 min cache
+
+async function getSettings(): Promise<Record<string, string>> {
+  try {
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await sb.from("platform_settings").select("key, value");
+    const map: Record<string, string> = {};
+    (data ?? []).forEach((r: any) => { map[r.key] = r.value; });
+    return map;
+  } catch { return {}; }
+}
+
+function s(settings: Record<string, string>, key: string, def: string) {
+  return settings[key] ?? def;
+}
+
+export default async function Home() {
+  const settings = await getSettings();
+  const g = (key: string, def: string) => s(settings, key, def);
+
+  // ── Mockup data ──────────────────────────────────────────────────────────
+  let mockupLinks: MockupLink[] = [
+    { name: "Elon Musk",   slug: "elon-musk",  views: 12, hot: true  },
+    { name: "Jeff Bezos",  slug: "jeff-bezos", views: 5,  hot: false },
+    { name: "Lidl",        slug: "lidl",       views: 2,  hot: false },
+  ];
+  try {
+    const raw = settings["mockup_links"];
+    if (raw) mockupLinks = JSON.parse(raw);
+  } catch {}
+
+  const hotleadName     = g("mockup_hotlead_name",     "Elon Musk");
+  const hotleadViews    = g("mockup_hotlead_views",    "12");
+  const hotleadTime     = g("mockup_hotlead_time",     "danas u 14:27");
+  const hotleadDuration = g("mockup_hotlead_duration", "4m 12s");
+  const hotleadOpens    = g("mockup_hotlead_opens",    "3");
+
+  // ── Freelancer badges ─────────────────────────────────────────────────────
+  const badges = g("freelancer_badges", "Dizajneri,Video editori,SMM menadžeri,Copywriteri,Fotografi,Web developeri")
+    .split(",").map(b => b.trim()).filter(Boolean);
+
+  // ── Hero ─────────────────────────────────────────────────────────────────
+  const heroBadge    = g("hero_badge",    "✦ Tailored portfolios. Real connections.");
+  const heroTitle    = g("hero_title",    "Portfolio koji zatvara klijente dok spavaš.");
+  const heroSubtitle = g("hero_subtitle", "Personalizovani portfolio link za svakog klijenta. Vidi ko gleda, šta gleda i kada je spreman.");
+  const heroCta1     = g("hero_cta1",     "Kreiraj profil besplatno");
+  const heroNote     = g("hero_note",     "Free · 7 dana · Bez kreditne kartice");
+
+  // ── How it works ──────────────────────────────────────────────────────────
+  const steps = [
+    { n: "01", color: "#8B5CF6", title: g("how_step1_title", "Kreiraj profil"),    desc: g("how_step1_desc", "Popuni za 5 minuta. Dodaj projekte, opis i boje.") },
+    { n: "02", color: "#A855F7", title: g("how_step2_title", "Podeli pitch link"),  desc: g("how_step2_desc", "Za svakog klijenta personalizovan link sa porukom.") },
+    { n: "03", color: "#D946EF", title: g("how_step3_title", "Prati i reaguj"),     desc: g("how_step3_desc", "Dobijaš notifikaciju. Vidiš šta gledaju. Pišeš im u pravom momentu.") },
+  ];
+
+  // ── Pricing ───────────────────────────────────────────────────────────────
+  const freeFeatures  = g("pricing_free_features",  "Osnovni profil\nOgraničen broj pitch linkova\nStatistika pregleda").split("\n").filter(Boolean);
+  const proFeatures   = g("pricing_pro_features",   "Neograničeno pitch linkova\nSve sekcije profila\nReal-time tracking i notifikacije\nOutreach kit (DM + email + follow-up)\nCustom boje i fontovi\nPriorizetna podrška").split("\n").filter(Boolean);
+  const proPrice      = g("pricing_pro_price",      "990 din");
+  const proNote       = g("pricing_pro_note",       "Manje od jedne kafe nedeljno");
+  const pro3Price     = g("pricing_pro3_price",     "2490 din");
+  const pro3Note      = g("pricing_pro3_note",      "Uštedi 17%");
+  const pro3Saving    = g("pricing_pro3_saving",    "~830 din mesečno · ušteda ~480 din");
+
+  // ── CTA / Footer ─────────────────────────────────────────────────────────
+  const ctaTitle    = g("cta_title",    "Spreman da zatvoriš prvi deal?");
+  const ctaSub      = g("cta_subtitle", "Kreiraj profil za 5 minuta. Besplatno.");
+  const footerCopy  = g("footer_copy",  "© 2026 pikmi. Sva prava zadržana.");
+
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+    <div style={{ background: "#08080F", minHeight: "100vh", color: "#fff", fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif" }}>
 
-      {/* NAV */}
-      <nav className="nav-top">
-        <Link href="/" className="nav-logo">
-          <PikmiLogo size={32} />
-          pikmi
+      {/* ── Global inline styles ── */}
+      <style>{`
+        .landing-nav-link { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s; }
+        .landing-nav-link:hover { color: rgba(255,255,255,0.9); }
+        .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
+        .landing-feature-card:hover { border-color: rgba(139,92,246,0.2) !important; background: rgba(139,92,246,0.05) !important; }
+        @media (max-width: 768px) {
+          .hero-grid { flex-direction: column !important; }
+          .hero-mockup { display: none !important; }
+          .hero-text { max-width: 100% !important; }
+          .how-grid { flex-direction: column !important; }
+          .pricing-grid { flex-direction: column !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .nav-links-desktop { display: none !important; }
+          .hero-title { font-size: 36px !important; }
+        }
+      `}</style>
+
+      {/* ══ NAV ══ */}
+      <nav style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto",
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(8,8,15,0.85)", backdropFilter: "blur(20px)",
+      }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: "#fff" }}>P</div>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
-        <ul className="nav-links">
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#how">Kako funkcioniše</a></li>
-          <li><a href="/#pricing">Cene</a></li>
-          <li><Link href="/blog">Blog</Link></li>
-        </ul>
-        <div className="nav-actions">
-          <Link href="/login" className="btn btn-ghost btn-sm">Login</Link>
-          <Link href="/register" className="btn btn-primary btn-sm">Get started</Link>
+
+        <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <a href="/#features"  className="landing-nav-link">Features</a>
+          <a href="/#how"       className="landing-nav-link">Kako funkcioniše</a>
+          <a href="/#pricing"   className="landing-nav-link">Cene</a>
+          <Link href="/blog"    className="landing-nav-link">Blog</Link>
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link href="/login" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.15s" }} className="landing-btn-ghost">Login</Link>
+          <Link href="/register" style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Get started</Link>
         </div>
       </nav>
+      <div style={{ height: 1, background: "rgba(139,92,246,0.06)" }} />
 
-      {/* HERO */}
-      <section style={{ paddingTop: 140, paddingBottom: 100, textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div className="hero-glow" style={{ top: -100, left: "50%", transform: "translateX(-50%)" }} />
-        <div style={{ maxWidth: 820, margin: "0 auto", padding: "0 24px", position: "relative" }}>
-          <div className="badge badge-purple" style={{ margin: "0 auto 20px", display: "inline-flex" }}>
-            <span>✦</span> Tailored portfolios. Real connections.
-          </div>
-          <h1 style={{ fontSize: "clamp(42px, 6vw, 72px)", fontWeight: 900, lineHeight: 1.1, marginBottom: 24 }}>
-            Portfolio koji zatvara<br />
-            <span className="grad-text-pink">klijente dok spavaš.</span>
-          </h1>
-          <p style={{ fontSize: 18, color: "var(--text2)", maxWidth: 560, margin: "0 auto 40px", lineHeight: 1.6 }}>
-            Personalizovani portfolio link za svakog klijenta. Vidi ko gleda, šta gleda i kada je spreman.
-          </p>
-          <div className="flex items-center justify-center gap-3 hero-btns">
-            <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno</Link>
-          </div>
-        </div>
+      {/* ══ HERO ══ */}
+      <section style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 48px 60px", position: "relative" }}>
+        {/* Glow */}
+        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 800, height: 600, background: "radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 60%)", pointerEvents: "none" }} />
 
-        {/* Hero mockup card */}
-        <div style={{ maxWidth: 480, margin: "64px auto 0", padding: "0 24px" }}>
-          <div className="card glow" style={{ textAlign: "left" }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="avatar">M</div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 600 }}>Hey Marko,</div>
-                <div style={{ fontSize: 13, color: "var(--text2)" }}>ovo je za tebe.</div>
-              </div>
+        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: 64, position: "relative" }}>
+          {/* Left — text */}
+          <div className="hero-text" style={{ flex: 1, maxWidth: 560 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 16px", borderRadius: 100, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 28, letterSpacing: 0.3 }}>
+              {heroBadge}
             </div>
-            <div style={{ height: 6, borderRadius: 100, background: "var(--border)", marginBottom: 8 }}>
-              <div style={{ height: "100%", width: "72%", borderRadius: 100, background: "var(--grad)" }} />
+            <h1 className="hero-title" style={{ fontSize: 58, fontWeight: 900, letterSpacing: -2, lineHeight: 1.07, marginBottom: 20, color: "#fff" }}>
+              {heroTitle.includes("dok spavaš") ? (
+                <>
+                  {heroTitle.split("dok spavaš")[0]}
+                  <span style={{ background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>dok spavaš.</span>
+                </>
+              ) : heroTitle}
+            </h1>
+            <p style={{ fontSize: 17, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 36, maxWidth: 460 }}>
+              {heroSubtitle}
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+              <Link href="/register" style={{ padding: "15px 32px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)", letterSpacing: -0.2 }}>
+                {heroCta1}
+              </Link>
+              <a href="/#how" style={{ padding: "15px 28px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.5)", fontSize: 15, fontWeight: 600, textDecoration: "none", letterSpacing: -0.2 }}>
+                ▷ Kako funkcioniše
+              </a>
             </div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 20 }}>Pripremio sam selekciju projekata koji su napravljeni za tvoj brand.</div>
-            <div className="grid-3" style={{ gap: 10 }}>
-              {["Ukupno linkova", "Otvoreno", "Vreme gledanja"].map((label, i) => (
-                <div key={label} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "12px 14px" }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>{["24", "18", "2h 47m"][i]}</div>
-                  <div style={{ fontSize: 11, color: "var(--text3)" }}>{label}</div>
-                </div>
-              ))}
-            </div>
-            <div className="divider" />
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Nedavna otvaranja</div>
-            {[
-              { name: "Marko Jovanović", time: "danas u 14:27", dur: "2m 31s" },
-              { name: "Ana Petrović", time: "juče u 11:20", dur: "1m 18s" },
-            ].map((v) => (
-              <div key={v.name} className="flex items-center justify-between" style={{ padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
-                <div className="flex items-center gap-2">
-                  <div className="avatar" style={{ width: 28, height: 28, fontSize: 11 }}>{v.name[0]}</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>{v.name}</div>
-                    <div style={{ fontSize: 11, color: "var(--text3)" }}>{v.time}</div>
-                  </div>
-                </div>
-                <span className="badge badge-purple">{v.dur}</span>
-              </div>
-            ))}
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{heroNote}</p>
+          </div>
+
+          {/* Right — mockup */}
+          <div className="hero-mockup" style={{ width: 420, flexShrink: 0 }}>
+            <LandingMockup
+              links={mockupLinks}
+              hotleadName={hotleadName}
+              hotleadViews={hotleadViews}
+              hotleadTime={hotleadTime}
+              hotleadDuration={hotleadDuration}
+              hotleadOpens={hotleadOpens}
+            />
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section id="features" style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Features</div>
-          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800 }}>Sve što ti treba da zatvoriš posao</h2>
+      {/* ══ WHO IS THIS FOR ══ */}
+      <section style={{ padding: "32px 48px 48px", textAlign: "center", maxWidth: 1280, margin: "0 auto" }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.25)", marginBottom: 14, letterSpacing: 0.5, textTransform: "uppercase" }}>Za kreativce i freelancere</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+          {badges.map((b, i) => (
+            <span key={i} style={{ padding: "7px 16px", borderRadius: 100, background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.1)", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>{b}</span>
+          ))}
         </div>
-        <div className="grid-3">
-          {[
-            { icon: "👤", title: "Personalizovano", desc: "Svaki klijent dobija iskustvo kreirano samo za njega — tvoje radove, tvoju priču.", color: "rgba(124,58,237,0.15)" },
-            { icon: "👁", title: "Prati interes", desc: "Vidi kada otvore, šta su gledali i koliko su se zadržali. Real-time notifikacije.", color: "rgba(59,130,246,0.15)" },
-            { icon: "📈", title: "Zatvara poslove", desc: "Povećava šanse da te izaberu i da saradujete duže. Hot leads na dlanu.", color: "rgba(236,72,153,0.15)" },
-            { icon: "🔗", title: "Pitch linkovi", desc: "Jedan klik deli tvoj personalizovani portfolio. Nema više generičnih CV-jeva.", color: "rgba(34,197,94,0.15)" },
-            { icon: "✉️", title: "Outreach kit", desc: "Cold DM, email i follow-up šabloni za svaku profesiju. Samo popuni i pošalji.", color: "rgba(249,115,22,0.15)" },
-            { icon: "⚡", title: "Brzo podešavanje", desc: "Profil spreman za 5 minuta. Bez dizajnera, bez tehničkog znanja.", color: "rgba(234,179,8,0.15)" },
-          ].map((f) => (
-            <div key={f.title} className="card">
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: f.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 16 }}>
-                {f.icon}
+      </section>
+
+      {/* ══ FEATURES ══ */}
+      <section id="features" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Features</div>
+          <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1 }}>Sve što ti treba da<br />zatvoriš posao</h2>
+        </div>
+
+        <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          {/* Feature 1 — Personalization */}
+          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.08)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎯</div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature1_title", "Personalizovano")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature1_sub", "Svaki klijent dobija svoj link")}</div>
               </div>
-              <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.6 }}>{f.desc}</p>
+            </div>
+            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, padding: "14px 16px", border: "1px solid rgba(139,92,246,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg,#3B82F6,#6366F1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>C</div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Hey Coca Cola, ovo je za vas.</span>
+              </div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>pikmi.today/coca-cola</div>
+            </div>
+          </div>
+
+          {/* Feature 2 — Tracking */}
+          <div className="landing-feature-card" style={{ background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.07)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(245,158,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👁</div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature2_title", "Prati interes")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature2_sub", "Real-time otvaranja i notifikacije")}</div>
+              </div>
+            </div>
+            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, padding: "12px 16px", border: "1px solid rgba(245,158,11,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>✉️</span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Klijent je otvorio tvoj link</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>upravo sada</div>
+                </div>
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#EF4444", background: "rgba(239,68,68,0.12)", padding: "3px 9px", borderRadius: 100 }}>🔥</span>
+            </div>
+          </div>
+
+          {/* Feature 3 — Outreach Kit */}
+          <div className="landing-feature-card" style={{ background: "rgba(16,185,129,0.03)", border: "1px solid rgba(16,185,129,0.07)", borderRadius: 20, padding: "28px 24px", transition: "all 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>✉️</div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature3_title", "Outreach kit")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature3_sub", "Cold DM, email i follow-up šabloni")}</div>
+              </div>
+            </div>
+            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, border: "1px solid rgba(16,185,129,0.06)", overflow: "hidden", position: "relative" }}>
+              <div style={{ padding: "14px 16px 6px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(16,185,129,0.5)", marginBottom: 8 }}>Outreach dokument</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>Pozicioniranje — morate se predstaviti kao ekspert koji edukuje klijenta.</div>
+              </div>
+              <div style={{ position: "relative", padding: "4px 16px 14px" }}>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.7, filter: "blur(4px)", userSelect: "none" }}>
+                  Ponuda mora biti jasna i specifična. Klijent mora razumeti šta dobija, u kom roku i za koju cenu.
+                </div>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(180deg,transparent,rgba(0,0,0,0.5))" }}>
+                  <span style={{ fontSize: 24 }}>🔒</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature 4 — Quick Setup */}
+          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.03)", border: "1px solid rgba(139,92,246,0.07)", borderRadius: 20, padding: "28px 24px", display: "flex", alignItems: "flex-start", gap: 16, transition: "all 0.2s" }}>
+            <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(250,204,21,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, marginTop: 2 }}>⚡</div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8 }}>{g("feature4_title", "Profil spreman za 5 minuta")}</div>
+              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>{g("feature4_desc", "Bez dizajnera. Bez kodiranja. Bez čekanja. Onboarding te vodi korak po korak.")}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ HOW IT WORKS ══ */}
+      <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "64px 48px", textAlign: "center" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Kako funkcioniše</div>
+        <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 56 }}>
+          {g("how_title", "3 koraka do prvog klijenta")}
+        </h2>
+        <div className="how-grid" style={{ display: "flex", gap: 32, textAlign: "left" }}>
+          {steps.map((step, i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 16, background: `linear-gradient(135deg,${step.color},${step.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "#fff", boxShadow: `0 6px 20px ${step.color}40` }}>{step.n}</div>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8, color: "#fff" }}>{step.title}</div>
+                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>{step.desc}</div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how" style={{ background: "var(--surface)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Kako funkcioniše</div>
-          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800, marginBottom: 56 }}>3 koraka do prvog klijenta</h2>
-          <div className="grid-3" style={{ gap: 32, textAlign: "left" }}>
-            {[
-              { n: "01", title: "Kreiraj profil", desc: "Popuni onboarding za 5 minuta. Dodaj projekte, opis i boje koje odgovaraju tebi." },
-              { n: "02", title: "Podeli pitch link", desc: "Za svakog klijenta kreiraj personalizovani link sa porukom i relevantnim radovima." },
-              { n: "03", title: "Prati i reaguj", desc: "Dobijaš notifikaciju kada otvore. Vidiš šta gledaju. Pišeš im u pravom momentu." },
-            ].map((s) => (
-              <div key={s.n} className="flex flex-col gap-4">
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "white" }}>{s.n}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 700 }}>{s.title}</h3>
-                <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.7 }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
+      {/* ══ PRICING ══ */}
+      <section id="pricing" style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 48px", background: "linear-gradient(180deg,rgba(139,92,246,0.03) 0%,transparent 100%)" }}>
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Cene</div>
+          <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1 }}>Jednostavna cena.<br />Ozbiljan alat.</h2>
         </div>
-      </section>
+        <div className="pricing-grid" style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
 
-      {/* PRICING */}
-      <section id="pricing" style={{ maxWidth: 800, margin: "0 auto", padding: "80px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div className="badge badge-purple mb-4" style={{ margin: "0 auto 16px" }}>Cene</div>
-          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800 }}>Jednostavne cene</h2>
-        </div>
-        <div className="grid-2" style={{ gap: 24 }}>
-          <div className="card">
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", marginBottom: 12 }}>FREE</div>
-            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>0 din</div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>zauvek besplatno</div>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-              {["1 pitch link", "Osnovni profil", "Statistika pregleda"].map(f => (
-                <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text2)" }}>
-                  <span style={{ color: "#4ADE80" }}>✓</span> {f}
-                </li>
+          {/* Free */}
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 24, padding: "28px 24px", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>FREE</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, color: "#fff" }}>0 din</span>
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", marginBottom: 24 }}>zauvek besplatno</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
+              {freeFeatures.map((f, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.45)" }}>
+                  <span style={{ color: "#10B981", fontSize: 12 }}>✓</span> {f}
+                </div>
               ))}
-            </ul>
-            <Link href="/register" className="btn btn-ghost w-full" style={{ justifyContent: "center" }}>Počni besplatno</Link>
+            </div>
+            <Link href="/register" style={{ display: "block", textAlign: "center", padding: "14px 0", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+              Počni besplatno
+            </Link>
           </div>
-          <div className="card" style={{
-            border: "1.5px solid rgba(124,58,237,0.6)",
-            background: "linear-gradient(160deg, rgba(124,58,237,0.13) 0%, rgba(59,130,246,0.06) 100%)",
-            position: "relative",
-            boxShadow: "0 0 0 1px rgba(124,58,237,0.15), 0 8px 40px rgba(124,58,237,0.22), 0 2px 8px rgba(0,0,0,0.25)",
-            overflow: "visible",
-          }}>
-            {/* Top accent line */}
-            <div style={{
-              position: "absolute", top: 0, left: 0, right: 0, height: 3,
-              background: "linear-gradient(90deg, #7C3AED, #3B82F6, #7C3AED)",
-              borderRadius: "12px 12px 0 0",
-            }} />
-            {/* Badge */}
-            <div style={{
-              position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)",
-              background: "linear-gradient(90deg, #7C3AED, #6D28D9)",
-              color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-              padding: "4px 14px", borderRadius: 999,
-              boxShadow: "0 4px 12px rgba(124,58,237,0.5)",
-              whiteSpace: "nowrap",
-            }}>✦ PREPORUČENO</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#A78BFA", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: 10 }}>Pro</div>
-            <div style={{ fontSize: 40, fontWeight: 900, marginBottom: 4 }}>990 din<span style={{ fontSize: 16, fontWeight: 500, color: "var(--text2)" }}>/mes</span></div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 24 }}>otkaži kada hoćeš</div>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-              {["Neograničeno pitch linkova", "Sve sekcije profila", "Real-time tracking i notifikacije", "Outreach kit", "Custom boje i fontovi", "Prioritetna podrška"].map(f => (
-                <li key={f} className="flex items-center gap-2" style={{ fontSize: 14, color: "var(--text)" }}>
-                  <span style={{ color: "#A78BFA", fontSize: 12 }}>✦</span> {f}
-                </li>
+
+          {/* Pro Monthly */}
+          <div style={{ flex: 1, background: "linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.05))", border: "1.5px solid rgba(139,92,246,0.3)", borderRadius: 24, padding: "28px 24px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 8px 40px rgba(124,58,237,0.15)" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#7C3AED,#A855F7,#7C3AED)", borderRadius: "24px 24px 0 0" }} />
+            <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(90deg,#7C3AED,#6D28D9)", color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", padding: "4px 16px", borderRadius: 999, whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(124,58,237,0.5)" }}>✦ PREPORUČENO</div>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "#A855F7", marginBottom: 14, marginTop: 10 }}>PRO MESEČNO</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6 }}>
+              <span style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{proPrice}</span>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/mes</span>
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginBottom: 22 }}>{proNote}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
+              {proFeatures.map((f, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
+                  <span style={{ color: "#A855F7", fontSize: 12 }}>✦</span> {f}
+                </div>
               ))}
-            </ul>
+            </div>
             <CheckoutButton />
           </div>
+
+          {/* Pro 3 Months */}
+          <div style={{ flex: 1, background: "rgba(16,185,129,0.03)", border: "1.5px solid rgba(16,185,129,0.18)", borderRadius: 24, padding: "28px 24px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "#10B981" }}>PRO 3 MESECA</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.18)", padding: "3px 10px", borderRadius: 100 }}>{pro3Note}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+              <span style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, color: "#10B981" }}>{pro3Price}</span>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>/3 mes</span>
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginBottom: 22 }}>{pro3Saving}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
+              {["Sve iz Pro mesečnog plana", "Zaključana niža cena za 3 meseca"].map((f, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.45)" }}>
+                  <span style={{ color: "#10B981", fontSize: 12 }}>✦</span> {f}
+                </div>
+              ))}
+            </div>
+            <Link href="/billing" style={{ display: "block", textAlign: "center", padding: "14px 0", borderRadius: 14, border: "none", background: "#10B981", color: "#08080F", fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 24px rgba(16,185,129,0.25)" }}>
+              Pretplati se na 3 meseca
+            </Link>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center", marginTop: 10 }}>Najbolja vrednost</p>
+          </div>
+
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ background: "var(--surface)", padding: "80px 24px", textAlign: "center" }}>
+      {/* ══ CTA ══ */}
+      <section style={{ padding: "80px 48px", textAlign: "center", background: "linear-gradient(180deg,transparent,rgba(139,92,246,0.05))" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
-          <h2 className="landing-section-title" style={{ fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Spreman da zatvoriš<br /><span className="grad-text">prvi deal?</span></h2>
-          <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 36, lineHeight: 1.6 }}>
-            Kreiraj pikmi profil za 5 minuta i pošalji prvi personalizovani pitch link još danas.
-          </p>
-          <Link href="/register" className="btn btn-primary btn-lg">Kreiraj profil besplatno →</Link>
+          <h2 style={{ fontSize: 44, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 14, color: "#fff" }}>
+            {ctaTitle.includes("deal") ? (
+              <>
+                {ctaTitle.split("deal")[0]}
+                <span style={{ background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>deal?</span>
+              </>
+            ) : ctaTitle}
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.35)", marginBottom: 32 }}>{ctaSub}</p>
+          <Link href="/register" style={{ display: "inline-block", padding: "16px 48px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.3)" }}>
+            Kreiraj profil besplatno →
+          </Link>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "32px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
-        <div className="nav-logo">
-          <PikmiLogo size={24} />
-          pikmi
-        </div>
-        <div style={{ fontSize: 13, color: "var(--text3)", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>© 2026 pikmi. Sva prava zadržana.</div>
-        <div className="flex gap-4" style={{ fontSize: 13, color: "var(--text3)" }}>
-          <Link href="/uslovi" style={{ color: "var(--text3)", textDecoration: "none" }}>Uslovi korišćenja</Link>
-          <Link href="/privatnost" style={{ color: "var(--text3)", textDecoration: "none" }}>Politika privatnosti</Link>
+      {/* ══ FOOTER ══ */}
+      <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "32px 48px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#fff" }}>P</div>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>pikmi</span>
+          </div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{footerCopy}</div>
+          <div style={{ display: "flex", gap: 20 }}>
+            <Link href="/uslovi"     style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Uslovi korišćenja</Link>
+            <Link href="/privatnost" style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Politika privatnosti</Link>
+          </div>
         </div>
       </footer>
 
