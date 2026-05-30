@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   );
 
   try {
-    const { userId, userEmail } = await req.json();
+    const { userId, userEmail, priceId } = await req.json();
 
     if (!userId || !userEmail) {
       return NextResponse.json({ error: "Missing userId or userEmail" }, { status: 400 });
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId ?? process.env.STRIPE_PRICE_ID!,
           quantity: 1,
         },
       ],

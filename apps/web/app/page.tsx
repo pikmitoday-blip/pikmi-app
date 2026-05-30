@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import CheckoutButton from "./components/CheckoutButton";
+import Checkout3MButton from "./components/Checkout3MButton";
 import LandingMockup, { MockupLink } from "./components/LandingMockup";
 
 export const revalidate = 300; // 5 min cache
@@ -393,9 +394,7 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            <Link href="/billing" style={{ display: "block", textAlign: "center", padding: "14px 0", borderRadius: 14, border: "none", background: "#10B981", color: "#08080F", fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 24px rgba(16,185,129,0.25)" }}>
-              Pretplati se na 3 meseca
-            </Link>
+            <Checkout3MButton />
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center", marginTop: 10 }}>Najbolja vrednost</p>
           </div>
 
