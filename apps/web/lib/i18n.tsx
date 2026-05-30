@@ -326,7 +326,7 @@ const translations = {
     billing_faq_q2:        "Zašto je Outreach kit jedina razlika?",
     billing_faq_a2:        "Vjerujemo da svaki freelancer zaslužuje odličan profil i pitch linkove — besplatno. Outreach kit je premium alat za one koji žele da skaliraju akviziciju klijenata.",
     billing_faq_q3:        "Koliko dugo traje besplatni trial?",
-    billing_faq_a3:        "7 dana od registracije. Tokom triala imaš pristup svim funkcijama uključujući Outreach kit — bez kreditne kartice.",
+    billing_faq_a3:        "7 dana od registracije. Tokom triala imaš pristup svim funkcijama osim Outreach kita. Nakon 7 dana, tvoj profil se zaključava dok ne pređeš na Pro plan.",
     billing_faq_q4:        "Da li su podaci bezbedni?",
     billing_faq_a4:        "Plaćanje se vrši direktno kroz Stripe — mi nikada ne vidimo podatke tvoje kartice. Profil podaci su enkriptovani i sigurno čuvani.",
     // Analytics misc
@@ -680,7 +680,7 @@ const translations = {
     billing_faq_q2:        "Why is Outreach Kit the only difference?",
     billing_faq_a2:        "We believe every freelancer deserves a great profile and pitch links — for free. Outreach Kit is a premium tool for those who want to scale client acquisition.",
     billing_faq_q3:        "How long does the free trial last?",
-    billing_faq_a3:        "7 days from registration. During the trial you have access to all features including Outreach Kit — no credit card required.",
+    billing_faq_a3:        "7 days from registration. During the trial you have access to all features except the Outreach Kit. After 7 days, your profile is locked until you upgrade to the Pro plan.",
     billing_faq_q4:        "Is my data secure?",
     billing_faq_a4:        "Payment is processed directly through Stripe — we never see your card details. Profile data is encrypted and securely stored.",
     // Analytics misc
