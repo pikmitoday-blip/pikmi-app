@@ -289,8 +289,9 @@ export default function MojProfil() {
     if (!draft) return null;
     return (
       <div style={{ padding: 24 }}>
+        {/* Profilna slika */}
         <p style={{ ...LBL, marginBottom: 10 }}>PROFILNA SLIKA</p>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           {draft.avatarUrl
             ? <img src={draft.avatarUrl} alt="" style={{ width: 60, height: 60, borderRadius: 14, objectFit: "cover" }} />
             : <div style={{ width: 60, height: 60, borderRadius: 14, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#fff" }}>{draft.initials || "?"}</div>
@@ -301,34 +302,20 @@ export default function MojProfil() {
           </label>
         </div>
 
+        {/* Ime i prezime */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 2 }}>
           <div><label style={LBL}>IME</label><input style={INP} value={draft.firstName} onChange={e => setD("firstName", e.target.value)} placeholder="Ime" /></div>
           <div><label style={LBL}>PREZIME</label><input style={INP} value={draft.lastName} onChange={e => setD("lastName", e.target.value)} placeholder="Prezime" /></div>
         </div>
+
+        {/* Grad */}
         <label style={LBL}>GRAD, ZEMLJA</label>
         <input style={INP} value={draft.city} onChange={e => setD("city", e.target.value)} placeholder="Beograd, Srbija" />
-        <label style={LBL}>STATUS</label>
-        <input style={INP} value={draft.openStatus} onChange={e => setD("openStatus", e.target.value)} placeholder="DOSTUPAN" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <div><label style={LBL}>BEDŽ 1</label><input style={INP} value={draft.badge} onChange={e => setD("badge", e.target.value)} placeholder="100% USPEH" /></div>
-          <div><label style={LBL}>BEDŽ 2</label><input style={INP} value={draft.badge2 ?? ""} onChange={e => setD("badge2", e.target.value)} placeholder="★ TOP" /></div>
-        </div>
 
-        <p style={{ margin: "10px 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>STATISTIKE</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-          {([
-            { vk: "metric1Value", lk: "metric1Label", vph: "47",    lph: "PROJEKATA" },
-            { vk: "metric2Value", lk: "metric2Label", vph: "3.2×",  lph: "PROS. ROAS" },
-            { vk: "metric3Value", lk: "metric3Label", vph: "23",    lph: "BRENDOVA" },
-          ] as const).map(({ vk, lk, vph, lph }) => (
-            <div key={vk}>
-              <label style={LBL}>{lph}</label>
-              <input style={INP} value={(draft as any)[vk] ?? ""} onChange={e => setD(vk as any, e.target.value)} placeholder={vph} />
-              <label style={LBL}>LABELA</label>
-              <input style={INP} value={(draft as any)[lk] ?? ""} onChange={e => setD(lk as any, e.target.value)} placeholder={lph} />
-            </div>
-          ))}
-        </div>
+        {/* Godine iskustva */}
+        <label style={LBL}>GODINE ISKUSTVA</label>
+        <input style={INP} value={(draft as any).yearsExperience ?? ""} onChange={e => setD("yearsExperience" as any, e.target.value)} placeholder="npr. 3+ godine, 5 godina..." />
+
         <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
       </div>
     );
@@ -358,29 +345,12 @@ export default function MojProfil() {
           <p style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
           <p style={{ margin: "2px 0 0", fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
           {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
+          {(p as any).yearsExperience && (
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: C.accent, fontWeight: 600 }}>
+              🗓 {(p as any).yearsExperience}
+            </p>
+          )}
         </div>
-
-        {/* Badges */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
-          <div style={{ padding: "5px 11px", background: C.dark, color: "#fff", fontSize: 10, borderRadius: 999, display: "flex", alignItems: "center", gap: 5, fontWeight: 500 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />
-            {(p.openStatus || "DOSTUPAN").toUpperCase()}
-          </div>
-          {p.badge  && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge}</div>}
-          {p.badge2 && <div style={{ padding: "5px 11px", background: C.accentLight, color: C.accent, fontSize: 10, borderRadius: 999, fontWeight: 500 }}>{p.badge2}</div>}
-        </div>
-
-        {/* Stats */}
-        {stats.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 20px", paddingTop: 14, borderTop: `0.5px solid ${C.divider}` }}>
-            {stats.map((s, i) => (
-              <div key={i}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: i === 0 ? C.accent : C.dark }}>{s.value}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     );
   }

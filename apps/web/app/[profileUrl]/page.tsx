@@ -728,41 +728,18 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               </div>
             </div>
 
-            {/* Badges */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-              {/* DOSTUPAN — dark pill */}
-              <div style={{
-                padding: "5px 11px",
-                background: C.dark, color: "#fff",
-                fontSize: 10, borderRadius: 999,
-                display: "flex", alignItems: "center", gap: 5, fontWeight: 500,
-              }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />
-                {(p.openStatus || "DOSTUPAN").toUpperCase()}
+            {/* Godina iskustva */}
+            {(p as any).yearsExperience && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "5px 12px", background: C.accentLight, color: C.accent,
+                  fontSize: 11, borderRadius: 999, fontWeight: 600,
+                }}>
+                  🗓 {(p as any).yearsExperience}
+                </div>
               </div>
-
-              {/* Badge 1 — purple pill */}
-              {p.badge && (
-                <div style={{
-                  padding: "5px 11px",
-                  background: C.accentLight, color: C.accent,
-                  fontSize: 10, borderRadius: 999, fontWeight: 500,
-                }}>
-                  {p.badge}
-                </div>
-              )}
-
-              {/* Badge 2 — purple pill */}
-              {p.badge2 && (
-                <div style={{
-                  padding: "5px 11px",
-                  background: C.accentLight, color: C.accent,
-                  fontSize: 10, borderRadius: 999, fontWeight: 500,
-                }}>
-                  {p.badge2}
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Stats */}
             {stats.length > 0 && (
