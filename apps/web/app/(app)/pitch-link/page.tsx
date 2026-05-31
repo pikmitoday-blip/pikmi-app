@@ -168,8 +168,7 @@ export default function PitchLink() {
       )}
 
       {/* ── Main grid: form + list ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "start" }}
-        className="pl-grid">
+      <div className="pl-grid">
 
         {/* ══ FORM CARD ══ */}
         <div style={{
