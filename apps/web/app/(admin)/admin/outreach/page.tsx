@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../../lib/supabase";
-import { createClient } from "@supabase/supabase-js";
 
 interface DocSection {
   title: string;
@@ -50,18 +49,18 @@ export default function AdminOutreach() {
   async function uploadFile(i: number, file: File) {
     setUploading(i);
     try {
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
-      const path = `outreach/doc-${i + 1}-${Date.now()}.${ext}`;
-      const { error } = await supabaseAdmin.storage
-        .from("pikmi-uploads")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (error) { alert("Greška pri uploadu: " + error.message); return; }
-      const { data: { publicUrl } } = supabaseAdmin.storage.from("pikmi-uploads").getPublicUrl(path);
-      setDocs(prev => prev.map((d, j) => j === i ? { ...d, url: publicUrl } : d));
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "outreach");
+
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        alert("Greška pri uploadu: " + (data.error ?? "Nepoznata greška"));
+        return;
+      }
+      setDocs(prev => prev.map((d, j) => j === i ? { ...d, url: data.url } : d));
     } catch (e: any) {
       alert("Greška: " + e.message);
     }
