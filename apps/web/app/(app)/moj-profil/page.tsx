@@ -493,32 +493,83 @@ export default function MojProfil() {
             </div>
 
             {/* Paketi / cene */}
-            {p.pricing && p.pricing.length > 0 && (
-              <>
-                <SectionSep />
-                <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {editSection === "pricing" && draft ? (
+                <div>
+                  <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
+                  {(draft.pricing ?? []).map((tier, i) => (
+                    <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.muted }}>Paket {i + 1}</span>
+                        <button onClick={() => {
+                          const next = [...(draft.pricing ?? [])]; next.splice(i, 1);
+                          setDraft(prev => prev ? { ...prev, pricing: next } : null);
+                        }} style={{ padding: "3px 10px", borderRadius: 6, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444", fontSize: 11, cursor: "pointer" }}>
+                          Ukloni
+                        </button>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                        <div>
+                          <label style={LBL}>IME PAKETA</label>
+                          <input style={INP} value={tier.name} onChange={e => {
+                            const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], name: e.target.value };
+                            setDraft(prev => prev ? { ...prev, pricing: t } : null);
+                          }} placeholder="Starter" />
+                        </div>
+                        <div>
+                          <label style={LBL}>CENA</label>
+                          <input style={INP} value={tier.price} onChange={e => {
+                            const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], price: e.target.value };
+                            setDraft(prev => prev ? { ...prev, pricing: t } : null);
+                          }} placeholder="€500" />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={LBL}>OPIS</label>
+                        <input style={INP} value={tier.desc} onChange={e => {
+                          const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], desc: e.target.value };
+                          setDraft(prev => prev ? { ...prev, pricing: t } : null);
+                        }} placeholder="Šta je uključeno u ovaj paket..." />
+                      </div>
+                    </div>
+                  ))}
+                  {(draft.pricing ?? []).length < 3 && (
+                    <button onClick={() => setDraft(prev => prev ? { ...prev, pricing: [...(prev.pricing ?? []), { name: "", price: "", desc: "" }] } : null)}
+                      style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                      + Dodaj paket {(draft.pricing ?? []).length + 1}
+                    </button>
+                  )}
+                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                </div>
+              ) : (
+                <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                     <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
                     <button onClick={() => startEdit("pricing")}
                       style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
-                    {p.pricing.map((tier, i) => (
-                      <div key={i} style={{
-                        background: tier.green ? C.accent : C.sectionBg,
-                        border: `1px solid ${tier.green ? C.accent : C.border}`,
-                        borderRadius: 14, padding: "14px 12px",
-                        color: tier.green ? "#fff" : C.text,
-                      }}>
-                        <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
-                        <p style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 800, color: tier.green ? "#fff" : C.accent }}>{tier.price}</p>
-                        <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: tier.green ? "rgba(255,255,255,0.8)" : C.muted }}>{tier.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+                  {p.pricing && p.pricing.length > 0 ? (
+                    <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
+                      {p.pricing.map((tier, i) => (
+                        <div key={i} style={{
+                          background: tier.green ? C.accent : C.sectionBg,
+                          border: `1px solid ${tier.green ? C.accent : C.border}`,
+                          borderRadius: 14, padding: "14px 12px",
+                          color: tier.green ? "#fff" : C.text,
+                        }}>
+                          <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
+                          <p style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 800, color: tier.green ? "#fff" : C.accent }}>{tier.price}</p>
+                          <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: tier.green ? "rgba(255,255,255,0.8)" : C.muted }}>{tier.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema paketa — klikni ✏️</p>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* 02 — Rad */}
             <SectionSep />
