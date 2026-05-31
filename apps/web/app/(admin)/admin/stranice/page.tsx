@@ -14,8 +14,8 @@ interface CustomPage {
 
 const BUILTIN_PAGES = [
   { title: "Landing page",        path: "/",           editable: false },
-  { title: "Uslovi korišćenja",   path: "/uslovi",     editable: true,  editPath: "/admin/landing" },
-  { title: "Politika privatnosti",path: "/privatnost", editable: true,  editPath: "/admin/landing" },
+  { title: "Uslovi korišćenja",   path: "/uslovi",     editable: true,  editPath: "/admin/polise" },
+  { title: "Politika privatnosti",path: "/privatnost", editable: true,  editPath: "/admin/polise" },
   { title: "Login",               path: "/login",      editable: false },
   { title: "Registracija",        path: "/register",   editable: false },
 ];

@@ -1,13 +1,39 @@
 import Link from "next/link";
 import PikmiLogo from "../components/PikmiLogo";
+import { createClient } from "@supabase/supabase-js";
 
+export const revalidate = 300;
 export const metadata = { title: "Politika privatnosti — pikmi" };
 
-export default function PrivatnostPage() {
+const DEFAULT_HTML = `<h2>1. Koje podatke prikupljamo</h2>
+<p>Prikupljamo email adresu, ime i prezime, podatke profila koje sami unosiš, i tehničke podatke o korišćenju (IP adresa, tip uređaja, pregledi pitch linkova).</p>
+<h2>2. Kako koristimo podatke</h2>
+<p>Podaci se koriste za pružanje usluge, slanje notifikacija o aktivnostima na tvojim linkovima, i poboljšanje platforme. Ne prodajemo tvoje podatke trećim stranama.</p>
+<h2>3. Kolačići i praćenje</h2>
+<p>Koristimo kolačiće za autentifikaciju i analitiku. Ne koristimo kolačiće za reklamno praćenje.</p>
+<h2>4. Čuvanje podataka</h2>
+<p>Podaci se čuvaju u Supabase infrastrukturi (EU region). Možeš zatražiti brisanje svog naloga i svih podataka u bilo kom trenutku.</p>
+<h2>5. Plaćanje</h2>
+<p>Podaci o platnoj kartici se ne čuvaju na pikmi serverima — obrada se vrši putem Stripe platforme.</p>
+<h2>6. Kontakt</h2>
+<p>Za pitanja o privatnosti: <a href="mailto:podrska@pikmi.today">podrska@pikmi.today</a></p>`;
+
+async function getContent(): Promise<string> {
+  try {
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await sb.from("platform_settings").select("value").eq("key", "policy_privatnost").single();
+    return data?.value || DEFAULT_HTML;
+  } catch { return DEFAULT_HTML; }
+}
+
+export default async function PrivatnostPage() {
+  const html = await getContent();
+
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh", fontFamily: "'Satoshi', -apple-system, sans-serif" }}>
-
-      {/* Nav */}
       <nav className="nav-top">
         <Link href="/" className="nav-logo">
           <PikmiLogo size={32} />
@@ -20,163 +46,36 @@ export default function PrivatnostPage() {
       </nav>
 
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 24px 100px" }}>
-
         <div style={{ marginBottom: 48 }}>
           <div className="badge badge-purple" style={{ marginBottom: 16, display: "inline-flex" }}>Pravni dokument</div>
           <h1 style={{ fontSize: 40, fontWeight: 900, marginBottom: 12 }}>Politika privatnosti</h1>
-          <p style={{ fontSize: 15, color: "var(--text2)" }}>Posljednje azuriranje: 20. maja 2026.</p>
+          <p style={{ fontSize: 15, color: "var(--text2)" }}>Posljednje ažuriranje: maj 2026.</p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+        <div
+          style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 8 }}
+          dangerouslySetInnerHTML={{ __html: html }}
+          className="policy-content"
+        />
 
-          <Section title="1. Ko smo mi">
-            <p>
-              pikmi je platforma za kreiranje personalizovanih portfolio profila i pitch linkova,
-              dostupna na <strong>pikmi.today</strong>. U ovom dokumentu, "pikmi", "mi" ili "nas"
-              odnosi se na tim i kompaniju koja stoji iza ove platforme.
-            </p>
-            <p>
-              Ovom politikom privatnosti objasnjavamo koje podatke prikupljamo, kako ih koristimo
-              i na koji nacin ih stitimo.
-            </p>
-          </Section>
-
-          <Section title="2. Koji podaci se prikupljaju">
-            <p><strong>Podaci koje ti dajes:</strong></p>
-            <ul>
-              <li>Email adresa (pri registraciji)</li>
-              <li>Ime i prezime</li>
-              <li>Podaci profila: profilna slika, opis usluga, projekti, cijene, tehnologije</li>
-              <li>Podaci o placanju (obradjuju se iskljucivo preko Stripe-a — pikmi nema pristup podacima kartice)</li>
-            </ul>
-            <p><strong>Podaci koji se prikupljaju automatski:</strong></p>
-            <ul>
-              <li>Podaci o pregledima pitch linkova: datum i vrijeme, tip uredjaja, referrer URL</li>
-              <li>IP adresa posjetilaca javnih profila (anonimizovano)</li>
-              <li>Podaci o sesiji (ID sesije, user agent) za upravljanje prijavama</li>
-            </ul>
-          </Section>
-
-          <Section title="3. Kako koristimo podatke">
-            <p>Podatke koristimo iskljucivo u svrhe za koje su prikupljeni:</p>
-            <ul>
-              <li><strong>Pruzanje usluge:</strong> prikaz profila, generisanje linkova, analitika pregleda</li>
-              <li><strong>Notifikacije:</strong> slanje email obavjestenja kada neko otvori tvoj pitch link</li>
-              <li><strong>Upravljanje pretplatom:</strong> pracenje plana i obracun putem Stripe-a</li>
-              <li><strong>Bezbjednost:</strong> ogranicavanje broja aktivnih sesija i detekcija zloupotreba</li>
-              <li><strong>Poboljsanje platforme:</strong> anonimizovana analitika koriscenja</li>
-            </ul>
-            <p>Nikada ne prodajemo tvoje podatke trecim stranama niti ih koristimo u reklamne svrhe.</p>
-          </Section>
-
-          <Section title="4. Dijeljenje podataka s trecim stranama">
-            <p>Podaci se mogu dijeliti samo sa sljedecim provajderima, u svrhu pruzanja usluge:</p>
-            <ul>
-              <li><strong>Supabase</strong> — hosting baze podataka i autentifikacija (serveri u EU)</li>
-              <li><strong>Stripe</strong> — obrada placanja (ne dobijaju pristup tvojim profilnim podacima)</li>
-              <li><strong>Resend</strong> — slanje transakcijskih emailova (notifikacije, reset lozinke)</li>
-              <li><strong>Vercel</strong> — hosting platforme</li>
-            </ul>
-            <p>Svi provajderi su obavezani standardima zastite podataka (GDPR-kompatibilni).</p>
-          </Section>
-
-          <Section title="5. Javni profili i pitch linkovi">
-            <p>
-              Sadrzaj koji postavljas na javni profil (ime, opis, projekti, cijene) je{" "}
-              <strong>javno dostupan</strong> svima koji imaju link. Svjestan si toga pri kreiranju profila.
-            </p>
-            <p>
-              Podaci o posjetama pitch linkova (broj pregleda, uredjaj, referrer) vidljivi su tebi
-              kao vlasniku linka, ali nisu javno prikazani posjetiocu.
-            </p>
-          </Section>
-
-          <Section title="6. Kolacici i lokalno skladiste">
-            <p>pikmi koristi <strong>localStorage</strong> u browseru za cuvanje:</p>
-            <ul>
-              <li>Preferencije teme (tamna / svjetla)</li>
-              <li>ID aktivne sesije (za upravljanje prijavama na vise uredjaja)</li>
-            </ul>
-            <p>Ne koristimo tracking kolacice niti alate za pracenje posjetilaca poput Google Analytics-a.</p>
-          </Section>
-
-          <Section title="7. Cuvanje i brisanje podataka">
-            <p>Podatke cuvamo dok je tvoj nalog aktivan. Imas pravo da:</p>
-            <ul>
-              <li><strong>Pristupi</strong> svim podacima vezanim za tvoj nalog</li>
-              <li><strong>Ispravi</strong> netacne podatke putem podesavanja profila</li>
-              <li><strong>Obrises nalog</strong> zajedno sa svim podacima — kontaktiraj nas na email ispod</li>
-              <li><strong>Izveze</strong> podatke profila — dostupno na zahtjev</li>
-            </ul>
-            <p>
-              Nakon brisanja naloga, podaci se uklanjaju u roku od 30 dana,
-              osim ako postoji zakonska obaveza cuvanja.
-            </p>
-          </Section>
-
-          <Section title="8. Bezbjednost podataka">
-            <p>Koristimo industry-standard mjere zastite:</p>
-            <ul>
-              <li>HTTPS enkripcija za sve komunikacije</li>
-              <li>Lozinke se nikada ne cuvaju u cistom tekstu (Supabase Auth)</li>
-              <li>Ogranicenje broja aktivnih sesija po nalogu (max 3 uredjaja)</li>
-              <li>Row-level security (RLS) pravila na nivou baze podataka</li>
-            </ul>
-          </Section>
-
-          <Section title="9. Deca">
-            <p>
-              pikmi nije namenjen osobama mlađim od 16 godina. Svesno ne prikupljamo podatke
-              maloletnih osoba. Ako smatraš da smo greškom prikupili podatke deteta,
-              kontaktiraj nas i odmah ćemo obrisati takve podatke.
-            </p>
-          </Section>
-
-          <Section title="10. Izmene politike">
-            <p>
-              Možemo povremeno ažurirati ovu politiku. O značajnim izmenama obavestićemo te
-              emailom ili obaveštenjem na platformi. Preporučujemo povremenu proveru ove stranice.
-            </p>
-          </Section>
-
-          <Section title="11. Kontakt">
-            <p>Za sva pitanja u vezi privatnosti, brisanja podataka ili ostvarivanja prava, kontaktiraj nas:</p>
-            <p>
-              <strong>Email:</strong>{" "}
-              <a href="mailto:podrska@pikmi.today" style={{ color: "var(--purple)" }}>
-                podrska@pikmi.today
-              </a>
-            </p>
-            <p>Odgovaramo u roku od 5 radnih dana.</p>
-          </Section>
-
-        </div>
-
-        <div style={{
-          marginTop: 56, paddingTop: 32, borderTop: "1px solid var(--border)",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          flexWrap: "wrap", gap: 12,
-        }}>
+        <div style={{ marginTop: 56, paddingTop: 32, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <Link href="/uslovi" style={{ color: "var(--purple)", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>
-            Uslovi koristenja &rarr;
+            Uslovi korišćenja →
           </Link>
           <Link href="/" style={{ color: "var(--text3)", fontSize: 14, textDecoration: "none" }}>
-            &larr; Nazad na pikmi
+            ← Nazad na pikmi
           </Link>
         </div>
-
       </div>
-    </div>
-  );
-}
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "var(--text)" }}>{title}</h2>
-      <div style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 12 }}>
-        {children}
-      </div>
+      <style>{`
+        .policy-content h2 { font-size: 20px; font-weight: 700; color: var(--text); margin: 32px 0 12px; }
+        .policy-content p  { margin-bottom: 10px; }
+        .policy-content ul { padding-left: 20px; margin-bottom: 10px; }
+        .policy-content li { margin-bottom: 6px; }
+        .policy-content a  { color: var(--purple); }
+        .policy-content strong { color: var(--text); }
+      `}</style>
     </div>
   );
 }
