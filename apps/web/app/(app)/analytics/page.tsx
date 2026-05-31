@@ -165,7 +165,18 @@ export default function Analytics() {
   }
 
   const chartData = buildChartData();
+  // Na mobilnom uvek prikazujemo 7 dana (timeline dugmad su skrivena)
+  const mobileChartData = (() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (6 - i));
+      const dateStr = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("sr", { weekday: "short", day: "numeric" });
+      const count = filteredViews.filter(v => v.viewed_at?.slice(0, 10) === dateStr).length;
+      return { date: dateStr, label, count };
+    });
+  })();
   const maxBar = Math.max(...chartData.map(d => d.count), 1);
+  const mobileMaxBar = Math.max(...mobileChartData.map(d => d.count), 1);
 
   function timeAgo(dateStr: string) {
     if (!dateStr) return "—";
@@ -274,8 +285,11 @@ export default function Analytics() {
       {/* ── Chart ── */}
       <div style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 20, padding: "22px 20px", marginBottom: 16, minWidth: 0, overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, minWidth: 0 }}>{chartTitleMap[timeline]}</h2>
-          <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 10, padding: 3, width: "fit-content" }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, minWidth: 0 }}>
+            {chartTitleMap["7"]}
+            <span className="analytics-desktop-title" style={{ display: "none" }}>{chartTitleMap[timeline]}</span>
+          </h2>
+          <div className="analytics-timeline-btns" style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 10, padding: 3, width: "fit-content" }}>
             {TIMELINES.map(tl => (
               <button key={tl.value} onClick={() => setTimeline(tl.value)} style={{
                 padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
@@ -289,7 +303,30 @@ export default function Analytics() {
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8, height: 110, overflowX: "auto", maxWidth: "100%", WebkitOverflowScrolling: "touch" as any }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .analytics-timeline-btns { display: none !important; }
+            .analytics-chart-bars { display: none !important; }
+            .analytics-mobile-chart { display: flex !important; }
+          }
+          @media (min-width: 769px) {
+            .analytics-mobile-chart { display: none !important; }
+          }
+        `}</style>
+        {/* Mobile: uvek 7 dana */}
+        <div className="analytics-mobile-chart" style={{ alignItems: "flex-end", gap: 8, height: 110, maxWidth: "100%" }}>
+          {mobileChartData.map((d, i) => {
+            const showLabel = true;
+            return (
+              <div key={d.date} style={{ flex: 1, minWidth: 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)" }}>{d.count > 0 ? d.count : ""}</div>
+                <div style={{ width: "100%", borderRadius: 6, background: d.count > 0 ? "linear-gradient(to top,#7C3AED,#A78BFA)" : "rgba(255,255,255,0.04)", height: `${Math.max((d.count / mobileMaxBar) * 80, d.count > 0 ? 8 : 4)}px`, minHeight: 4, transition: "height 0.3s" }} />
+                <div style={{ fontSize: 10, color: "var(--text3)", textAlign: "center", whiteSpace: "nowrap" }}>{d.label}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 110, overflowX: "auto", maxWidth: "100%", WebkitOverflowScrolling: "touch" as any }} className="analytics-chart-bars">
           {chartData.map((d, i) => {
             // Na mobilnom prikazuj etiketu samo za svaki Nti bar
             const step = timeline === "30" ? 5 : timeline === "90" ? 2 : 1;
