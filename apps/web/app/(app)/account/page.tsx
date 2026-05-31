@@ -45,6 +45,9 @@ function AccountSettingsInner() {
   const [cancelledUntil, setCancelledUntil] = useState<string | null>(null);
   const [subError, setSubError] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [pro3Price, setPro3Price]   = useState("2490 din");
+  const [pro3Note, setPro3Note]     = useState("Uštedi 17%");
+  const [pro3Saving, setPro3Saving] = useState("~830 din mesečno · ušteda ~480 din");
   const [subDetails, setSubDetails] = useState<{
     status: string; cancelAtPeriodEnd: boolean; cancelAt: string | null;
     currentPeriodEnd: string; amount: number; currency: string;
@@ -85,6 +88,22 @@ function AccountSettingsInner() {
           }
         }
       } catch {}
+
+      // Dohvati cene Pro 3M plana iz platform_settings (iste kao na landingu)
+      try {
+        const { data: settings } = await supabase
+          .from("platform_settings")
+          .select("key, value")
+          .in("key", ["pricing_pro3_price", "pricing_pro3_note", "pricing_pro3_saving"]);
+        if (settings) {
+          const m: Record<string, string> = {};
+          settings.forEach((r: any) => { m[r.key] = r.value; });
+          if (m.pricing_pro3_price)  setPro3Price(m.pricing_pro3_price);
+          if (m.pricing_pro3_note)   setPro3Note(m.pricing_pro3_note);
+          if (m.pricing_pro3_saving) setPro3Saving(m.pricing_pro3_saving);
+        }
+      } catch {}
+
       setSubLoading(false);
     }
     load();
@@ -494,13 +513,13 @@ function AccountSettingsInner() {
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#10B981", textTransform: "uppercase" as const, letterSpacing: 1 }}>Pro 3 meseca</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", padding: "3px 10px", borderRadius: 100 }}>Uštedi 17%</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", padding: "3px 10px", borderRadius: 100 }}>{pro3Note}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontSize: 28, fontWeight: 900, color: "#10B981" }}>2490 din</span>
+                  <span style={{ fontSize: 28, fontWeight: 900, color: "#10B981" }}>{pro3Price}</span>
                   <span style={{ fontSize: 13, color: "var(--text3)" }}>/3 mes</span>
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginBottom: 14 }}>~830 din mesečno · ušteda ~480 din</div>
+                <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 14 }}>{pro3Saving}</div>
                 <Checkout3MButton label="Pređi na 3-mesečni plan →" style={{ borderRadius: 10, padding: "11px 0", fontSize: 13 }} />
               </div>
               <div style={{ fontSize: 11, color: "var(--text3)", textAlign: "center" }}>
