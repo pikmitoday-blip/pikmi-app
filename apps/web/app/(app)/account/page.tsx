@@ -609,28 +609,70 @@ function AccountSettingsInner() {
             </div>
           </div>
 
-          {/* Free → Pro upgrade */}
+          {/* Free → Pro upgrade — dva plana isti dizajn kao landing */}
           {plan === "free" && !subLoading && (
-            <div style={{ ...SECTION, background: "linear-gradient(160deg,rgba(124,58,237,0.1) 0%,rgba(59,130,246,0.05) 100%)", border: "1.5px solid rgba(124,58,237,0.3)", position: "relative", overflow: "visible", boxShadow: "0 4px 24px rgba(124,58,237,0.15)", marginBottom: 0 }}>
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#7C3AED,#3B82F6,#7C3AED)", borderRadius: "18px 18px 0 0" }} />
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#A855F7", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10, marginTop: 4 }}>Pro plan</div>
-              <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 2 }}>990 din<span style={{ fontSize: 14, fontWeight: 500, color: "var(--text3)" }}>/mes</span></div>
-              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
-              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-                {["Neograničeno pitch linkova", "Real-time tracking i notifikacije", "Outreach kit", "Prioritetna podrška"].map(f => (
-                  <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>
-                    <span style={{ color: "#A855F7", fontSize: 11 }}>✦</span> {f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={handleCheckout} disabled={checkoutLoading} style={{
-                width: "100%", padding: "13px 0", background: checkoutLoading ? "rgba(124,58,237,0.5)" : "linear-gradient(135deg,#7C3AED,#6366F1)",
-                border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700,
-                cursor: checkoutLoading ? "wait" : "pointer", fontFamily: "inherit",
-                boxShadow: "0 4px 20px rgba(124,58,237,0.3)", transition: "all 0.2s", opacity: checkoutLoading ? 0.7 : 1,
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 0 }}>
+
+              {/* Pro mesečno — isti dizajn kao landing */}
+              <div style={{
+                background: "linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.05))",
+                border: "1.5px solid rgba(139,92,246,0.3)", borderRadius: 20,
+                padding: "22px 20px", position: "relative",
+                boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 8px 40px rgba(124,58,237,0.15)",
               }}>
-                {checkoutLoading ? "Učitavanje..." : <>{t("billing_subscribe")} →</>}
-              </button>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#A855F7", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>PRO MESEČNO</div>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "linear-gradient(135deg,#7C3AED,#A855F7)", padding: "4px 12px", borderRadius: 999, letterSpacing: "0.05em", boxShadow: "0 2px 12px rgba(124,58,237,0.5)" }}>🔥 NAJPOPULARNIJE</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: -2, background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>990 din</span>
+                  <span style={{ fontSize: 13, color: "var(--text3)" }}>/mes</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+                  {["Neograničeno pitch linkova", "Sve sekcije profila", "Real-time tracking i notifikacije", "Outreach kit", "Prioritetna podrška"].map(f => (
+                    <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>
+                      <span style={{ color: "#A855F7", fontSize: 11 }}>✦</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <button onClick={handleCheckout} disabled={checkoutLoading} style={{
+                  width: "100%", padding: "14px 0",
+                  background: checkoutLoading ? "rgba(124,58,237,0.5)" : "linear-gradient(135deg,#7C3AED,#6D28D9)",
+                  border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700,
+                  cursor: checkoutLoading ? "wait" : "pointer", fontFamily: "inherit",
+                  boxShadow: checkoutLoading ? "none" : "0 6px 24px rgba(124,58,237,0.5)",
+                  transition: "all 0.2s", opacity: checkoutLoading ? 0.7 : 1,
+                }}>
+                  {checkoutLoading ? "Učitavanje..." : <>{t("billing_subscribe")} →</>}
+                </button>
+              </div>
+
+              {/* Pro 3 meseca — isti dizajn kao landing */}
+              <div style={{
+                background: "rgba(16,185,129,0.03)",
+                border: "1.5px solid rgba(16,185,129,0.18)", borderRadius: 20,
+                padding: "22px 20px",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#10B981", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>PRO 3 MESECA</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", padding: "3px 10px", borderRadius: 100 }}>{pro3Note}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: -2, color: "#10B981" }}>{pro3Price}</span>
+                  <span style={{ fontSize: 13, color: "var(--text3)" }}>/3 mes</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{pro3Saving}</div>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+                  {["Sve iz Pro mesečnog plana", "Zaključana niža cena za 3 meseca"].map(f => (
+                    <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>
+                      <span style={{ color: "#10B981", fontSize: 11 }}>✦</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Checkout3MButton label="Pređi na 3-mesečni plan →" style={{ borderRadius: 10, padding: "13px 0", fontSize: 14, boxShadow: "0 4px 16px rgba(16,185,129,0.25)" }} />
+              </div>
+
             </div>
           )}
         </div>
