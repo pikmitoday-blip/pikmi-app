@@ -132,24 +132,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Stats Grid ── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: 14,
-        marginBottom: 20,
-      }}
-        className="dash-stats-grid"
-      >
-        <style>{`
-          @media (max-width: 640px) {
-            .dash-stats-grid { grid-template-columns: 1fr 1fr !important; }
-            .dash-link-row-slug { display: none !important; }
-            .dash-link-row-time { display: none !important; }
-          }
-          @media (max-width: 400px) {
-            .dash-stats-grid { grid-template-columns: 1fr 1fr !important; }
-          }
-        `}</style>
+      <div style={{ marginBottom: 20 }} className="dash-stats-grid">
         {statCards.map((s) => (
           <div key={s.label} style={{
             background: s.bg,

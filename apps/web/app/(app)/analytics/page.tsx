@@ -252,15 +252,8 @@ export default function Analytics() {
         ))}
       </div>
 
-      <style>{`
-        @media (max-width: 640px) {
-          .analytics-stats { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
-
       {/* ── Stats Grid ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}
-        className="analytics-stats">
+      <div style={{ marginBottom: 20 }} className="analytics-stats">
         {statCards.map(s => (
           <div key={s.label} style={{
             background: s.bg, border: `1px solid ${s.border}`,
