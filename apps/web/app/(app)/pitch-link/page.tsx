@@ -120,7 +120,7 @@ export default function PitchLink() {
   // ── Shared input style ────────────────────────────────────────────────────
   const INP: React.CSSProperties = {
     width: "100%", padding: "13px 14px",
-    background: "rgba(255,255,255,0.04)",
+    background: "var(--inp-bg)",
     border: "1px solid rgba(139,92,246,0.12)",
     borderRadius: 12, color: "var(--text)",
     fontSize: 14, fontFamily: "inherit", outline: "none",
@@ -128,7 +128,7 @@ export default function PitchLink() {
   };
   const LBL: React.CSSProperties = {
     fontSize: 12, fontWeight: 600,
-    color: "rgba(255,255,255,0.45)",
+    color: "var(--text3)",
     marginBottom: 8, display: "block", letterSpacing: 0.3,
   };
 
@@ -310,7 +310,7 @@ export default function PitchLink() {
                           <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {l.title}
                           </div>
-                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: "monospace" }}>
+                          <div style={{ fontSize: 11, color: "var(--text3)", fontFamily: "monospace" }}>
                             pikmi.today/{l.slug}
                           </div>
                         </div>
@@ -327,7 +327,7 @@ export default function PitchLink() {
                           {l.views >= 2 ? "🔥 Hot lead" : l.views === 1 ? "Opened" : l.is_active ? t("links_active") : t("links_inactive")}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>
+                          <span style={{ fontSize: 12, color: "var(--text2)", fontFamily: "monospace" }}>
                             {l.views > 0 ? `${l.views} ${t("links_views_count")}` : t("links_views_count") ? `0 ${t("links_views_count")}` : "No views"}
                           </span>
                         </div>

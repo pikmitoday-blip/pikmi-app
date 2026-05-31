@@ -212,10 +212,10 @@ export default function Dashboard() {
           <div>
             {/* Column labels — desktop only */}
             <div className="dash-link-row-time" style={{ display: "grid", gridTemplateColumns: "1fr 160px 80px 100px", gap: 12, padding: "0 4px 8px", borderBottom: "1px solid rgba(139,92,246,0.06)", marginBottom: 4 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_client")}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_link")}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_views_col")}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_status")}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_client")}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_link")}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_views_col")}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: 1, textTransform: "uppercase" }}>{t("dash_status")}</span>
             </div>
 
             {links.map((l, i) => {
@@ -244,7 +244,7 @@ export default function Dashboard() {
                       </div>
                       <a href={getLinkUrl(l.slug)} target="_blank" rel="noreferrer"
                         className="dash-link-row-slug"
-                        style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", textDecoration: "none", fontFamily: "monospace" }}>
+                        style={{ fontSize: 10, color: "var(--text3)", textDecoration: "none", fontFamily: "monospace" }}>
                         /{l.slug} ↗
                       </a>
                     </div>

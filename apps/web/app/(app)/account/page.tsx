@@ -190,14 +190,14 @@ function AccountSettingsInner() {
   // ── Shared styles matching JSX reference ────────────────────────────────
   const INP: React.CSSProperties = {
     width: "100%", padding: "13px 14px",
-    background: "rgba(255,255,255,0.04)",
+    background: "var(--inp-bg)",
     border: "1px solid rgba(139,92,246,0.12)",
     borderRadius: 12, color: "var(--text)",
     fontSize: 14, fontFamily: "inherit", outline: "none",
     transition: "border-color 0.2s", boxSizing: "border-box",
   };
   const LBL: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)",
+    fontSize: 12, fontWeight: 600, color: "var(--text3)",
     marginBottom: 8, display: "block", letterSpacing: 0.3,
   };
   const SECTION: React.CSSProperties = {
@@ -279,7 +279,7 @@ function AccountSettingsInner() {
                     </button>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>{t("account_avatar_hint")}</div>
+                <div style={{ fontSize: 11, color: "var(--text3)" }}>{t("account_avatar_hint")}</div>
               </div>
             </div>
             {avatarError && <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 13 }}>⚠️ {avatarError}</div>}
@@ -305,18 +305,18 @@ function AccountSettingsInner() {
 
             <div style={{ marginBottom: 14 }}>
               <label style={LBL}>{t("account_email")}</label>
-              <div style={{ ...INP, background: "rgba(255,255,255,0.02)", color: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ ...INP, background: "rgba(255,255,255,0.02)", color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span>{email}</span>
                 <span style={{ fontSize: 14 }}>🔒</span>
               </div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", marginTop: 5 }}>{t("account_email_note")}</div>
+              <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 5 }}>{t("account_email_note")}</div>
             </div>
 
             {/* Profile URL */}
             <div style={{ marginBottom: 20 }}>
               <label style={LBL}>{t("account_email") === "Email adresa" ? "URL profila" : "Profile URL"}</label>
               <div style={{ display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(139,92,246,0.12)" }}>
-                <div style={{ padding: "13px 12px", background: "rgba(139,92,246,0.08)", fontSize: 12, color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap", borderRight: "1px solid rgba(139,92,246,0.1)" }}>
+                <div style={{ padding: "13px 12px", background: "rgba(139,92,246,0.08)", fontSize: 12, color: "var(--text3)", whiteSpace: "nowrap", borderRight: "1px solid rgba(139,92,246,0.1)" }}>
                   pikmi.today/
                 </div>
                 <input style={{ ...INP, border: "none", borderRadius: 0, flex: 1 }}
@@ -346,7 +346,7 @@ function AccountSettingsInner() {
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A855F7", display: "inline-block" }} />
                 {t("account_password_section")}
               </div>
-              <span style={{ fontSize: 16, color: "rgba(255,255,255,0.2)", transform: showPasswordSection ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>⌄</span>
+              <span style={{ fontSize: 16, color: "var(--text3)", transform: showPasswordSection ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>⌄</span>
             </div>
 
             {showPasswordSection && (
@@ -355,7 +355,7 @@ function AccountSettingsInner() {
                   <label style={LBL}>{t("account_current_pass")}</label>
                   <div style={{ position: "relative" }}>
                     <input style={{ ...INP, paddingRight: 44 }} type={showCurrent ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="••••••••" />
-                    <button type="button" onClick={() => setShowCurrent(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", fontSize: 16, padding: 0 }}>
+                    <button type="button" onClick={() => setShowCurrent(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 16, padding: 0 }}>
                       {showCurrent ? "🙈" : "👁"}
                     </button>
                   </div>
@@ -364,7 +364,7 @@ function AccountSettingsInner() {
                   <label style={LBL}>{t("account_new_pass")}</label>
                   <div style={{ position: "relative" }}>
                     <input style={{ ...INP, paddingRight: 44 }} type={showNew ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder={t("account_new_pass_ph")} />
-                    <button type="button" onClick={() => setShowNew(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", fontSize: 16, padding: 0 }}>
+                    <button type="button" onClick={() => setShowNew(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 16, padding: 0 }}>
                       {showNew ? "🙈" : "👁"}
                     </button>
                   </div>
@@ -373,7 +373,7 @@ function AccountSettingsInner() {
                   <label style={LBL}>{t("account_confirm_pass")}</label>
                   <div style={{ position: "relative" }}>
                     <input style={{ ...INP, paddingRight: 44 }} type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder={t("account_confirm_pass_ph")} />
-                    <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", fontSize: 16, padding: 0 }}>
+                    <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text3)", fontSize: 16, padding: 0 }}>
                       {showConfirm ? "🙈" : "👁"}
                     </button>
                   </div>
@@ -472,12 +472,12 @@ function AccountSettingsInner() {
               </span>
             </div>
             {plan === "pro" && subDetails && (
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+              <div style={{ fontSize: 12, color: "var(--text3)" }}>
                 {subDetails.cancelAtPeriodEnd ? t("billing_expires_on") : t("billing_next")}: {new Date(subDetails.currentPeriodEnd).toLocaleDateString("sr-RS", { day: "numeric", month: "long", year: "numeric" })}
               </div>
             )}
             {plan === "free" && (
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t("billing_trial_expired")}</div>
+              <div style={{ fontSize: 12, color: "var(--text3)" }}>{t("billing_trial_expired")}</div>
             )}
           </div>
 
@@ -498,12 +498,12 @@ function AccountSettingsInner() {
                 </div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
                   <span style={{ fontSize: 28, fontWeight: 900, color: "#10B981" }}>2490 din</span>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>/3 mes</span>
+                  <span style={{ fontSize: 13, color: "var(--text3)" }}>/3 mes</span>
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginBottom: 14 }}>~830 din mesečno · ušteda ~480 din</div>
                 <Checkout3MButton label="Pređi na 3-mesečni plan →" style={{ borderRadius: 10, padding: "11px 0", fontSize: 13 }} />
               </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "var(--text3)", textAlign: "center" }}>
                 Trenutni mesečni plan ostaje aktivan do kraja perioda
               </div>
             </div>
@@ -520,7 +520,7 @@ function AccountSettingsInner() {
                 <span style={{ fontSize: 22 }}>💳</span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, textTransform: "capitalize" }}>{subDetails.card.brand} •••• {subDetails.card.last4}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t("billing_card_exp")} {subDetails.card.expMonth}/{subDetails.card.expYear}</div>
+                  <div style={{ fontSize: 12, color: "var(--text3)" }}>{t("billing_card_exp")} {subDetails.card.expMonth}/{subDetails.card.expYear}</div>
                 </div>
                 {subDetails.lastInvoicePdf && (
                   <a href={subDetails.lastInvoicePdf} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "auto", fontSize: 11, color: "#A855F7", textDecoration: "none", fontWeight: 600 }}>
@@ -538,7 +538,7 @@ function AccountSettingsInner() {
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A855F7", display: "inline-block" }} />
                 {t("sub_manage_card")}
               </div>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 14, lineHeight: 1.6 }}>{t("sub_manage_card_desc")}</p>
+              <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 14, lineHeight: 1.6 }}>{t("sub_manage_card_desc")}</p>
               <button onClick={openPortal} disabled={portalLoading} style={{
                 width: "100%", padding: "13px 0",
                 background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)",
@@ -558,7 +558,7 @@ function AccountSettingsInner() {
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(239,68,68,0.6)", display: "inline-block" }} />
                 {t("sub_cancel_title")}
               </div>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", lineHeight: 1.5, marginBottom: 14 }}>{t("sub_cancel_desc")}</p>
+              <p style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5, marginBottom: 14 }}>{t("sub_cancel_desc")}</p>
               {cancelledUntil ? (
                 <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", color: "#FBBF24", fontSize: 13 }}>
                   ⚠️ {t("sub_cancelled")} {cancelledUntil}
@@ -579,7 +579,7 @@ function AccountSettingsInner() {
 
           {/* FAQ */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const, color: "rgba(255,255,255,0.3)", marginBottom: 10 }}>{t("billing_faq")}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const, color: "var(--text3)", marginBottom: 10 }}>{t("billing_faq")}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[{ q: t("billing_faq_q1"), a: t("billing_faq_a1") }, { q: t("billing_faq_q2"), a: t("billing_faq_a2") }, { q: t("billing_faq_q3"), a: t("billing_faq_a3") }].map(item => (
                 <div key={item.q} style={{ ...SECTION, padding: "14px 16px", marginBottom: 0 }}>
@@ -595,8 +595,8 @@ function AccountSettingsInner() {
             <div style={{ ...SECTION, background: "linear-gradient(160deg,rgba(124,58,237,0.1) 0%,rgba(59,130,246,0.05) 100%)", border: "1.5px solid rgba(124,58,237,0.3)", position: "relative", overflow: "visible", boxShadow: "0 4px 24px rgba(124,58,237,0.15)", marginBottom: 0 }}>
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#7C3AED,#3B82F6,#7C3AED)", borderRadius: "18px 18px 0 0" }} />
               <div style={{ fontSize: 12, fontWeight: 700, color: "#A855F7", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10, marginTop: 4 }}>Pro plan</div>
-              <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 2 }}>990 din<span style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.3)" }}>/mes</span></div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
+              <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 2 }}>990 din<span style={{ fontSize: 14, fontWeight: 500, color: "var(--text3)" }}>/mes</span></div>
+              <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                 {["Neograničeno pitch linkova", "Real-time tracking i notifikacije", "Outreach kit", "Prioritetna podrška"].map(f => (
                   <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>

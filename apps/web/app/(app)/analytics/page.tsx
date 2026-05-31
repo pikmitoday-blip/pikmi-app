@@ -235,7 +235,7 @@ export default function Analytics() {
         <button onClick={() => setSelectedLink("all")} style={{
           padding: "7px 16px", borderRadius: 10, border: selectedLink === "all" ? "none" : "1px solid rgba(139,92,246,0.12)",
           background: selectedLink === "all" ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(139,92,246,0.04)",
-          color: selectedLink === "all" ? "#fff" : "rgba(255,255,255,0.45)",
+          color: selectedLink === "all" ? "#fff" : "var(--text2)",
           fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
           flexShrink: 0, whiteSpace: "nowrap",
         }}>
@@ -245,7 +245,7 @@ export default function Analytics() {
           <button key={l.id} onClick={() => setSelectedLink(l.id)} style={{
             padding: "7px 16px", borderRadius: 10, border: selectedLink === l.id ? "none" : "1px solid rgba(139,92,246,0.12)",
             background: selectedLink === l.id ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(139,92,246,0.04)",
-            color: selectedLink === l.id ? "#fff" : "rgba(255,255,255,0.45)",
+            color: selectedLink === l.id ? "#fff" : "var(--text2)",
             fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
             flexShrink: 0, whiteSpace: "nowrap",
           }}>
@@ -281,7 +281,7 @@ export default function Analytics() {
                 padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontSize: 12, fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
                 background: timeline === tl.value ? "rgba(124,58,237,0.8)" : "transparent",
-                color: timeline === tl.value ? "#fff" : "rgba(255,255,255,0.35)",
+                color: timeline === tl.value ? "#fff" : "var(--text3)",
                 whiteSpace: "nowrap",
               }}>
                 {tl.label}
@@ -314,7 +314,7 @@ export default function Analytics() {
       <div style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 20, padding: "22px 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: -0.3 }}>{t("analytics_recent")}</h2>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+          <span style={{ fontSize: 12, color: "var(--text3)", fontFamily: "monospace" }}>
             {filteredViews.length} {t("analytics_total_views").toLowerCase()}
           </span>
         </div>
@@ -330,7 +330,7 @@ export default function Analytics() {
             {/* Column headers — desktop */}
             <div className="dash-link-row-time" style={{ display: "grid", gridTemplateColumns: "1fr 110px 80px 70px", gap: 8, padding: "0 4px 8px", borderBottom: "1px solid rgba(139,92,246,0.06)", marginBottom: 4 }}>
               {["Pitch link", "Uređaj", "Trajanje", "Vreme"].map((h, i) => (
-                <span key={i} style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: 1, textTransform: "uppercase" }}>{h}</span>
+                <span key={i} style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: 1, textTransform: "uppercase" }}>{h}</span>
               ))}
             </div>
 

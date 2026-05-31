@@ -20,6 +20,17 @@
   --grad-pink: linear-gradient(135deg, #7C3AED, #EC4899);
   --r: 12px;
   --r-lg: 20px;
+  /* Adaptive alpha text — zamenjuju rgba(255,255,255,x) u dark i rgba(0,0,0,x) u light */
+  --t-high:   rgba(255,255,255,0.9);
+  --t-mid:    rgba(255,255,255,0.55);
+  --t-low:    rgba(255,255,255,0.35);
+  --t-subtle: rgba(255,255,255,0.25);
+  --t-hint:   rgba(255,255,255,0.18);
+  --t-ghost:  rgba(255,255,255,0.08);
+  /* Input / card adaptive backgrounds */
+  --inp-bg:     rgba(255,255,255,0.04);
+  --inp-border: rgba(139,92,246,0.12);
+  --card-bg:    rgba(139,92,246,0.04);
 }
 
 /* === LIGHT THEME === */
@@ -32,6 +43,15 @@
   --text: #111827;
   --text2: #4B5563;
   --text3: #9CA3AF;
+  --t-high:   rgba(0,0,0,0.85);
+  --t-mid:    rgba(0,0,0,0.55);
+  --t-low:    rgba(0,0,0,0.45);
+  --t-subtle: rgba(0,0,0,0.35);
+  --t-hint:   rgba(0,0,0,0.3);
+  --t-ghost:  rgba(0,0,0,0.08);
+  --inp-bg:     rgba(0,0,0,0.03);
+  --inp-border: rgba(124,58,237,0.15);
+  --card-bg:    rgba(124,58,237,0.04);
 }
 [data-theme="light"] body {
   background: #F4F6F8;
