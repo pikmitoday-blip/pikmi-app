@@ -798,7 +798,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <>
               <SectionSep />
               <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="01" text="ŠTA RADIM" />
+                <SectionLabel number="01" text="Šta radim" />
                 <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>
                   {p.serviceTitle}
                 </h2>
@@ -840,7 +840,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <>
               <SectionSep />
               <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="02" text="RAD" />
+                <SectionLabel number="02" text="Prethodni radovi" />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                   {csSlots.map(i => {
@@ -888,7 +888,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <>
               <SectionSep />
               <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="03" text="VEŠTINE" />
+                <SectionLabel number="03" text="Veštine" />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {stackTags.map((tag, i) => {
                     const isPrimary = i < 2;
@@ -919,7 +919,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             <>
               <SectionSep />
               <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="05" text="ISKUSTVO" />
+                <SectionLabel number="05" text="Prethodno iskustvo" />
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {p.experience.map((exp, i) => {
                     const isActive = i === 0;
@@ -970,7 +970,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               <>
                 <SectionSep />
                 <div style={{ padding: "24px 20px" }}>
-                  <SectionLabel number="06" text="REČI KLIJENATA" />
+                  <SectionLabel number="06" text="Reči klijenata" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {list.map((t, i) => (
                       <div key={i} style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>

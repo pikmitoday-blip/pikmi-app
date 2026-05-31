@@ -680,8 +680,6 @@ export default function MojProfil() {
                           <label style={LBL}>ULOGA</label>
                           <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder="Senior Video Editor" />
                         </div>
-                        <div><label style={LBL}>OD</label><input style={INP} value={exp.dateFrom} onChange={e => setDraftExp(i, "dateFrom", e.target.value)} placeholder="'23" /></div>
-                        <div><label style={LBL}>DO</label><input style={INP} value={exp.dateTo} onChange={e => setDraftExp(i, "dateTo", e.target.value)} placeholder="danas" /></div>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <label style={LBL}>OPIS</label>
                           <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder="Brand film + 8 ad creative-a · ROAS 3.2×" />
