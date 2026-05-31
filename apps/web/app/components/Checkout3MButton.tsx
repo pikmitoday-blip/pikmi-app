@@ -40,10 +40,10 @@ export default function Checkout3MButton({ style, label = "Pretplati se na 3 mes
       if (data.url) {
         window.location.href = data.url;
       } else {
-        window.location.href = "/billing";
+        window.location.href = "/account?tab=subscription";
       }
     } catch {
-      window.location.href = "/billing";
+      window.location.href = "/account?tab=subscription";
     }
     setLoading(false);
   }

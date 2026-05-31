@@ -15,16 +15,27 @@ export default function CheckoutButton() {
   async function handleClick() {
     setLoading(true);
 
-    // Provjeri da li je korisnik ulogovan
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      // Nije ulogovan — idi na registraciju, pa će billing page otvoriti checkout
       window.location.href = "/register?plan=pro";
       return;
     }
 
-    // Ulogovan — pozovi Stripe checkout
+    // Provjeri trenutni plan — ako je već Pro, vodi na pretplatu
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("user_id", user.id)
+        .single();
+      if (profile?.plan === "pro") {
+        window.location.href = "/account?tab=subscription";
+        return;
+      }
+    } catch {}
+
+    // Nije Pro — pozovi Stripe checkout
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -35,10 +46,10 @@ export default function CheckoutButton() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        window.location.href = "/billing";
+        window.location.href = "/account?tab=subscription";
       }
     } catch {
-      window.location.href = "/billing";
+      window.location.href = "/account?tab=subscription";
     }
     setLoading(false);
   }

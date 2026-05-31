@@ -160,7 +160,7 @@ export default function PitchLink() {
             </div>
           </div>
           {isAtLimit && (
-            <a href="/billing" className="btn btn-primary btn-sm" style={{ whiteSpace: "nowrap" }}>
+            <a href="/account?tab=subscription" className="btn btn-primary btn-sm" style={{ whiteSpace: "nowrap" }}>
               ⚡ {t("links_upgrade")}
             </a>
           )}
@@ -195,7 +195,7 @@ export default function PitchLink() {
               <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", textAlign: "center", padding: "0 20px" }}>
                 {t("links_limit_reached")}
               </div>
-              <a href="/billing" className="btn btn-primary btn-sm">⚡ {t("links_upgrade")}</a>
+              <a href="/account?tab=subscription" className="btn btn-primary btn-sm">⚡ {t("links_upgrade")}</a>
             </div>
           )}
 

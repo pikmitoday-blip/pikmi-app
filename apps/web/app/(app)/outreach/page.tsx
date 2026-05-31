@@ -418,7 +418,7 @@ export default function Outreach() {
           justifyContent: "space-between", gap: 12,
         }}>
           <span>⏳ Tvoj besplatni trial ističe za <strong>{trialDaysLeft} {trialDaysLeft === 1 ? "dan" : trialDaysLeft < 5 ? "dana" : "dana"}</strong></span>
-          <Link href="/billing" className="btn btn-sm" style={{
+          <Link href="/account?tab=subscription" className="btn btn-sm" style={{
             background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.4)",
             color: "#FCD34D", fontSize: 12, padding: "5px 12px",
           }}>
@@ -458,7 +458,7 @@ export default function Outreach() {
               990 din<span style={{ fontSize: 14, fontWeight: 500, color: "var(--text2)" }}>/mesec</span>
             </div>
             <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 24 }}>{t("cancel_anytime")}</div>
-            <Link href="/billing" className="btn btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+            <Link href="/account?tab=subscription" className="btn btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
               {t("outreach_upgrade_btn")}
             </Link>
             <Link href="/dashboard" style={{ display: "block", marginTop: 14, fontSize: 13, color: "var(--text3)" }}>

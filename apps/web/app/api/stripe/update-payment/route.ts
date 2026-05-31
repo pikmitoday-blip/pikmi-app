@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       setup_intent_data: profile.stripe_subscription_id
         ? { metadata: { subscription_id: profile.stripe_subscription_id } }
         : undefined,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?payment_updated=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&payment_updated=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription`,
     });
 
     return NextResponse.json({ url: session.url });

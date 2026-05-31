@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?success=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?cancelled=1`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&success=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&cancelled=1`,
       metadata: { supabase_user_id: userId },
     });
 
