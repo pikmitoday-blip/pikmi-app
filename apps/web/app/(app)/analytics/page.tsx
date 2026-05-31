@@ -272,15 +272,16 @@ export default function Analytics() {
 
       {/* ── Chart ── */}
       <div style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 20, padding: "22px 20px", marginBottom: 16, minWidth: 0, overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700 }}>{chartTitleMap[timeline]}</h2>
-          <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 10, padding: 3 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, minWidth: 0 }}>{chartTitleMap[timeline]}</h2>
+          <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(139,92,246,0.1)", borderRadius: 10, padding: 3, width: "fit-content" }}>
             {TIMELINES.map(tl => (
               <button key={tl.value} onClick={() => setTimeline(tl.value)} style={{
-                padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontSize: 12, fontWeight: 600, fontFamily: "inherit", transition: "all 0.15s",
                 background: timeline === tl.value ? "rgba(124,58,237,0.8)" : "transparent",
                 color: timeline === tl.value ? "#fff" : "rgba(255,255,255,0.35)",
+                whiteSpace: "nowrap",
               }}>
                 {tl.label}
               </button>
