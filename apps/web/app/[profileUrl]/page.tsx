@@ -873,12 +873,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   })}
                 </div>
 
-                {/* Pagination dots */}
-                <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
-                  <div style={{ width: 18, height: 4, borderRadius: 999, background: C.accent }} />
-                  <div style={{ width: 4,  height: 4, borderRadius: 999, background: C.border }} />
-                  <div style={{ width: 4,  height: 4, borderRadius: 999, background: C.border }} />
-                </div>
               </div>
             </>
           )}

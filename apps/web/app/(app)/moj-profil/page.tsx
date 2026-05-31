@@ -612,19 +612,20 @@ export default function MojProfil() {
                           const img = p.csImages?.[i]; const cs = p.caseStudies?.[i];
                           return (
                             <div key={i}>
+                              {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
+                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: 14, display: "block", background: "#000", maxHeight: 160, objectFit: "contain" }} />
+                              ) : (
                               <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
                                 {img && <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
                               </div>
+                              )}
                               {cs?.client && <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>{cs.client}</p>}
                               {(cs?.platform || cs?.year) && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{[cs.platform, cs.year].filter(Boolean).join(" · ")}</p>}
                             </div>
                           );
                         })}
                       </div>
-                      <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
-                        <div style={{ width: 18, height: 4, borderRadius: 999, background: C.accent }} />
-                        <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
-                        <div style={{ width: 4, height: 4, borderRadius: 999, background: C.border }} />
+                      <div style={{ display: "none" }}>
                       </div>
                     </>
                   ) : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema projekata — klikni Uredi</p>}
