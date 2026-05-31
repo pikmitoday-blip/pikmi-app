@@ -41,8 +41,8 @@
   --card-hover: rgba(0,0,0,0.055);
   --border: rgba(0,0,0,0.09);
   --text: #111827;
-  --text2: #4B5563;
-  --text3: #9CA3AF;
+  --text2: #374151;
+  --text3: #6B7280;
   --t-high:   rgba(0,0,0,0.85);
   --t-mid:    rgba(0,0,0,0.55);
   --t-low:    rgba(0,0,0,0.45);
@@ -56,7 +56,33 @@
 [data-theme="light"] body {
   background: #F4F6F8;
   background-attachment: fixed;
+  color: #111827;
 }
+
+/* ── Light theme: globalni kontrast fix ─────────────────────────────────────
+   body.color se nasledi → sve što nema eksplicitnu boju postaje tamno.
+   CSS klase override-uju tamo gde je needed. */
+
+/* Kartice i sekcije */
+[data-theme="light"] .card       { color: #111827; }
+[data-theme="light"] .stat-card  { color: #111827; }
+
+/* Stat labele */
+[data-theme="light"] .stat-label { color: #6B7280 !important; }
+
+/* Tabele */
+[data-theme="light"] .table th   { color: #6B7280; }
+[data-theme="light"] .table td   { color: #374151; }
+
+/* Page naslovi */
+[data-theme="light"] .page-title    { color: #111827 !important; }
+[data-theme="light"] .page-subtitle { color: #6B7280 !important; }
+
+/* Sidebar */
+[data-theme="light"] .sidebar-section { color: #9CA3AF; }
+
+/* Sav tekst unutar main-content koji nema eksplicitnu CSS boju nasledi tamnu */
+[data-theme="light"] .main-content { color: #111827; }
 [data-theme="light"] .input {
   background: #FFFFFF;
   border-color: rgba(0,0,0,0.12);
