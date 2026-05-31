@@ -58,6 +58,7 @@ interface Profile {
   ctaBtn1: string;
   ctaBtn2: string;
   pdfUrl: string;
+  portfolioFiles?: { url: string; name: string; type: "image" | "video" | "document" }[];
 }
 
 // ─── Design tokens (iz HTML reference-a) ────────────────────────────────────
@@ -861,6 +862,38 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 </div>
               </div>
             </>
+          )}
+
+          {/* ─── Portfolio fajlovi ───────────────────────────────────────────── */}
+          {(p.portfolioFiles ?? []).length > 0 && (
+            <div style={{ padding: "32px 0 8px", borderTop: `1px solid ${C.divider}` }}>
+              <p style={{ margin: "0 0 16px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>
+                Materijali
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+                {(p.portfolioFiles ?? []).map((f, i) => (
+                  <div key={i} style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${C.border}`, background: C.sectionBg }}>
+                    {f.type === "image" && (
+                      <a href={f.url} target="_blank" rel="noreferrer">
+                        <img src={f.url} alt={f.name} style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+                      </a>
+                    )}
+                    {f.type === "video" && (
+                      <video src={f.url} controls style={{ width: "100%", height: 120, objectFit: "cover", display: "block", background: "#000" }} />
+                    )}
+                    {f.type === "document" && (
+                      <a href={f.url} target="_blank" rel="noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, gap: 8, textDecoration: "none" }}>
+                        <span style={{ fontSize: 36 }}>📄</span>
+                        <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>Otvori PDF</span>
+                      </a>
+                    )}
+                    <div style={{ padding: "8px 10px", borderTop: `1px solid ${C.border}` }}>
+                      <p style={{ margin: 0, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* ─── 07 — Kontakt ────────────────────────────────────────────────── */}

@@ -25,6 +25,13 @@ interface Profile {
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl: string;
+  portfolioFiles?: PortfolioFile[];
+}
+
+interface PortfolioFile {
+  url: string;
+  name: string;
+  type: "image" | "video" | "document";
 }
 
 const DEFAULT: Profile = {
@@ -56,6 +63,7 @@ const DEFAULT: Profile = {
   ctaTitle: "Spreman da skaliraš", ctaHighlight: "profitabilno",
   ctaBtn1: "Zakaži strategy poziv →", ctaBtn2: "Preuzmi case study (PDF)",
   pdfUrl: "",
+  portfolioFiles: [],
 };
 
 function Section({ label, color = "#A78BFA", children }: { label: string; color?: string; children: React.ReactNode }) {
@@ -88,6 +96,7 @@ function ProfileEditInner() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [profileUrl, setProfileUrl] = useState<string>("");
 
   useEffect(() => {
@@ -219,6 +228,31 @@ function ProfileEditInner() {
       console.error("Upload error:", e);
     }
     setUploading(null);
+  }
+
+  async function uploadPortfolioFile(file: File) {
+    setUploadingFile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
+      const path = `${user.id}/portfolio-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: false, contentType: file.type });
+      if (error) { console.error(error); return; }
+      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const fileType: PortfolioFile["type"] = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
+      const newFile: PortfolioFile = { url: publicUrl, name: file.name, type: fileType };
+      setP(prev => ({ ...prev, portfolioFiles: [...(prev.portfolioFiles ?? []), newFile] }));
+    } catch (e) { console.error("Portfolio file upload error:", e); }
+    setUploadingFile(false);
+  }
+
+  function removePortfolioFile(i: number) {
+    setP(prev => {
+      const files = [...(prev.portfolioFiles ?? [])];
+      files.splice(i, 1);
+      return { ...prev, portfolioFiles: files };
+    });
   }
 
   function removeImage(i: number) {
@@ -522,6 +556,62 @@ function ProfileEditInner() {
               <input className="input" value={p.pdfUrl} onChange={e => set("pdfUrl", e.target.value)} placeholder="https://drive.google.com/..." />
             </div>
           </div>
+        </Section>
+
+        {/* Portfolio fajlovi */}
+        <Section label="Portfolio fajlovi" color="#3B82F6">
+          <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 20, lineHeight: 1.6 }}>
+            Dodaj slike, videa ili dokumente koji se prikazuju na tvom portfoliju. Podržani formati: PNG, JPG, GIF, WebP, MP4, MOV, PDF.
+          </p>
+
+          {/* Existing files */}
+          {(p.portfolioFiles ?? []).length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+              {(p.portfolioFiles ?? []).map((f, i) => (
+                <div key={i} style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  {f.type === "image" && (
+                    <img src={f.url} alt={f.name} style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
+                  )}
+                  {f.type === "video" && (
+                    <video src={f.url} style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} muted />
+                  )}
+                  {f.type === "document" && (
+                    <div style={{ width: "100%", height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(59,130,246,0.08)" }}>
+                      <span style={{ fontSize: 32 }}>📄</span>
+                      <span style={{ fontSize: 10, color: "var(--text3)", textAlign: "center", padding: "0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>{f.name}</span>
+                    </div>
+                  )}
+                  <div style={{ padding: "6px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 10, color: "var(--text3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{f.name}</span>
+                    <button onClick={() => removePortfolioFile(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#F87171", fontSize: 14, padding: "0 0 0 4px", flexShrink: 0 }}>×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload button */}
+          <label style={{ display: "block", cursor: "pointer" }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              padding: "14px 20px", borderRadius: 12, border: "2px dashed var(--border)",
+              background: "transparent", color: "var(--text2)", fontSize: 14, fontWeight: 600,
+              transition: "all 0.15s",
+            }}>
+              {uploadingFile ? (
+                <><span style={{ fontSize: 18 }}>⏳</span> Otpremam...</>
+              ) : (
+                <><span style={{ fontSize: 20 }}>+</span> Dodaj sliku, video ili dokument</>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*,video/*,application/pdf,.pdf"
+              style={{ display: "none" }}
+              disabled={uploadingFile}
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadPortfolioFile(f); e.target.value = ""; }}
+            />
+          </label>
         </Section>
 
         {/* Save */}
