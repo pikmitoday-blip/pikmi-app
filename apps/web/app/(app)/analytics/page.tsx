@@ -289,8 +289,12 @@ export default function Analytics() {
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8, height: 110, overflowX: "auto", maxWidth: "100%", WebkitOverflowScrolling: "touch" }}>
-          {chartData.map(d => (
+        <div style={{ display: "flex", alignItems: "flex-end", gap: timeline === "30" ? 4 : 8, height: 110, overflowX: "auto", maxWidth: "100%", WebkitOverflowScrolling: "touch" as any }}>
+          {chartData.map((d, i) => {
+            // Na mobilnom prikazuj etiketu samo za svaki Nti bar
+            const step = timeline === "30" ? 5 : timeline === "90" ? 2 : 1;
+            const showLabel = i % step === 0 || i === chartData.length - 1;
+            return (
             <div key={d.date} style={{ flex: 1, minWidth: timeline === "30" ? 18 : 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)" }}>{d.count > 0 ? d.count : ""}</div>
               <div style={{
@@ -299,9 +303,10 @@ export default function Analytics() {
                 height: `${Math.max((d.count / maxBar) * 80, d.count > 0 ? 8 : 4)}px`,
                 minHeight: 4, transition: "height 0.3s",
               }} />
-              <div style={{ fontSize: 10, color: "var(--text3)", textAlign: "center", whiteSpace: "nowrap" }}>{d.label}</div>
+              <div style={{ fontSize: 10, color: "var(--text3)", textAlign: "center", whiteSpace: "nowrap", visibility: showLabel ? "visible" : "hidden" }}>{d.label}</div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
