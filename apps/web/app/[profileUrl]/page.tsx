@@ -774,14 +774,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                           borderRadius: 14,
                           overflow: "hidden",
                         }}>
-                          {img && (
+                          {img && (/\.(mp4|mov|webm|avi)$/i.test(img) ? (
+                            <video src={img} muted autoPlay loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          ) : (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={img}
-                              alt={cs?.client || ""}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            />
-                          )}
+                            <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          ))}
                         </div>
                         {cs?.client && (
                           <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>

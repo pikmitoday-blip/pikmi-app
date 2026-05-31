@@ -574,14 +574,16 @@ export default function MojProfil() {
                         <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
                         <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {draft.csImages?.[i]
-                            ? <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                            : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez slike</span>
+                            ? (/\.(mp4|mov|webm|avi)$/i.test(draft.csImages[i])
+                                ? <video src={draft.csImages[i]} muted style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />)
+                            : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez fajla</span>
                           }
                         </div>
                         <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
                           <label style={{ padding: "5px 10px", background: C.accentLight, color: C.accent, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
-                            {uploading === i ? "..." : "Dodaj sliku"}
-                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
+                            {uploading === i ? "..." : "Dodaj fajl"}
+                            <input type="file" accept="image/*,video/*,application/pdf,.pdf,.mp4,.mov,.webm" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
                           </label>
                           {draft.csImages?.[i] && (
                             <button onClick={() => { const imgs = [...(draft.csImages ?? ["","","",""])]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}
