@@ -1,5 +1,81 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
+// ── Custom video player (no download, adaptive ratio, play/pause + mute) ─────
+function VideoPlayer({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [ratio, setRatio] = useState("16/9");
+
+  function onMeta() {
+    const v = ref.current;
+    if (v && v.videoWidth && v.videoHeight) {
+      setRatio(`${v.videoWidth}/${v.videoHeight}`);
+    }
+  }
+
+  function togglePlay() {
+    const v = ref.current;
+    if (!v) return;
+    if (playing) { v.pause(); setPlaying(false); }
+    else { v.play(); setPlaying(true); }
+  }
+
+  function toggleMute() {
+    const v = ref.current;
+    if (!v) return;
+    v.muted = !muted;
+    setMuted(!muted);
+  }
+
+  return (
+    <div style={{ position: "relative", width: "100%", aspectRatio: ratio, background: "#000", borderRadius: 14, overflow: "hidden" }}>
+      <video
+        ref={ref}
+        src={src}
+        muted
+        playsInline
+        onLoadedMetadata={onMeta}
+        onEnded={() => setPlaying(false)}
+        style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+      />
+      {/* Overlay controls */}
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+        onClick={togglePlay}>
+        {!playing && (
+          <div style={{
+            width: 48, height: 48, borderRadius: "50%",
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", border: "2px solid rgba(255,255,255,0.3)",
+          }}>
+            <span style={{ fontSize: 20, marginLeft: 3 }}>▶</span>
+          </div>
+        )}
+      </div>
+      {/* Bottom bar: pause + mute */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "8px 10px", display: "flex", alignItems: "center", gap: 8,
+        background: "linear-gradient(transparent, rgba(0,0,0,0.6))",
+        opacity: playing ? 1 : 0, transition: "opacity 0.2s",
+      }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+        onMouseLeave={e => { if (playing) e.currentTarget.style.opacity = "1"; else e.currentTarget.style.opacity = "0"; }}
+      >
+        <button onClick={e => { e.stopPropagation(); togglePlay(); }}
+          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 14, padding: "2px 6px", borderRadius: 4, display: "flex", alignItems: "center" }}>
+          {playing ? "⏸" : "▶"}
+        </button>
+        <button onClick={e => { e.stopPropagation(); toggleMute(); }}
+          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 14, padding: "2px 6px", borderRadius: 4, display: "flex", alignItems: "center" }}>
+          {muted ? "🔇" : "🔊"}
+        </button>
+      </div>
+    </div>
+  );
+}
 import { supabase } from "../../lib/supabase";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -768,21 +844,16 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     const cs  = p.caseStudies?.[i];
                     return (
                       <div key={i}>
-                        <div style={{
-                          ...(img && /\.(mp4|mov|webm|avi)$/i.test(img)
-                            ? { aspectRatio: "16/9" }
-                            : { height: 110 }),
-                          background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length],
-                          borderRadius: 14,
-                          overflow: "hidden",
-                        }}>
-                          {img && (/\.(mp4|mov|webm|avi)$/i.test(img) ? (
-                            <video src={img} muted autoPlay loop playsInline controls style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", background: "#000" }} />
-                          ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          ))}
-                        </div>
+                        {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
+                          <VideoPlayer src={img} />
+                        ) : (
+                          <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
+                            {img && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            )}
+                          </div>
+                        )}
                         {cs?.client && (
                           <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>
                             {cs.client}
@@ -937,7 +1008,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                       </a>
                     )}
                     {f.type === "video" && (
-                      <video src={f.url} controls style={{ width: "100%", height: 120, objectFit: "cover", display: "block", background: "#000" }} />
+                      <VideoPlayer src={f.url} />
                     )}
                     {f.type === "document" && (
                       <a href={f.url} target="_blank" rel="noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, gap: 8, textDecoration: "none" }}>
