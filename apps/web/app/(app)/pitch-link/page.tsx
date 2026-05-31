@@ -324,7 +324,7 @@ export default function PitchLink() {
                           padding: "4px 10px", borderRadius: 100,
                           textTransform: "uppercase", letterSpacing: 0.8, whiteSpace: "nowrap",
                         }}>
-                          {l.views >= 2 ? "🔥 Hot lead" : l.views === 1 ? "Opened" : l.is_active ? t("links_active") : t("links_inactive")}
+                          {l.views >= 2 ? "🔥 Hot lead" : l.views === 1 ? t("links_opened") : l.is_active ? t("links_active") : t("links_inactive")}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <span style={{ fontSize: 12, color: "var(--text2)", fontFamily: "monospace" }}>

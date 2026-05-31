@@ -150,6 +150,7 @@ const translations = {
     links_activate:       "▶ Aktiviraj",
     links_active:         "Aktivan",
     links_inactive:       "Neaktivan",
+    links_opened:         "Otvoren",
     // Analytics
     analytics_page_sub:   "Statistika pregleda tvojih pitch linkova",
     analytics_all_links:  "Svi linkovi",
@@ -506,6 +507,7 @@ const translations = {
     links_activate:       "▶ Activate",
     links_active:         "Active",
     links_inactive:       "Inactive",
+    links_opened:         "Opened",
     analytics_page_sub:   "View statistics for your pitch links",
     analytics_all_links:  "All links",
     analytics_timeline_7: "7 days",
