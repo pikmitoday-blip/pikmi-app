@@ -89,7 +89,7 @@ const CS_GRADIENTS = [
 
 // ─── Section separator ───────────────────────────────────────────────────────
 function SectionSep() {
-  return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
+  return <div className="pf-section-sep" />;
 }
 
 // ─── Section label (heading, bez broja) ─────────────────────────────────────
@@ -525,18 +525,49 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       color: C.dark,
     }}>
+      {/* ── Responsive CSS ── */}
+      <style>{`
+        .pf-card { width:100%; max-width:480px; background:#fff; min-height:100vh; overflow:hidden; }
+        .pf-grid { display:block; }
+        .pf-left { }
+        .pf-right { }
+        .pf-section-sep { border-top: 6px solid ${C.sectionBg}; }
+        @media (min-width: 769px) {
+          .pf-card {
+            max-width: 1060px;
+            margin: 0 auto;
+            border-radius: 24px;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+            overflow: hidden;
+          }
+          .pf-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            align-items: start;
+            min-height: calc(100vh - 56px);
+          }
+          .pf-left {
+            border-right: 1px solid ${C.divider};
+            position: sticky;
+            top: 56px;
+            max-height: calc(100vh - 56px);
+            overflow-y: auto;
+            scrollbar-width: none;
+          }
+          .pf-left::-webkit-scrollbar { display: none; }
+          .pf-right { min-width: 0; }
+          .pf-section-sep { border-top: 1px solid ${C.divider}; }
+        }
+        @media (min-width: 769px) {
+          .pf-wrap { padding: 32px 24px !important; }
+        }
+      `}</style>
+
       {/* ── Outer centering wrapper ── */}
-      <div style={{ display: "flex", justifyContent: "center", padding: "0" }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: "0", minHeight: "100vh" }}>
 
         {/* ── Card ── */}
-        <div style={{
-          width: "100%",
-          maxWidth: 480,
-          background: "#fff",
-          minHeight: "100vh",
-          /* rounded corners only on desktop */
-          overflow: "hidden",
-        }}>
+        <div className="pf-card">
 
           {/* ─── Nav ─────────────────────────────────────────────────────────── */}
           <div style={{
@@ -572,7 +603,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </div>
           </div>
 
-          {/* ─── Header: Avatar + Name + Badges + Stats ──────────────────────── */}
+          {/* ── Desktop grid: left (info) + right (sections) ── */}
+          <div className="pf-grid">
+
+          {/* ── LEFT: Avatar + Name + Badges + Stats ── */}
+          <div className="pf-left">
           <div style={{ padding: 20 }}>
 
             {/* Avatar + Name */}
@@ -672,6 +707,10 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               </div>
             )}
           </div>
+          </div>{/* end pf-left */}
+
+          {/* ── RIGHT: sve sekcije ── */}
+          <div className="pf-right">
 
           {/* ─── 01 — Šta radim ──────────────────────────────────────────────── */}
           {(p.serviceTitle || p.servicePrice) && (
@@ -983,6 +1022,9 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
             </p>
           </div>
+
+          </div>{/* end pf-right */}
+          </div>{/* end pf-grid */}
 
         </div>{/* end card */}
       </div>{/* end centering */}
