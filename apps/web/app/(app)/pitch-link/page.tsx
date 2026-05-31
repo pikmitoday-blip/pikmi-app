@@ -47,7 +47,6 @@ export default function PitchLink() {
   const [copied, setCopied] = useState<string|null>(null);
   const [loadingLinks, setLoadingLinks] = useState(true);
   const [userPlan, setUserPlan] = useState<"free"|"pro">("free");
-  const [expandedCard, setExpandedCard] = useState<string|null>(null);
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
 
@@ -286,10 +285,8 @@ export default function PitchLink() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {links.map(l => {
                 const color = linkColor(l.views);
-                const isExpanded = expandedCard === l.id;
                 return (
                   <div key={l.id}
-                    onClick={() => setExpandedCard(isExpanded ? null : l.id)}
                     style={{
                       background: l.views >= 2
                         ? "rgba(239,68,68,0.04)"
@@ -298,7 +295,6 @@ export default function PitchLink() {
                         : "rgba(139,92,246,0.03)",
                       border: `1px solid ${l.views >= 2 ? "rgba(239,68,68,0.12)" : l.views === 1 ? "rgba(245,158,11,0.12)" : "rgba(139,92,246,0.08)"}`,
                       borderRadius: 16, padding: "16px",
-                      cursor: "pointer", transition: "all 0.2s",
                     }}>
                     {/* Top row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -338,52 +334,49 @@ export default function PitchLink() {
                       </div>
                     </div>
 
-                    {/* Expanded: filters + action buttons */}
-                    {isExpanded && (
-                      <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(139,92,246,0.06)" }}
-                        onClick={e => e.stopPropagation()}>
-                        {l.filters && (
-                          <div style={{ marginBottom: 12 }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 999, background: "rgba(124,58,237,0.12)", color: "#A78BFA" }}>
-                              {l.filters}
-                            </span>
-                          </div>
-                        )}
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          <button
-                            onClick={() => copy(getLinkUrl(l.slug), l.id)}
-                            style={{
-                              flex: 1, minWidth: 100, padding: "10px 0",
-                              background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)",
-                              borderRadius: 10, color: "#A855F7",
-                              fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                            }}>
-                            📋 {copied === l.id ? t("links_copied_btn") : t("links_copy_btn")}
-                          </button>
-                          <button
-                            onClick={() => toggleActive(l.id, l.is_active)}
-                            style={{
-                              flex: 1, minWidth: 100, padding: "10px 0",
-                              background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)",
-                              borderRadius: 10, color: "#F59E0B",
-                              fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                            }}>
-                            {l.is_active ? `⏸ ${t("links_deactivate")}` : `▶ ${t("links_activate")}`}
-                          </button>
-                          <button
-                            onClick={() => deleteLink(l.id)}
-                            style={{
-                              width: 42, padding: "10px 0",
-                              background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.12)",
-                              borderRadius: 10, color: "#EF4444",
-                              fontSize: 15, cursor: "pointer", fontFamily: "inherit",
-                              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                            }}>🗑</button>
+                    {/* Filters badge + action buttons — uvek vidljivo */}
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(139,92,246,0.06)" }}>
+                      {l.filters && (
+                        <div style={{ marginBottom: 10 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 999, background: "rgba(124,58,237,0.12)", color: "#A78BFA" }}>
+                            {l.filters}
+                          </span>
                         </div>
+                      )}
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => copy(getLinkUrl(l.slug), l.id)}
+                          style={{
+                            flex: 1, minWidth: 100, padding: "10px 0",
+                            background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)",
+                            borderRadius: 10, color: "#A855F7",
+                            fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                          }}>
+                          {copied === l.id ? t("links_copied_btn") : t("links_copy_btn")}
+                        </button>
+                        <button
+                          onClick={() => toggleActive(l.id, l.is_active)}
+                          style={{
+                            flex: 1, minWidth: 100, padding: "10px 0",
+                            background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)",
+                            borderRadius: 10, color: "#F59E0B",
+                            fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                          }}>
+                          {l.is_active ? t("links_deactivate") : t("links_activate")}
+                        </button>
+                        <button
+                          onClick={() => deleteLink(l.id)}
+                          style={{
+                            width: 42, padding: "10px 0",
+                            background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.12)",
+                            borderRadius: 10, color: "#EF4444",
+                            fontSize: 15, cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}>🗑</button>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}
