@@ -10,9 +10,12 @@ function VideoPlayer({ src }: { src: string }) {
 
   function onMeta() {
     const v = ref.current;
-    if (v && v.videoWidth && v.videoHeight) {
+    if (!v) return;
+    if (v.videoWidth && v.videoHeight) {
       setRatio(`${v.videoWidth}/${v.videoHeight}`);
     }
+    // Seek to 0.001s to force first frame render on mobile browsers
+    v.currentTime = 0.001;
   }
 
   function togglePlay() {
@@ -36,6 +39,7 @@ function VideoPlayer({ src }: { src: string }) {
         src={src}
         muted
         playsInline
+        preload="metadata"
         onLoadedMetadata={onMeta}
         onEnded={() => setPlaying(false)}
         style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
