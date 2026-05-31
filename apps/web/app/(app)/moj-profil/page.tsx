@@ -93,17 +93,17 @@ function SectionSep() {
   return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
 }
 
-function SectionHead({ number, text, section, onEdit }: {
+function SectionHead({ number: _number, text, section, onEdit }: {
   number: string; text: string; section: string; onEdit: (s: string) => void;
 }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-      <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" as const }}>
-        {number} — {text}
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>
+        {text}
       </p>
       <button onClick={() => onEdit(section)}
-        style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}>
-        Uredi
+        style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>
+        ✏️
       </button>
     </div>
   );
@@ -492,6 +492,34 @@ export default function MojProfil() {
               )}
             </div>
 
+            {/* Paketi / cene */}
+            {p.pricing && p.pricing.length > 0 && (
+              <>
+                <SectionSep />
+                <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
+                    <button onClick={() => startEdit("pricing")}
+                      style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
+                    {p.pricing.map((tier, i) => (
+                      <div key={i} style={{
+                        background: tier.green ? C.accent : C.sectionBg,
+                        border: `1px solid ${tier.green ? C.accent : C.border}`,
+                        borderRadius: 14, padding: "14px 12px",
+                        color: tier.green ? "#fff" : C.text,
+                      }}>
+                        <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
+                        <p style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 800, color: tier.green ? "#fff" : C.accent }}>{tier.price}</p>
+                        <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: tier.green ? "rgba(255,255,255,0.8)" : C.muted }}>{tier.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* 02 — Rad */}
             <SectionSep />
             <div className="pp-right-section" style={{ padding: "24px 20px" }}>
@@ -586,42 +614,6 @@ export default function MojProfil() {
               )}
             </div>
 
-            {/* 04 — Detalji */}
-            <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
-              {editSection === "details" && draft ? (
-                <div>
-                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>04 — DETALJI</p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <div><label style={LBL}>DOSTUPNOST</label><input style={INP} value={draft.detailCapacity} onChange={e => setD("detailCapacity", e.target.value)} placeholder="30+ h/ned" /></div>
-                    <div><label style={LBL}>ODGOVOR</label><input style={INP} value={draft.detailResponse} onChange={e => setD("detailResponse", e.target.value)} placeholder="0–4 sata" /></div>
-                    <div><label style={LBL}>JEZICI</label><input style={INP} value={draft.detailLanguages} onChange={e => setD("detailLanguages", e.target.value)} placeholder="SR · EN" /></div>
-                    <div><label style={LBL}>RETAINER</label><input style={INP} value={draft.detailMinBudget} onChange={e => setD("detailMinBudget", e.target.value)} placeholder="Otvoren" /></div>
-                  </div>
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
-                </div>
-              ) : (
-                <>
-                  <SectionHead number="04" text="DETALJI" section="details" onEdit={startEdit} />
-                  {(p.detailCapacity || p.detailResponse || p.detailLanguages || p.detailMinBudget)
-                    ? <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
-                        {[
-                          { label: "DOSTUPNOST", value: p.detailCapacity },
-                          { label: "ODGOVOR",    value: p.detailResponse },
-                          { label: "JEZICI",     value: p.detailLanguages },
-                          { label: "RETAINER",   value: p.detailMinBudget },
-                        ].filter(d => d.value).map((d, i) => (
-                          <div key={i}>
-                            <p style={{ margin: 0, fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>{d.label}</p>
-                            <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 500 }}>{d.value}</p>
-                          </div>
-                        ))}
-                      </div>
-                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema detalja — klikni Uredi</p>
-                  }
-                </>
-              )}
-            </div>
 
             {/* 05 — Iskustvo */}
             <SectionSep />
@@ -714,41 +706,52 @@ export default function MojProfil() {
               )}
             </div>
 
-            {/* 07 — Kontakt */}
+            {/* CTA / Kontakt */}
             <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
               {editSection === "cta" && draft ? (
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
-                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>07 — KONTAKT</p>
-                  <label style={LBL}>NASLOV (npr. Da napravimo)</label>
+                  <label style={LBL}>NASLOV</label>
                   <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Da napravimo" />
                   <label style={LBL}>ISTAKNUTA REČ (ljubičasto)</label>
                   <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="sledeći hit" />
-                  <label style={LBL}>DUGME 1 (primarno)</label>
-                  <input style={INP} value={draft.ctaBtn1} onChange={e => setD("ctaBtn1", e.target.value)} placeholder="Zakaži besplatan poziv" />
-                  <label style={LBL}>DUGME 2 (sekundarno)</label>
-                  <input style={INP} value={draft.ctaBtn2} onChange={e => setD("ctaBtn2", e.target.value)} placeholder="Pošalji poruku" />
-                  <label style={LBL}>PDF URL (opciono)</label>
-                  <input style={INP} value={draft.pdfUrl ?? ""} onChange={e => setD("pdfUrl", e.target.value)} placeholder="https://..." />
+                  <label style={LBL}>EMAIL (za kopiranje)</label>
+                  <input style={INP} value={(draft as any).contactEmail ?? ""} onChange={e => setD("contactEmail" as any, e.target.value)} placeholder="tvoj@email.com" />
+                  <label style={LBL}>TELEFON (za kopiranje)</label>
+                  <input style={INP} value={(draft as any).contactPhone ?? ""} onChange={e => setD("contactPhone" as any, e.target.value)} placeholder="+381 60 000 0000" />
                   <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
                 </div>
               ) : (
                 <>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <p style={{ margin: 0, fontSize: 9, color: C.accentMuted, letterSpacing: "1.5px", fontWeight: 600 }}>07 — KONTAKT</p>
-                    <button onClick={() => startEdit("cta")} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.12)", color: "#fff", border: "none", cursor: "pointer" }}>Uredi</button>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                    <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px", flex: 1 }}>
+                      {(p.ctaTitle || p.ctaHighlight)
+                        ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
+                        : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
+                      }
+                    </h2>
+                    <button onClick={() => startEdit("cta")} style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer", lineHeight: 1, flexShrink: 0, marginLeft: 10 }}>✏️</button>
                   </div>
-                  <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
-                    {(p.ctaTitle || p.ctaHighlight)
-                      ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
-                      : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
-                    }
-                  </h2>
-                  <button style={{ width: "100%", background: C.accent, color: "#fff", border: "none", padding: 15, borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 8, cursor: "default", boxShadow: "0 6px 20px rgba(124,58,237,0.4)" }}>
-                    {p.ctaBtn1 || "Zakaži besplatan poziv"} →
-                  </button>
-                  <button style={{ width: "100%", background: "transparent", color: "#fff", border: "0.5px solid rgba(255,255,255,0.25)", padding: 14, borderRadius: 999, fontSize: 12, cursor: "default" }}>
-                    {p.ctaBtn2 || "Pošalji poruku"}
-                  </button>
+                  {/* Kontakt blokovi preview */}
+                  {((p as any).contactEmail || (p as any).contactPhone) ? (
+                    <div style={{ display: "grid", gridTemplateColumns: (p as any).contactEmail && (p as any).contactPhone ? "1fr 1fr" : "1fr", gap: 10, marginBottom: 0 }}>
+                      {(p as any).contactEmail && (
+                        <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
+                          <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>✉️ Email</p>
+                          <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600, wordBreak: "break-all" }}>{(p as any).contactEmail}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
+                        </div>
+                      )}
+                      {(p as any).contactPhone && (
+                        <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
+                          <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>📞 Telefon</p>
+                          <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600 }}>{(p as any).contactPhone}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontStyle: "italic" }}>Dodaj email ili telefon — klikni ✏️</p>
+                  )}
                   <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
                     PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
                   </p>

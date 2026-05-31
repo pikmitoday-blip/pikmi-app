@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -59,6 +59,8 @@ interface Profile {
   ctaBtn2: string;
   pdfUrl: string;
   portfolioFiles?: { url: string; name: string; type: "image" | "video" | "document" }[];
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 // ─── Design tokens (iz HTML reference-a) ────────────────────────────────────
@@ -90,19 +92,50 @@ function SectionSep() {
   return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
 }
 
-// ─── Section label ───────────────────────────────────────────────────────────
-function SectionLabel({ number, text }: { number: string; text: string }) {
+// ─── Section label (heading, bez broja) ─────────────────────────────────────
+function SectionLabel({ number: _number, text }: { number: string; text: string }) {
   return (
     <p style={{
-      margin: "0 0 14px",
-      fontSize: 9,
-      fontWeight: 600,
-      color: C.accent,
-      letterSpacing: "1.5px",
-      textTransform: "uppercase" as const,
+      margin: "0 0 16px",
+      fontSize: 13,
+      fontWeight: 700,
+      color: C.text,
+      letterSpacing: "-0.1px",
     }}>
-      {number} — {text}
+      {text}
     </p>
+  );
+}
+
+// ─── Contact copy block ──────────────────────────────────────────────────────
+function ContactCopyBlock({ label, value, icon }: { label: string; value: string; icon: string }) {
+  const [copied, setCopied] = React.useState(false);
+  function handleCopy() {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        borderRadius: 14, padding: "14px 16px",
+        cursor: "pointer", textAlign: "left", width: "100%",
+        transition: "background 0.15s",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontSize: 16 }}>{icon}</span>
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 500 }}>{label}</span>
+      </div>
+      <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 600, color: "#fff", wordBreak: "break-all" }}>{value}</p>
+      <p style={{ margin: 0, fontSize: 10, color: copied ? "#4ADE80" : "rgba(255,255,255,0.35)" }}>
+        {copied ? "✓ Kopirano!" : "klikni da kopiraš"}
+      </p>
+    </button>
   );
 }
 
@@ -675,6 +708,30 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </>
           )}
 
+          {/* ─── Cene (paketi) ───────────────────────────────────────────────── */}
+          {p.pricing && p.pricing.length > 0 && (
+            <>
+              <SectionSep />
+              <div style={{ padding: "24px 20px" }}>
+                <SectionLabel number="" text="Paketi" />
+                <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
+                  {p.pricing.map((tier, i) => (
+                    <div key={i} style={{
+                      background: tier.green ? C.accent : C.sectionBg,
+                      border: `1px solid ${tier.green ? C.accent : C.border}`,
+                      borderRadius: 14, padding: "18px 16px",
+                      color: tier.green ? "#fff" : C.text,
+                    }}>
+                      <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
+                      <p style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", color: tier.green ? "#fff" : C.accent }}>{tier.price}</p>
+                      <p style={{ margin: 0, fontSize: 12, lineHeight: 1.55, color: tier.green ? "rgba(255,255,255,0.85)" : C.muted }}>{tier.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           {/* ─── 02 — Rad ────────────────────────────────────────────────────── */}
           {csSlots.length > 0 && (
             <>
@@ -758,32 +815,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </>
           )}
 
-          {/* ─── 04 — Detalji ────────────────────────────────────────────────── */}
-          {(p.detailCapacity || p.detailResponse || p.detailLanguages || p.detailMinBudget) && (
-            <>
-              <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="04" text="DETALJI" />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 20px" }}>
-                  {[
-                    { label: "DOSTUPNOST", value: p.detailCapacity },
-                    { label: "ODGOVOR",    value: p.detailResponse },
-                    { label: "JEZICI",     value: p.detailLanguages },
-                    { label: "RETAINER",   value: p.detailMinBudget },
-                  ].filter(d => d.value).map((d, i) => (
-                    <div key={i}>
-                      <p style={{ margin: 0, fontSize: 9, color: C.muted, letterSpacing: "0.5px" }}>
-                        {d.label}
-                      </p>
-                      <p style={{ margin: "4px 0 0", fontSize: 13, fontWeight: 500 }}>
-                        {d.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
 
           {/* ─── 05 — Iskustvo ───────────────────────────────────────────────── */}
           {p.experience && p.experience.length > 0 && (
@@ -896,12 +927,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </div>
           )}
 
-          {/* ─── 07 — Kontakt ────────────────────────────────────────────────── */}
+          {/* ─── CTA / Kontakt ───────────────────────────────────────────────── */}
           <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
-            <p style={{ margin: "0 0 12px", fontSize: 9, color: C.accentMuted, letterSpacing: "1.5px", fontWeight: 600 }}>
-              07 — KONTAKT
-            </p>
-
             <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
               {p.ctaTitle ? (
                 <>
@@ -918,51 +945,37 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               )}
             </h2>
 
-            {/* Primarni CTA */}
-            <button
-              onClick={() => setShowContactModal(true)}
-              style={{
-                width: "100%",
-                background: C.accent, color: "#fff", border: "none",
-                padding: 15, borderRadius: 999,
-                fontSize: 13, fontWeight: 600,
-                marginBottom: 8, cursor: "pointer",
-                boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
-              }}
-            >
-              {p.ctaBtn1 || "Zakaži besplatan poziv"} →
-            </button>
-
-            {/* Sekundarni CTA */}
-            {p.ctaBtn2 ? (
-              <a
-                href={p.pdfUrl || "#"}
-                onClick={!p.pdfUrl ? (e) => { e.preventDefault(); setShowContactModal(true); } : undefined}
-                target={p.pdfUrl ? "_blank" : undefined}
-                rel="noopener noreferrer"
-                style={{
-                  display: "block", width: "100%",
-                  background: "transparent", color: "#fff",
-                  border: "0.5px solid rgba(255,255,255,0.25)",
-                  padding: 14, borderRadius: 999,
-                  fontSize: 12, textAlign: "center",
-                  textDecoration: "none", boxSizing: "border-box", cursor: "pointer",
-                }}
-              >
-                {p.ctaBtn2}
-              </a>
+            {/* Email + Telefon blokovi */}
+            {(p.contactEmail || p.contactPhone) ? (
+              <div style={{ display: "grid", gridTemplateColumns: p.contactEmail && p.contactPhone ? "1fr 1fr" : "1fr", gap: 10, marginBottom: 0 }}>
+                {p.contactEmail && (
+                  <ContactCopyBlock
+                    label="Email"
+                    value={p.contactEmail}
+                    icon="✉️"
+                  />
+                )}
+                {p.contactPhone && (
+                  <ContactCopyBlock
+                    label="Telefon"
+                    value={p.contactPhone}
+                    icon="📞"
+                  />
+                )}
+              </div>
             ) : (
               <button
                 onClick={() => setShowContactModal(true)}
                 style={{
                   width: "100%",
-                  background: "transparent", color: "#fff",
-                  border: "0.5px solid rgba(255,255,255,0.25)",
-                  padding: 14, borderRadius: 999,
-                  fontSize: 12, cursor: "pointer",
+                  background: C.accent, color: "#fff", border: "none",
+                  padding: 15, borderRadius: 999,
+                  fontSize: 13, fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
                 }}
               >
-                Pošalji poruku
+                {p.ctaBtn1 || "Zakaži besplatan poziv"} →
               </button>
             )}
 

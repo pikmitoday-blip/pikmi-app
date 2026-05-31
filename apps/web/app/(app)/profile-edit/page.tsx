@@ -25,6 +25,8 @@ interface Profile {
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl: string;
+  contactEmail?: string;
+  contactPhone?: string;
   portfolioFiles?: PortfolioFile[];
 }
 
@@ -63,6 +65,8 @@ const DEFAULT: Profile = {
   ctaTitle: "Spreman da skaliraš", ctaHighlight: "profitabilno",
   ctaBtn1: "Zakaži strategy poziv →", ctaBtn2: "Preuzmi case study (PDF)",
   pdfUrl: "",
+  contactEmail: "",
+  contactPhone: "",
   portfolioFiles: [],
 };
 
@@ -456,27 +460,44 @@ function ProfileEditInner() {
           </div>
         </Section>
 
-        {/* 03 */}
+        {/* 03 — Paketi / Cene */}
         <Section label={t("edit_sec_03")}>
+          <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16, lineHeight: 1.6 }}>
+            Dodaj 1–3 paketa. Klijenti vide kartice sa cenom i opisom direktno na portfoliju.
+          </p>
           {p.pricing.map((tier, i) => (
-            <div key={i} style={{ marginBottom: i < 2 ? 20 : 0, paddingBottom: i < 2 ? 20 : 0, borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", marginBottom: 10 }}>{t("edit_package")} {i + 1} {i === 2 && <span style={{ color: "#1AA877" }}>{t("edit_green_color")}</span>}</div>
+            <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Paket {i + 1}</span>
+                <button onClick={() => {
+                  const next = [...p.pricing]; next.splice(i, 1);
+                  setP(prev => ({ ...prev, pricing: next }));
+                }} style={{ padding: "3px 10px", borderRadius: 6, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                  Ukloni
+                </button>
+              </div>
               <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 8 }}>
                 <div className="field" style={{ marginBottom: 0 }}>
-                  <label className="label">{t("edit_name")}</label>
-                  <input className="input" value={tier.name} onChange={e => setTier(i, "name", e.target.value)} />
+                  <label className="label">Naziv paketa</label>
+                  <input className="input" value={tier.name} onChange={e => setTier(i, "name", e.target.value)} placeholder="Starter" />
                 </div>
                 <div className="field" style={{ marginBottom: 0 }}>
-                  <label className="label">{t("edit_price")}</label>
-                  <input className="input" value={tier.price} onChange={e => setTier(i, "price", e.target.value)} />
+                  <label className="label">Cena</label>
+                  <input className="input" value={tier.price} onChange={e => setTier(i, "price", e.target.value)} placeholder="€500" />
                 </div>
               </div>
               <div className="field" style={{ marginBottom: 0 }}>
-                <label className="label">{t("edit_desc")}</label>
-                <input className="input" value={tier.desc} onChange={e => setTier(i, "desc", e.target.value)} />
+                <label className="label">Opis (šta je uključeno)</label>
+                <input className="input" value={tier.desc} onChange={e => setTier(i, "desc", e.target.value)} placeholder="Audit + strategija + 30-dnevni plan" />
               </div>
             </div>
           ))}
+          {p.pricing.length < 3 && (
+            <button onClick={() => setP(prev => ({ ...prev, pricing: [...prev.pricing, { name: "", price: "", desc: "" }] }))}
+              style={{ width: "100%", padding: "11px", borderRadius: 8, background: "var(--card)", border: "1px dashed var(--border)", color: "var(--text2)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              + Dodaj paket {p.pricing.length + 1}
+            </button>
+          )}
         </Section>
 
         {/* 04 */}
@@ -554,6 +575,14 @@ function ProfileEditInner() {
             <div className="field" style={{ marginBottom: 0 }}>
               <label className="label">{t("edit_btn2_pdf")}</label>
               <input className="input" value={p.pdfUrl} onChange={e => set("pdfUrl", e.target.value)} placeholder="https://drive.google.com/..." />
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label className="label">Email (za kopiranje na portfoliju)</label>
+              <input className="input" value={p.contactEmail ?? ""} onChange={e => set("contactEmail" as any, e.target.value)} placeholder="tvoj@email.com" />
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label className="label">Telefon (za kopiranje na portfoliju)</label>
+              <input className="input" value={p.contactPhone ?? ""} onChange={e => set("contactPhone" as any, e.target.value)} placeholder="+381 60 000 0000" />
             </div>
           </div>
         </Section>
