@@ -344,7 +344,7 @@ export default async function Home() {
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
               <span style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, color: "#fff" }}>0 din</span>
             </div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", marginBottom: 24 }}>zauvek besplatno</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", marginBottom: 24 }}>7 dana besplatno · bez kreditne kartice</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
               {freeFeatures.map((f, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.45)" }}>
