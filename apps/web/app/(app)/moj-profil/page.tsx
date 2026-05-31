@@ -467,10 +467,6 @@ export default function MojProfil() {
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
                   <label style={LBL}>NASLOV USLUGE</label>
                   <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Video editor za e-commerce" />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <div><label style={LBL}>CENA (npr. €85)</label><input style={INP} value={draft.servicePrice} onChange={e => setD("servicePrice", e.target.value)} placeholder="€85" /></div>
-                    <div><label style={LBL}>JEDINICA (npr. sat)</label><input style={INP} value={draft.servicePriceLabel} onChange={e => setD("servicePriceLabel", e.target.value)} placeholder="sat" /></div>
-                  </div>
                   <label style={LBL}>OPIS</label>
                   <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga..." />
                   <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
@@ -482,12 +478,6 @@ export default function MojProfil() {
                     ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
                     : <p style={{ margin: "0 0 12px", fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
                   }
-                  {p.servicePrice && (
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
-                      <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: C.accent }}>{p.servicePrice}</p>
-                      {p.servicePriceLabel && <p style={{ margin: 0, fontSize: 12, color: C.muted }}>/{p.servicePriceLabel}</p>}
-                    </div>
-                  )}
                   {p.serviceDesc && <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.65 }}>{p.serviceDesc}</p>}
                 </>
               )}

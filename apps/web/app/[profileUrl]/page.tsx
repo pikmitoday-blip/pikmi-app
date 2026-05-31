@@ -714,31 +714,14 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           <div className="pf-right">
 
           {/* ─── 01 — Šta radim ──────────────────────────────────────────────── */}
-          {(p.serviceTitle || p.servicePrice) && (
+          {p.serviceTitle && (
             <>
               <SectionSep />
               <div style={{ padding: "24px 20px" }}>
                 <SectionLabel number="01" text="ŠTA RADIM" />
-
-                {p.serviceTitle && (
-                  <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>
-                    {p.serviceTitle}
-                  </h2>
-                )}
-
-                {p.servicePrice && (
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
-                    <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: C.accent }}>
-                      {p.servicePrice}
-                    </p>
-                    {p.servicePriceLabel && (
-                      <p style={{ margin: 0, fontSize: 12, color: C.muted }}>
-                        /{p.servicePriceLabel}
-                      </p>
-                    )}
-                  </div>
-                )}
-
+                <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>
+                  {p.serviceTitle}
+                </h2>
                 {p.serviceDesc && (
                   <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.65 }}>
                     {p.serviceDesc}

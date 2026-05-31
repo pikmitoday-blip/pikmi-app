@@ -379,16 +379,6 @@ function ProfileEditInner() {
             <label className="label">{t("edit_service_title_lbl")}</label>
             <textarea className="input" rows={2} value={p.serviceTitle} onChange={e => set("serviceTitle", e.target.value)} />
           </div>
-          <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">{t("edit_price")}</label>
-              <input className="input" value={p.servicePrice} onChange={e => set("servicePrice", e.target.value)} placeholder="€1.800" />
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">{t("edit_price_label")}</label>
-              <input className="input" value={p.servicePriceLabel} onChange={e => set("servicePriceLabel", e.target.value)} placeholder="/mes retainer" />
-            </div>
-          </div>
           <div className="field" style={{ marginBottom: 0 }}>
             <label className="label">{t("edit_desc")}</label>
             <textarea className="input" rows={3} value={p.serviceDesc} onChange={e => set("serviceDesc", e.target.value)} />
