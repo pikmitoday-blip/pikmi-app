@@ -473,7 +473,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="01" text="ŠTA RADIM" section="service" onEdit={startEdit} />
+                  <SectionHead number="01" text="Šta radim" section="service" onEdit={startEdit} />
                   {p.serviceTitle
                     ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
                     : <p style={{ margin: "0 0 12px", fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
@@ -604,7 +604,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="02" text="RAD" section="portfolio" onEdit={startEdit} />
+                  <SectionHead number="02" text="Prethodni radovi" section="portfolio" onEdit={startEdit} />
                   {hasWork ? (
                     <>
                       <div className="pp-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
@@ -645,7 +645,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="03" text="VEŠTINE" section="stack" onEdit={startEdit} />
+                  <SectionHead number="03" text="Veštine" section="stack" onEdit={startEdit} />
                   {stackTags.length > 0
                     ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {stackTags.map((tag, i) => (
@@ -694,7 +694,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="05" text="ISKUSTVO" section="experience" onEdit={startEdit} />
+                  <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} />
                   {(p.experience ?? []).length > 0
                     ? <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                         {(p.experience ?? []).map((exp, i) => (
