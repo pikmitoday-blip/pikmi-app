@@ -454,6 +454,7 @@ textarea.input { resize: vertical; min-height: 90px; }
 
 @media (max-width: 768px) {
   .analytics-stats  { grid-template-columns: 1fr 1fr !important; }
+  .pl-grid          { grid-template-columns: 1fr !important; }
   .dash-stats-grid  { grid-template-columns: 1fr 1fr !important; }
   .dash-link-row-slug { display: none !important; }
   .dash-link-row-time { display: none !important; }
