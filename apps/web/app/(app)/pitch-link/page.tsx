@@ -212,12 +212,12 @@ export default function PitchLink() {
 
           {/* Slug */}
           <div style={{ marginBottom: 14 }}>
-            <label style={LBL}>{t("links_slug_label")}</label>
-            <div style={{ display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(139,92,246,0.12)" }}>
+            <label style={LBL}>URL</label>
+            <div style={{ display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid var(--inp-border)" }}>
               <div style={{
-                padding: "13px 12px", background: "rgba(139,92,246,0.08)",
-                fontSize: 13, color: "rgba(255,255,255,0.3)",
-                whiteSpace: "nowrap", borderRight: "1px solid rgba(139,92,246,0.1)",
+                padding: "13px 12px", background: "var(--surface)",
+                fontSize: 13, color: "var(--text3)",
+                whiteSpace: "nowrap", borderRight: "1px solid var(--border)",
               }}>pikmi.today/</div>
               <input style={{ ...INP, border: "none", borderRadius: 0, flex: 1 }}
                 value={form.slug} placeholder="coca-cola"
