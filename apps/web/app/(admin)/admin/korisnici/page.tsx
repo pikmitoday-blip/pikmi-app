@@ -78,15 +78,20 @@ export default function AdminKorisnici() {
   }
 
   async function deleteUser(userId: string, name: string) {
-    if (!confirm(`Obrisati korisnika "${name}"? Ova akcija je trajna.`)) return;
+    if (!confirm(`Obrisati korisnika "${name}"? Ova akcija je trajna i briše korisnika i iz Auth-a.`)) return;
     setActionLoading(userId + "del");
     try {
-      await supabase.from("pitch_links").delete().eq("user_id", userId);
-      await supabase.from("profiles").delete().eq("user_id", userId);
+      const res = await fetch("/api/admin/delete-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Greška");
       setUsers(prev => prev.filter(u => u.user_id !== userId));
-      showToast(`Korisnik "${name}" obrisan`, true);
-    } catch {
-      showToast("Greška pri brisanju", false);
+      showToast(`Korisnik "${name}" potpuno obrisan`, true);
+    } catch (e: any) {
+      showToast(e.message || "Greška pri brisanju", false);
     }
     setActionLoading(null);
   }
