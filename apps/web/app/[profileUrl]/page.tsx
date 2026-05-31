@@ -966,65 +966,59 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             </div>
           )}
 
-          {/* ─── CTA / Kontakt ───────────────────────────────────────────────── */}
-          <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
-            <h2 style={{ margin: "0 0 22px", fontSize: 24, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
-              {p.ctaTitle ? (
-                <>
-                  {p.ctaTitle}
-                  {p.ctaHighlight && (
-                    <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>
-                  )}?
-                </>
-              ) : (
-                <>
-                  Da napravimo<br />
-                  tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?
-                </>
-              )}
-            </h2>
-
-            {/* Email + Telefon blokovi */}
-            {(p.contactEmail || p.contactPhone) ? (
-              <div style={{ display: "grid", gridTemplateColumns: p.contactEmail && p.contactPhone ? "1fr 1fr" : "1fr", gap: 10, marginBottom: 0 }}>
-                {p.contactEmail && (
-                  <ContactCopyBlock
-                    label="Email"
-                    value={p.contactEmail}
-                    icon="✉️"
-                  />
-                )}
-                {p.contactPhone && (
-                  <ContactCopyBlock
-                    label="Telefon"
-                    value={p.contactPhone}
-                    icon="📞"
-                  />
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowContactModal(true)}
-                style={{
-                  width: "100%",
-                  background: C.accent, color: "#fff", border: "none",
-                  padding: 15, borderRadius: 999,
-                  fontSize: 13, fontWeight: 600,
-                  cursor: "pointer",
-                  boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
-                }}
-              >
-                {p.ctaBtn1 || "Zakaži besplatan poziv"} →
-              </button>
-            )}
-
-            <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
-              PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
-            </p>
-          </div>
-
           </div>{/* end pf-right */}
           </div>{/* end pf-grid */}
+
+          {/* ─── CTA / Kontakt — full width, van grid-a ──────────────────────── */}
+          <div style={{ padding: "40px 32px 32px", background: C.dark, color: "#fff" }}>
+            <div style={{ maxWidth: 700, margin: "0 auto" }}>
+              <h2 style={{ margin: "0 0 24px", fontSize: 28, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
+                {p.ctaTitle ? (
+                  <>
+                    {p.ctaTitle}
+                    {p.ctaHighlight && (
+                      <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>
+                    )}?
+                  </>
+                ) : (
+                  <>
+                    Da napravimo{" "}
+                    tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?
+                  </>
+                )}
+              </h2>
+
+              {/* Email + Telefon blokovi */}
+              {(p.contactEmail || p.contactPhone) ? (
+                <div style={{ display: "grid", gridTemplateColumns: p.contactEmail && p.contactPhone ? "1fr 1fr" : "1fr", gap: 12 }}>
+                  {p.contactEmail && (
+                    <ContactCopyBlock label="Email" value={p.contactEmail} icon="✉️" />
+                  )}
+                  {p.contactPhone && (
+                    <ContactCopyBlock label="Telefon" value={p.contactPhone} icon="📞" />
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowContactModal(true)}
+                  style={{
+                    width: "100%", maxWidth: 360,
+                    background: C.accent, color: "#fff", border: "none",
+                    padding: 15, borderRadius: 999,
+                    fontSize: 13, fontWeight: 600,
+                    cursor: "pointer",
+                    boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
+                  }}
+                >
+                  {p.ctaBtn1 || "Zakaži besplatan poziv"} →
+                </button>
+              )}
+
+              <p style={{ margin: "24px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
+                PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
+              </p>
+            </div>
+          </div>
 
         </div>{/* end card */}
       </div>{/* end centering */}
