@@ -23,6 +23,7 @@ interface Profile {
   stack: string;
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
+  testimonials?: Array<{ quote: string; name: string; title: string; avatarUrl?: string }>;
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl: string;
   contactEmail?: string;
@@ -535,22 +536,53 @@ function ProfileEditInner() {
           </div>
         </Section>
 
-        {/* 06 */}
+        {/* 06 — Reči klijenata (do 5) */}
         <Section label={t("edit_sec_06")} color="#1AA877">
-          <div className="field">
-            <label className="label">{t("edit_quote")}</label>
-            <textarea className="input" rows={3} value={p.testimonialQuote} onChange={e => set("testimonialQuote", e.target.value)} />
-          </div>
-          <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">{t("edit_full_name")}</label>
-              <input className="input" value={p.testimonialName} onChange={e => set("testimonialName", e.target.value)} placeholder="Ana Lukić" />
+          <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16, lineHeight: 1.6 }}>
+            Dodaj do 5 recenzija klijenata. Prikazuju se na tvom portfoliju.
+          </p>
+          {(p.testimonials ?? []).map((t, i) => (
+            <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Recenzija {i + 1}</span>
+                <button onClick={() => {
+                  const next = [...(p.testimonials ?? [])]; next.splice(i, 1);
+                  setP(prev => ({ ...prev, testimonials: next }));
+                }} style={{ padding: "3px 10px", borderRadius: 6, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                  Ukloni
+                </button>
+              </div>
+              <div className="field">
+                <label className="label">Citat klijenta</label>
+                <textarea className="input" rows={3} value={t.quote} onChange={e => {
+                  const ts = [...(p.testimonials ?? [])]; ts[i] = { ...ts[i], quote: e.target.value };
+                  setP(prev => ({ ...prev, testimonials: ts }));
+                }} placeholder='"Odlična saradnja, preporučujem svima..."' />
+              </div>
+              <div className="edit-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label className="label">Ime i prezime</label>
+                  <input className="input" value={t.name} onChange={e => {
+                    const ts = [...(p.testimonials ?? [])]; ts[i] = { ...ts[i], name: e.target.value };
+                    setP(prev => ({ ...prev, testimonials: ts }));
+                  }} placeholder="Ana Lukić" />
+                </div>
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label className="label">Kompanija / Pozicija</label>
+                  <input className="input" value={t.title} onChange={e => {
+                    const ts = [...(p.testimonials ?? [])]; ts[i] = { ...ts[i], title: e.target.value };
+                    setP(prev => ({ ...prev, testimonials: ts }));
+                  }} placeholder="CEO, Lumea Beauty" />
+                </div>
+              </div>
             </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="label">{t("edit_position")}</label>
-              <input className="input" value={p.testimonialTitle} onChange={e => set("testimonialTitle", e.target.value)} placeholder="CEO, Lumea Beauty" />
-            </div>
-          </div>
+          ))}
+          {(p.testimonials ?? []).length < 5 && (
+            <button onClick={() => setP(prev => ({ ...prev, testimonials: [...(prev.testimonials ?? []), { quote: "", name: "", title: "" }] }))}
+              style={{ width: "100%", padding: "11px", borderRadius: 8, background: "var(--card)", border: "1px dashed var(--border)", color: "var(--text2)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              + Dodaj recenziju ({(p.testimonials ?? []).length}/5)
+            </button>
+          )}
         </Section>
 
         {/* 07 */}

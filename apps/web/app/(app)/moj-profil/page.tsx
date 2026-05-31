@@ -27,6 +27,7 @@ interface Profile {
   stack: string;
   detailCapacity: string; detailResponse: string; detailMinBudget: string; detailLanguages: string;
   testimonialQuote: string; testimonialName: string; testimonialTitle: string;
+  testimonials?: Array<{ quote: string; name: string; title: string; avatarUrl?: string }>;
   experience?: ExperienceItem[];
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl?: string;
@@ -728,31 +729,97 @@ export default function MojProfil() {
             <div className="pp-right-section" style={{ padding: "24px 20px" }}>
               {editSection === "testimonial" && draft ? (
                 <div>
-                  <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>06 — REČI KLIJENATA</p>
-                  <label style={LBL}>CITAT KLIJENTA</label>
-                  <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} placeholder='"Bojan je promenio kako razmišljamo o video sadržaju..."' />
-                  <label style={LBL}>IME KLIJENTA</label>
-                  <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} placeholder="Marko Petrović" />
-                  <label style={LBL}>KOMPANIJA / POZICIJA</label>
-                  <input style={INP} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} placeholder="Magična Azbuka" />
+                  <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Reči klijenata</p>
+                  {((draft.testimonials ?? []).length === 0 && !draft.testimonialQuote) && (
+                    <p style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginBottom: 14 }}>Dodaj do 5 recenzija klijenata.</p>
+                  )}
+                  {/* Stari single testimonial — prikaži kao prvi ako nema array */}
+                  {(draft.testimonials ?? []).length === 0 && draft.testimonialQuote && (
+                    <div style={{ background: C.sectionBg, borderRadius: 12, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
+                      <label style={LBL}>CITAT</label>
+                      <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} />
+                      <label style={LBL}>IME</label>
+                      <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} />
+                      <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                      <input style={{ ...INP, marginBottom: 0 }} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} />
+                    </div>
+                  )}
+                  {/* Novi array testimonials */}
+                  {(draft.testimonials ?? []).map((t, i) => (
+                    <div key={i} style={{ background: C.sectionBg, borderRadius: 12, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.dark }}>Recenzija {i + 1}</span>
+                        <button onClick={() => {
+                          const next = [...(draft.testimonials ?? [])]; next.splice(i, 1);
+                          setDraft(prev => prev ? { ...prev, testimonials: next } : null);
+                        }} style={{ padding: "2px 8px", background: "none", border: "1px solid #FECACA", borderRadius: 5, cursor: "pointer", fontSize: 11, color: "#EF4444" }}>Ukloni</button>
+                      </div>
+                      <label style={LBL}>CITAT</label>
+                      <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={t.quote} onChange={e => {
+                        const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], quote: e.target.value };
+                        setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
+                      }} placeholder='"Odlična saradnja..."' />
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                        <div>
+                          <label style={LBL}>IME</label>
+                          <input style={INP} value={t.name} onChange={e => {
+                            const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], name: e.target.value };
+                            setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
+                          }} placeholder="Marko Petrović" />
+                        </div>
+                        <div>
+                          <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                          <input style={{ ...INP, marginBottom: 0 }} value={t.title} onChange={e => {
+                            const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], title: e.target.value };
+                            setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
+                          }} placeholder="CEO, Kompanija" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {((draft.testimonials ?? []).length < 5) && (
+                    <button onClick={() => {
+                      const current = draft.testimonials ?? [];
+                      // Ako imamo stari single, prebaci ga u array i resetuj stari
+                      if (current.length === 0 && draft.testimonialQuote) {
+                        const first = { quote: draft.testimonialQuote, name: draft.testimonialName, title: draft.testimonialTitle };
+                        setDraft(prev => prev ? { ...prev, testimonials: [...current, first, { quote: "", name: "", title: "" }], testimonialQuote: "", testimonialName: "", testimonialTitle: "" } : null);
+                      } else {
+                        setDraft(prev => prev ? { ...prev, testimonials: [...current, { quote: "", name: "", title: "" }] } : null);
+                      }
+                    }} style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                      + Dodaj recenziju ({(draft.testimonials ?? []).length + (draft.testimonialQuote ? 1 : 0)}/5)
+                    </button>
+                  )}
                   <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
                 </div>
               ) : (
                 <>
-                  <SectionHead number="06" text="REČI KLIJENATA" section="testimonial" onEdit={startEdit} />
-                  {p.testimonialQuote
-                    ? <div style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
-                        <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{p.testimonialQuote}"</p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
-                          <div>
-                            <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{p.testimonialName}</p>
-                            {p.testimonialTitle && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{p.testimonialTitle}</p>}
+                  <SectionHead number="06" text="Reči klijenata" section="testimonial" onEdit={startEdit} />
+                  {(() => {
+                    const list = (p.testimonials && p.testimonials.length > 0)
+                      ? p.testimonials
+                      : p.testimonialQuote
+                      ? [{ quote: p.testimonialQuote, name: p.testimonialName, title: p.testimonialTitle }]
+                      : [];
+                    if (list.length === 0) return <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema recenzija — klikni ✏️</p>;
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {list.map((t, i) => (
+                          <div key={i} style={{ background: C.accentLight, borderRadius: 14, padding: 16 }}>
+                            <p style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{t.quote}"</p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
+                              <div>
+                                <p style={{ margin: 0, fontSize: 11, fontWeight: 600 }}>{t.name}</p>
+                                {t.title && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{t.title}</p>}
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema recenzije — klikni Uredi</p>
-                  }
+                    );
+                  })()}
                 </>
               )}
             </div>

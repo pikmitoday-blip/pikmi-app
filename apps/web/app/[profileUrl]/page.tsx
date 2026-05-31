@@ -52,6 +52,7 @@ interface Profile {
   testimonialName: string;
   testimonialTitle: string;
   testimonialAvatarUrl?: string;
+  testimonials?: Array<{ quote: string; name: string; title: string; avatarUrl?: string }>;
   experience?: ExperienceItem[];
   ctaTitle: string;
   ctaHighlight: string;
@@ -899,40 +900,44 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           )}
 
           {/* ─── 06 — Reči klijenata ─────────────────────────────────────────── */}
-          {p.testimonialQuote && (
-            <>
-              <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="06" text="REČI KLIJENATA" />
-                <div style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
-                  <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>
-                    "{p.testimonialQuote}"
-                  </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {p.testimonialAvatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={p.testimonialAvatarUrl}
-                        alt={p.testimonialName}
-                        style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                      />
-                    ) : (
-                      <div style={{
-                        width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-                        background: `linear-gradient(135deg,${C.accent},#EC4899)`,
-                      }} />
-                    )}
-                    <div>
-                      <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{p.testimonialName}</p>
-                      {p.testimonialTitle && (
-                        <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{p.testimonialTitle}</p>
-                      )}
-                    </div>
+          {(() => {
+            // Koristimo novi array ako postoji, inače stari single testimonial
+            const list = (p.testimonials && p.testimonials.length > 0)
+              ? p.testimonials
+              : p.testimonialQuote
+              ? [{ quote: p.testimonialQuote, name: p.testimonialName, title: p.testimonialTitle, avatarUrl: p.testimonialAvatarUrl }]
+              : [];
+            if (list.length === 0) return null;
+            return (
+              <>
+                <SectionSep />
+                <div style={{ padding: "24px 20px" }}>
+                  <SectionLabel number="06" text="REČI KLIJENATA" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {list.map((t, i) => (
+                      <div key={i} style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
+                        <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>
+                          "{t.quote}"
+                        </p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          {t.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={t.avatarUrl} alt={t.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                          ) : (
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
+                          )}
+                          <div>
+                            <p style={{ margin: 0, fontSize: 12, fontWeight: 600 }}>{t.name}</p>
+                            {t.title && <p style={{ margin: 0, fontSize: 10, color: C.muted }}>{t.title}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            );
+          })()}
 
           {/* ─── Portfolio fajlovi ───────────────────────────────────────────── */}
           {(p.portfolioFiles ?? []).length > 0 && (
