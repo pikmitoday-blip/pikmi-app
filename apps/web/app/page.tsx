@@ -134,7 +134,8 @@ export default async function Home() {
           .pricing-grid { flex-direction: column !important; }
           .features-grid { grid-template-columns: 1fr !important; }
           .nav-links-desktop { display: none !important; }
-          .hero-title { font-size: 34px !important; letter-spacing: -1px !important; }
+          .hero-title { font-size: 44px !important; letter-spacing: -1.5px !important; }
+          section h2 { font-size: 26px !important; letter-spacing: -0.5px !important; }
           section { padding-left: 16px !important; padding-right: 16px !important; padding-top: 40px !important; padding-bottom: 40px !important; }
           nav { padding-left: 16px !important; padding-right: 16px !important; }
           footer { padding: 24px 16px !important; }
