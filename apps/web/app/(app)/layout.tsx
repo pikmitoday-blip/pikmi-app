@@ -310,15 +310,69 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
+        <div className="sidebar-footer" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+
+          {/* Desktop bell — na vrhu footer-a */}
+          <div ref={desktopBellRef} style={{ position: "relative" }}>
+            <button onClick={openBell} style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
+              background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
+              fontSize: 13, color: "var(--text2)", transition: "all 0.15s",
+            }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>🔔 Obaveštenja</span>
+              {unreadCount > 0 && (
+                <span style={{ minWidth: 20, height: 20, borderRadius: 10, background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+            {showBell && (
+              <div style={{
+                position: "absolute", bottom: "calc(100% + 8px)", left: 0, right: 0, zIndex: 1000,
+                background: "var(--bg, #0E0E12)", border: "1px solid var(--border)",
+                borderRadius: 14, boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
+                maxHeight: 360, overflowY: "auto",
+              }}>
+                <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+                  🔔 Pregledi pitch linkova
+                </div>
+                {notifGroups.length === 0 ? (
+                  <div style={{ padding: "28px 16px", textAlign: "center", color: "#4B5563", fontSize: 13 }}>Još nema pregleda.</div>
+                ) : (
+                  notifGroups.map(([id, g]) => (
+                    <Link key={id} href="/analytics" onClick={() => setShowBell(false)} style={{ textDecoration: "none" }}>
+                      <div style={{ padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", gap: 10, transition: "background 0.1s" }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#A78BFA" }}>
+                          {g.count}
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.title}</div>
+                          <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>{g.count === 1 ? "1 pregled" : `${g.count} pregleda`} · {timeAgoNotif(g.last)}</div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                )}
+                <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <button onClick={() => { setShowBell(false); setShowAllNotifs(true); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "#A78BFA", fontWeight: 600, padding: 0 }}>
+                    Pogledaj sva obaveštenja →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Admin link — vidljiv samo adminima */}
           {isAdmin && (
-            <Link href="/admin" style={{ textDecoration: "none", display: "block", marginBottom: 8 }}>
+            <Link href="/admin" style={{ textDecoration: "none", display: "block" }}>
               <div style={{
                 padding: "10px 14px", borderRadius: 10,
                 background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
-                display: "flex", alignItems: "center", gap: 8,
-                transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 8, transition: "all 0.15s",
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.15)";
@@ -334,31 +388,22 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
           )}
+
           {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
-              background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 13, color: "var(--text2)", marginBottom: 0, transition: "all 0.15s",
-            }}
-          >
+          <button onClick={toggleTheme} style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
+            background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
+            fontSize: 13, color: "var(--text2)", transition: "all 0.15s",
+          }}>
             <span>{theme === "dark" ? `🌙 ${t("dark_theme")}` : `☀️ ${t("light_theme")}`}</span>
-            <div style={{
-              width: 36, height: 20, borderRadius: 100, background: theme === "light" ? "var(--purple)" : "var(--border)",
-              position: "relative", transition: "background 0.2s", flexShrink: 0,
-            }}>
-              <div style={{
-                position: "absolute", top: 2, left: theme === "light" ? 18 : 2,
-                width: 16, height: 16, borderRadius: "50%", background: "white",
-                transition: "left 0.2s",
-              }} />
+            <div style={{ width: 36, height: 20, borderRadius: 100, background: theme === "light" ? "var(--purple)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+              <div style={{ position: "absolute", top: 2, left: theme === "light" ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
             </div>
           </button>
 
           {/* Language selector */}
-          <div style={{ position: "relative", marginTop: 8 }}>
+          <div style={{ position: "relative" }}>
             <button
               onClick={() => setShowLangMenu(v => !v)}
               style={{
@@ -411,61 +456,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Desktop bell — iznad profila */}
-          <div ref={desktopBellRef} style={{ position: "relative", marginBottom: 8 }}>
-            <button onClick={openBell} style={{
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)",
-              background: "var(--card)", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 13, color: "var(--text2)", transition: "all 0.15s",
-            }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>🔔 Obaveštenja</span>
-              {unreadCount > 0 && (
-                <span style={{ minWidth: 20, height: 20, borderRadius: 10, background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
-            {showBell && (
-              <div style={{
-                position: "absolute", bottom: "calc(100% + 8px)", left: 0, right: 0, zIndex: 1000,
-                background: "var(--bg, #0E0E12)", border: "1px solid var(--border)",
-                borderRadius: 14, boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
-                maxHeight: 360, overflowY: "auto",
-              }}>
-                <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
-                  🔔 Pregledi pitch linkova
-                </div>
-                {notifGroups.length === 0 ? (
-                  <div style={{ padding: "28px 16px", textAlign: "center", color: "#4B5563", fontSize: 13 }}>Još nema pregleda.</div>
-                ) : (
-                  notifGroups.map(([id, g]) => (
-                    <Link key={id} href="/analytics" onClick={() => setShowBell(false)} style={{ textDecoration: "none" }}>
-                      <div style={{ padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", gap: 10, transition: "background 0.1s" }}
-                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"}
-                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
-                        <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#A78BFA" }}>
-                          {g.count}
-                        </div>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.title}</div>
-                          <div style={{ fontSize: 11, color: "#6B7280", marginTop: 1 }}>{g.count === 1 ? "1 pregled" : `${g.count} pregleda`} · {timeAgoNotif(g.last)}</div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                )}
-                <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between" }}>
-                  <button onClick={() => { setShowBell(false); setShowAllNotifs(true); }}
-                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "#A78BFA", fontWeight: 600, padding: 0 }}>
-                    Pogledaj sva obaveštenja →
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="sidebar-user" style={{ marginTop: 0, flexDirection: "column", gap: 4 }}>
+          <div className="sidebar-user" style={{ flexDirection: "column", gap: 4 }}>
             {/* Profil link — cela širina */}
             <Link href="/account" title="Podešavanja naloga" style={{
               display: "flex", alignItems: "center", gap: 10, width: "100%",
