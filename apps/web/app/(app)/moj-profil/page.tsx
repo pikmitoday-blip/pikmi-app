@@ -575,7 +575,7 @@ export default function MojProfil() {
                         <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {draft.csImages?.[i]
                             ? (/\.(mp4|mov|webm|avi)$/i.test(draft.csImages[i])
-                                ? <video src={draft.csImages[i]} muted style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                ? <video src={draft.csImages[i]} muted controls style={{ width: "100%", objectFit: "contain", display: "block", background: "#000", maxHeight: 200 }} />
                                 : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />)
                             : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez fajla</span>
                           }

@@ -769,13 +769,15 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     return (
                       <div key={i}>
                         <div style={{
-                          height: 110,
+                          ...(img && /\.(mp4|mov|webm|avi)$/i.test(img)
+                            ? { aspectRatio: "16/9" }
+                            : { height: 110 }),
                           background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length],
                           borderRadius: 14,
                           overflow: "hidden",
                         }}>
                           {img && (/\.(mp4|mov|webm|avi)$/i.test(img) ? (
-                            <video src={img} muted autoPlay loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            <video src={img} muted autoPlay loop playsInline controls style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", background: "#000" }} />
                           ) : (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
