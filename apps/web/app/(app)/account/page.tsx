@@ -1,14 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import Checkout3MButton from "../../components/Checkout3MButton";
 
-export default function AccountSettings() {
+function AccountSettingsInner() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"profile" | "subscription">("profile");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<"profile" | "subscription">(() =>
+    searchParams.get("tab") === "subscription" ? "subscription" : "profile"
+  );
 
   // Profile state
   const [firstName, setFirstName] = useState("");
@@ -612,6 +616,7 @@ export default function AccountSettings() {
         </div>
       )}
       {/* ── Uslovi i privatnost ── */}
+
       <div style={{ display: "flex", gap: 16, justifyContent: "center", paddingTop: 32, paddingBottom: 8 }}>
         <a href="/uslovi" target="_blank" rel="noopener noreferrer"
           style={{ fontSize: 12, color: "var(--text3)", textDecoration: "none" }}>
@@ -624,5 +629,13 @@ export default function AccountSettings() {
         </a>
       </div>
     </div>
+  );
+}
+
+export default function AccountSettings() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, color: "var(--text3)" }}>Učitavanje...</div>}>
+      <AccountSettingsInner />
+    </Suspense>
   );
 }
