@@ -232,8 +232,8 @@ textarea.input { resize: vertical; min-height: 90px; }
   font-size: 20px; font-weight: 700;
 }
 .sidebar-nav { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-.analytics-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
-.dash-stats-grid  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.analytics-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; width: 100%; box-sizing: border-box; }
+.dash-stats-grid  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; width: 100%; box-sizing: border-box; }
 .sidebar-section {
   font-size: 10px; font-weight: 600; color: var(--text3);
   text-transform: uppercase; letter-spacing: 0.1em;
@@ -263,7 +263,7 @@ textarea.input { resize: vertical; min-height: 90px; }
   justify-content: center; font-size: 13px; font-weight: 700; color: white;
   flex-shrink: 0;
 }
-.main-content { margin-left: 232px; flex: 1; padding: 40px 48px; min-height: 100vh; }
+.main-content { margin-left: 232px; flex: 1; padding: 40px 48px; min-height: 100vh; overflow-x: hidden; }
 
 /* === PAGE HEADER === */
 .page-header { margin-bottom: 32px; }
