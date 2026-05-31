@@ -424,7 +424,7 @@ export default function MojProfil() {
 
           {/* ── LEFT PANEL (info) ── */}
           <div className="pp-left">
-            {editSection === "info" ? <InfoEditForm /> : <InfoDisplay />}
+            {editSection === "info" ? InfoEditForm() : InfoDisplay()}
           </div>
 
           {/* ── RIGHT PANEL (sections 01–07) ── */}
