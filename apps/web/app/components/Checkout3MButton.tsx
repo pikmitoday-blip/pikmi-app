@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 
 interface Props {
@@ -9,6 +9,12 @@ interface Props {
 
 export default function Checkout3MButton({ style, label = "Pretplati se na 3 meseca" }: Props) {
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) setLoading(false); };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   async function handleClick() {
     setLoading(true);
