@@ -130,7 +130,9 @@ export default function MojProfil() {
   const { t } = useLanguage();
   const [p, setP] = useState<Profile | null>(() => getCached());
   const [userId, setUserId] = useState<string>("");
-  const [profileUrl, setProfileUrl] = useState<string>("");
+  const [profileUrl, setProfileUrl] = useState<string>(() => {
+    try { return sessionStorage.getItem("pikmi-profile-url") ?? ""; } catch { return ""; }
+  });
   const [loading, setLoading] = useState(!getCached());
   const [editSection, setEditSection] = useState<string | null>(null);
   const [draft, setDraft] = useState<Profile | null>(null);
@@ -162,7 +164,10 @@ export default function MojProfil() {
             };
             setP(merged);
             try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
-            if (data.profile_url) setProfileUrl(data.profile_url);
+            if (data.profile_url) {
+              setProfileUrl(data.profile_url);
+              try { sessionStorage.setItem("pikmi-profile-url", data.profile_url); } catch {}
+            }
           }
         }
       } catch {}

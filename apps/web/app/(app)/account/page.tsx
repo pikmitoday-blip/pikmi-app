@@ -129,6 +129,7 @@ function AccountSettingsInner() {
         const initials = (fn[0] ?? "").toUpperCase() + (ln[0] ?? "").toUpperCase();
         window.dispatchEvent(new CustomEvent("pikmi-profile-changed", { detail: { firstName: fn, lastName: ln, initials } }));
         sessionStorage.removeItem("pikmi-moj-profil"); sessionStorage.removeItem("pikmi-profile-edit");
+        if (profileUrl.trim()) { try { sessionStorage.setItem("pikmi-profile-url", profileUrl.trim()); } catch {} }
       } catch {}
       setNameSaved(true); setTimeout(() => setNameSaved(false), 2500);
     } catch (e: any) { setNameError(e.message || "Error saving."); }
