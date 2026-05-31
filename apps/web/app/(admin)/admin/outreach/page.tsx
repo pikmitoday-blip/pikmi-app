@@ -7,13 +7,14 @@ interface DocSection {
   desc: string;
   icon: string;
   url: string;
+  preview: string; // tekst koji se vidi u pregledu (Free korisnici vide pola, Pro sve)
 }
 
 const DEFAULTS: DocSection[] = [
-  { title: "Cold DM & Email Šabloni",      desc: "Gotovi šabloni za hladni kontakt sa potencijalnim klijentima.",    icon: "✉️", url: "" },
-  { title: "Follow-up & Upsell Strategija", desc: "Kako pratiti klijente i povećati vrednost narudžbine.",             icon: "📈", url: "" },
-  { title: "Ponuda & Pozicioniranje",       desc: "Kako napraviti neodoljivu ponudu i pozicionirati se kao ekspert.",  icon: "🎯", url: "" },
-  { title: "Klijentski Onboarding Kit",     desc: "Sve što trebaš za profesionalan onboarding novog klijenta.",       icon: "🤝", url: "" },
+  { title: "Cold DM & Email Šabloni",      desc: "Gotovi šabloni za hladni kontakt sa potencijalnim klijentima.",    icon: "✉️", url: "", preview: "" },
+  { title: "Follow-up & Upsell Strategija", desc: "Kako pratiti klijente i povećati vrednost narudžbine.",             icon: "📈", url: "", preview: "" },
+  { title: "Ponuda & Pozicioniranje",       desc: "Kako napraviti neodoljivu ponudu i pozicionirati se kao ekspert.",  icon: "🎯", url: "", preview: "" },
+  { title: "Klijentski Onboarding Kit",     desc: "Sve što trebaš za profesionalan onboarding novog klijenta.",       icon: "🤝", url: "", preview: "" },
 ];
 
 export default function AdminOutreach() {
@@ -36,10 +37,11 @@ export default function AdminOutreach() {
         const map: Record<string, string> = {};
         data.forEach(r => { map[r.key] = r.value; });
         setDocs(prev => prev.map((d, i) => ({
-          title: map[`outreach_doc_${i + 1}_title`] ?? d.title,
-          desc:  map[`outreach_doc_${i + 1}_desc`]  ?? d.desc,
-          icon:  map[`outreach_doc_${i + 1}_icon`]  ?? d.icon,
-          url:   map[`outreach_doc_${i + 1}_url`]   ?? d.url,
+          title:   map[`outreach_doc_${i + 1}_title`]   ?? d.title,
+          desc:    map[`outreach_doc_${i + 1}_desc`]    ?? d.desc,
+          icon:    map[`outreach_doc_${i + 1}_icon`]    ?? d.icon,
+          url:     map[`outreach_doc_${i + 1}_url`]     ?? d.url,
+          preview: map[`outreach_doc_${i + 1}_preview`] ?? d.preview,
         })));
       }
     } catch {}
@@ -71,10 +73,11 @@ export default function AdminOutreach() {
     setSaving(true);
     try {
       const rows = docs.flatMap((d, i) => [
-        { key: `outreach_doc_${i + 1}_title`, value: d.title, updated_at: new Date().toISOString() },
-        { key: `outreach_doc_${i + 1}_desc`,  value: d.desc,  updated_at: new Date().toISOString() },
-        { key: `outreach_doc_${i + 1}_icon`,  value: d.icon,  updated_at: new Date().toISOString() },
-        { key: `outreach_doc_${i + 1}_url`,   value: d.url,   updated_at: new Date().toISOString() },
+        { key: `outreach_doc_${i + 1}_title`,   value: d.title,   updated_at: new Date().toISOString() },
+        { key: `outreach_doc_${i + 1}_desc`,    value: d.desc,    updated_at: new Date().toISOString() },
+        { key: `outreach_doc_${i + 1}_icon`,    value: d.icon,    updated_at: new Date().toISOString() },
+        { key: `outreach_doc_${i + 1}_url`,     value: d.url,     updated_at: new Date().toISOString() },
+        { key: `outreach_doc_${i + 1}_preview`, value: d.preview, updated_at: new Date().toISOString() },
       ]);
       const { error } = await supabase.from("platform_settings").upsert(rows, { onConflict: "key" });
       if (error) throw error;
@@ -165,6 +168,21 @@ export default function AdminOutreach() {
                       URL: {doc.url.split("/").pop()}
                     </div>
                   )}
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
+                    Preview tekst (vidljiv Free korisnicima — {i === 0 ? "prva polovina" : "zamagljeno"})
+                  </label>
+                  <textarea
+                    value={doc.preview}
+                    onChange={e => setDocs(prev => prev.map((d, j) => j === i ? { ...d, preview: e.target.value } : d))}
+                    rows={6}
+                    placeholder={`Upiši tekst koji će biti vidljiv korisnicima${i === 0 ? " (do pola)" : " (zamagljeno)"}. Npr. uvodni paragraf dokumenta...`}
+                    style={{ ...INP, resize: "vertical" as const, fontFamily: "inherit" }}
+                  />
+                  <p style={{ marginTop: 5, fontSize: 11, color: "#4B5563" }}>
+                    {i === 0 ? "⚠ Ovaj tekst će biti vidljiv do sredine za Free korisnike." : "🔒 Free korisnici vide samo zamagljeni oblik."}
+                  </p>
                 </div>
               </div>
             </div>
