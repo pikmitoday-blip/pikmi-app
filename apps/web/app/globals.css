@@ -234,6 +234,7 @@ textarea.input { resize: vertical; min-height: 90px; }
 .sidebar-nav { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
 .analytics-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; width: 100%; box-sizing: border-box; }
 .dash-stats-grid  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; width: 100%; box-sizing: border-box; }
+.analytics-stats > *, .dash-stats-grid > * { min-width: 0; box-sizing: border-box; }
 .sidebar-section {
   font-size: 10px; font-weight: 600; color: var(--text3);
   text-transform: uppercase; letter-spacing: 0.1em;
@@ -410,6 +411,10 @@ textarea.input { resize: vertical; min-height: 90px; }
   .dash-stats-grid  { grid-template-columns: 1fr 1fr !important; }
   .dash-link-row-slug { display: none !important; }
   .dash-link-row-time { display: none !important; }
+  /* Scrollable filter rows — ne prelaze ekran */
+  .filter-scroll { overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-scroll > * { flex-shrink: 0 !important; }
   .mobile-top-header {
     display: flex;
     align-items: center;

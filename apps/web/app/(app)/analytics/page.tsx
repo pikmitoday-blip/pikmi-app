@@ -231,12 +231,13 @@ export default function Analytics() {
       </div>
 
       {/* ── Filter po linku ── */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" as any }}>
         <button onClick={() => setSelectedLink("all")} style={{
           padding: "7px 16px", borderRadius: 10, border: selectedLink === "all" ? "none" : "1px solid rgba(139,92,246,0.12)",
           background: selectedLink === "all" ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(139,92,246,0.04)",
           color: selectedLink === "all" ? "#fff" : "rgba(255,255,255,0.45)",
           fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+          flexShrink: 0, whiteSpace: "nowrap",
         }}>
           {t("analytics_all_links")}
         </button>
@@ -246,6 +247,7 @@ export default function Analytics() {
             background: selectedLink === l.id ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(139,92,246,0.04)",
             color: selectedLink === l.id ? "#fff" : "rgba(255,255,255,0.45)",
             fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            flexShrink: 0, whiteSpace: "nowrap",
           }}>
             {l.title}
           </button>
