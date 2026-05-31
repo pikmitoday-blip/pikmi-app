@@ -165,10 +165,13 @@ textarea.input { resize: vertical; min-height: 90px; }
   cursor: pointer;
   transition: box-shadow 0.2s, background 0.2s, transform 0.15s;
 }
-.card-hover:hover {
-  background: var(--card-hover);
-  box-shadow: 0 6px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
-  transform: scale(0.98);
+/* Hover animacija samo na desktop (miš) — na mobilnom se hover zaglavljuje pri skrolovanju */
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    background: var(--card-hover);
+    box-shadow: 0 6px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+    transform: scale(0.98);
+  }
 }
 
 [data-theme="light"] .card {
