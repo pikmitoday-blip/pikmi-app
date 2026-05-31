@@ -257,7 +257,7 @@ export default function Dashboard() {
                     </span>
                     <span style={{
                       fontSize: 13, fontFamily: "monospace",
-                      color: isHot ? "#EF4444" : "rgba(255,255,255,0.4)",
+                      color: isHot ? "#EF4444" : "var(--text3)",
                       minWidth: 40, textAlign: "right",
                     }}>
                       {isHot && "🔥 "}{l.views || 0}

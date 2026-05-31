@@ -247,7 +247,7 @@ function AccountSettingsInner() {
             padding: "10px 20px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
             border: activeTab === tab.id ? "none" : "1px solid rgba(139,92,246,0.12)",
             background: activeTab === tab.id ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(139,92,246,0.04)",
-            color: activeTab === tab.id ? "#fff" : "rgba(255,255,255,0.45)",
+            color: activeTab === tab.id ? "#fff" : "var(--text2)",
             fontSize: 13, fontWeight: 600,
             display: "flex", alignItems: "center", gap: 6,
             transition: "all 0.15s",
@@ -324,7 +324,7 @@ function AccountSettingsInner() {
 
             <div style={{ marginBottom: 14 }}>
               <label style={LBL}>{t("account_email")}</label>
-              <div style={{ ...INP, background: "rgba(255,255,255,0.02)", color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ ...INP, background: "var(--surface)", color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span>{email}</span>
                 <span style={{ fontSize: 14 }}>🔒</span>
               </div>
@@ -452,8 +452,8 @@ function AccountSettingsInner() {
           <div style={{
             background: plan === "pro"
               ? "linear-gradient(135deg, rgba(124,58,237,0.12), rgba(99,102,241,0.08))"
-              : "rgba(255,255,255,0.02)",
-            border: `1px solid ${plan === "pro" ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.08)"}`,
+              : "var(--surface)",
+            border: `1px solid ${plan === "pro" ? "rgba(139,92,246,0.2)" : "var(--border)"}`,
             borderRadius: 18, padding: "22px 18px", position: "relative", overflow: "hidden",
           }}>
             {plan === "pro" && (
@@ -461,7 +461,7 @@ function AccountSettingsInner() {
             )}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <span style={{
-                background: plan === "pro" ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
+                background: plan === "pro" ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "var(--card)",
                 padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
                 display: "flex", alignItems: "center", gap: 6, color: "#fff",
               }}>
@@ -470,7 +470,7 @@ function AccountSettingsInner() {
               <span style={{
                 fontSize: 11, fontWeight: 600,
                 color: plan === "pro" ? "#10B981" : "#6B7280",
-                background: plan === "pro" ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.05)",
+                background: plan === "pro" ? "rgba(16,185,129,0.1)" : "var(--card)",
                 padding: "4px 10px", borderRadius: 100,
               }}>
                 {plan === "pro" ? t("billing_active") : "Free"}
@@ -486,7 +486,7 @@ function AccountSettingsInner() {
                   : "0"
                 }
               </span>
-              <span style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>
+              <span style={{ fontSize: 16, color: "var(--text3)", fontWeight: 600 }}>
                 {plan === "pro" ? ` ${subDetails?.currency?.toUpperCase() ?? "RSD"}/mes` : " din"}
               </span>
             </div>
@@ -603,7 +603,7 @@ function AccountSettingsInner() {
               {[{ q: t("billing_faq_q1"), a: t("billing_faq_a1") }, { q: t("billing_faq_q2"), a: t("billing_faq_a2") }, { q: t("billing_faq_q3"), a: t("billing_faq_a3") }].map(item => (
                 <div key={item.q} style={{ ...SECTION, padding: "14px 16px", marginBottom: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{item.q}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>{item.a}</div>
+                  <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.6 }}>{item.a}</div>
                 </div>
               ))}
             </div>

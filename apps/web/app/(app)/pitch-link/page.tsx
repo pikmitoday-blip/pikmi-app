@@ -265,7 +265,7 @@ export default function PitchLink() {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: -0.3 }}>{t("links_created_list")}</h2>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+            <span style={{ fontSize: 12, color: "var(--text3)", fontFamily: "monospace" }}>
               {links.length} {linkWord(links.length, locale)}
             </span>
           </div>
