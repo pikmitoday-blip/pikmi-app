@@ -1032,21 +1032,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     <ContactCopyBlock label="Telefon" value={p.contactPhone} icon="📞" />
                   )}
                 </div>
-              ) : (
-                <button
-                  onClick={() => setShowContactModal(true)}
-                  style={{
-                    width: "100%", maxWidth: 360,
-                    background: C.accent, color: "#fff", border: "none",
-                    padding: 15, borderRadius: 999,
-                    fontSize: 13, fontWeight: 600,
-                    cursor: "pointer",
-                    boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
-                  }}
-                >
-                  {p.ctaBtn1 || "Zakaži besplatan poziv"} →
-                </button>
-              )}
+              ) : null}
 
               <p style={{ margin: "24px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
                 PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
