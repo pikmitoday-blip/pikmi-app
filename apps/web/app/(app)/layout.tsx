@@ -503,8 +503,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       </aside>
       {/* ── Mobile top header ── */}
       <header className="mobile-top-header">
-        {/* Logo — samo tekst */}
-        <Link href="/dashboard" style={{ textDecoration: "none" }}>
+        {/* Logo */}
+        <Link href="/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}>
+          <img src="/pikmilogo.jpg" alt="pikmi" width={28} height={28} style={{ objectFit: "contain", display: "block" }} />
           <span style={{ fontWeight: 900, fontSize: 20, background: "linear-gradient(135deg, #7C3AED, #3B82F6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             pikmi
           </span>
