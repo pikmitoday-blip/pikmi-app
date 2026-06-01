@@ -121,79 +121,72 @@ export default function Outreach() {
               </div>
 
               {/* Document preview area */}
-              <div style={{ margin: "0 14px 14px", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)", position: "relative", minHeight: 160 }}>
+              <div style={{ margin: "0 14px 14px", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)", position: "relative" }}>
 
-                {/* Preview content */}
-                <div style={{ padding: "14px 16px" }}>
+                <div style={{ padding: "14px 16px 0" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>
                     {doc.title}
                   </div>
-
-                  {hasPreview ? (
-                    // Real preview text
-                    <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
-                      {doc.preview}
-                    </div>
-                  ) : (
-                    // Placeholder lines when no preview text set
-                    [85, 70, 90, 65, 80, 55, 75, 60, 88, 72, 68, 82].map((w, j) => (
-                      <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />
-                    ))
-                  )}
                 </div>
 
-                {/* Blur overlays */}
-                {locked && (
-                  <>
-                    {isFirst ? (
-                      // First card: top half visible, bottom 55% blurred
-                      <div style={{
-                        position: "absolute", bottom: 0, left: 0, right: 0, height: "55%",
-                        backdropFilter: "blur(7px)", WebkitBackdropFilter: "blur(7px)",
-                        background: "rgba(var(--surface-rgb, 255,255,255), 0.15)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexDirection: "column", gap: 6,
-                      }}>
-                        <span style={{ fontSize: 28 }}>🔒</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)" }}>Pro plan</span>
+                {locked ? (
+                  isFirst ? (
+                    // PRVI dokument: gornja polovina vidljiva, donja blurirana
+                    <>
+                      {/* Vidljivi deo — gornja polovina */}
+                      <div style={{ padding: "0 16px 10px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                        {hasPreview
+                          ? doc.preview.split("\n").slice(0, Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(0, Math.ceil(doc.preview.length / 2))
+                          : <>{[85, 70, 90, 65].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                        }
                       </div>
-                    ) : (
-                      // Other cards: fully blurred
-                      <div style={{
-                        position: "absolute", inset: 0,
-                        backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
-                        background: "rgba(var(--surface-rgb, 255,255,255), 0.2)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexDirection: "column", gap: 8,
-                      }}>
-                        <span style={{ fontSize: 36 }}>🔒</span>
+                      {/* Bluriran deo — donja polovina */}
+                      <div style={{ position: "relative", padding: "0 16px 14px" }}>
+                        <div style={{ filter: "blur(5px)", userSelect: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                          {hasPreview
+                            ? doc.preview.split("\n").slice(Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(Math.ceil(doc.preview.length / 2))
+                            : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                          }
+                        </div>
+                        {/* Lock overlay na bluriranom delu */}
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, background: "linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.12) 100%)" }}>
+                          <span style={{ fontSize: 28, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}>🔒</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)" }}>Pro plan</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    // OSTALI dokumenti: skroz blurirani
+                    <div style={{ position: "relative", padding: "0 16px 14px" }}>
+                      <div style={{ filter: "blur(6px)", userSelect: "none" }}>
+                        {hasPreview
+                          ? <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{doc.preview}</div>
+                          : <>{[85, 70, 90, 65, 80, 55, 75, 60, 88].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                        }
+                      </div>
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
+                        <span style={{ fontSize: 34 }}>🔒</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
                       </div>
-                    )}
-                  </>
-                )}
-
-                {/* Pro: show open hint */}
-                {!locked && hasFile && (
-                  <div style={{
-                    position: "absolute", bottom: 10, right: 10,
-                    padding: "4px 10px", borderRadius: 8,
-                    background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.25)",
-                    fontSize: 11, fontWeight: 600, color: "#A78BFA",
-                  }}>
-                    Klikni da čitaš ↗
+                    </div>
+                  )
+                ) : (
+                  // PRO — pun prikaz preview teksta
+                  <div style={{ padding: "0 16px 14px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                    {hasPreview
+                      ? doc.preview
+                      : <>{[85, 70, 90, 65, 80, 55, 75, 60, 88].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                    }
+                    {!hasFile && <div style={{ marginTop: 10, fontSize: 11, color: "var(--text3)", fontStyle: "italic" }}>Dokument dolazi uskoro</div>}
                   </div>
                 )}
 
-                {/* Pro + no file */}
-                {!locked && !hasFile && (
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexDirection: "column", gap: 6,
-                  }}>
-                    <span style={{ fontSize: 24 }}>📋</span>
-                    <span style={{ fontSize: 11, color: "var(--text3)" }}>Dokument dolazi uskoro</span>
+                {/* Pro: "klikni da čitaš" hint */}
+                {!locked && hasFile && (
+                  <div style={{ padding: "0 16px 10px", display: "flex", justifyContent: "flex-end" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#A78BFA", background: "rgba(124,58,237,0.1)", padding: "3px 10px", borderRadius: 8, border: "1px solid rgba(124,58,237,0.2)" }}>
+                      Klikni da čitaš ↗
+                    </span>
                   </div>
                 )}
               </div>
