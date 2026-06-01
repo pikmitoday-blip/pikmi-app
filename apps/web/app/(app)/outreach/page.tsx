@@ -138,42 +138,40 @@ export default function Outreach() {
                   isFirst ? (
                     // PRVI dokument: gornja polovina vidljiva, donja blurirana
                     <>
-                      {/* Vidljivi deo — gornja polovina */}
-                      <div style={{ padding: "0 16px 10px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                      {/* Vidljivi deo — gornja ~50% */}
+                      <div style={{ padding: "0 16px 8px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
                         {hasPreview
                           ? doc.preview.split("\n").slice(0, Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(0, Math.ceil(doc.preview.length / 2))
                           : <>{[85, 70, 90, 65].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                         }
                       </div>
-                      {/* Bluriran deo — donja polovina, isti stil kao ostale kartice */}
-                      <div style={{ position: "relative", minHeight: 80, padding: "8px 16px 14px" }}>
-                        <div style={{ filter: "blur(5px)", userSelect: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap", pointerEvents: "none" }}>
-                          {hasPreview
-                            ? doc.preview.split("\n").slice(Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(Math.ceil(doc.preview.length / 2))
-                            : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
-                          }
-                        </div>
-                        {/* Lock — isti kao kod ostalih kartica */}
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
-                          <span style={{ fontSize: 34 }}>🔒</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
-                        </div>
+                      {/* Bluriran deo — donja ~50%, bez lock ikone */}
+                      <div style={{ padding: "0 16px 14px", filter: "blur(5px)", userSelect: "none", pointerEvents: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                        {hasPreview
+                          ? doc.preview.split("\n").slice(Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(Math.ceil(doc.preview.length / 2))
+                          : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                        }
+                      </div>
+                      {/* Lock — centriran na celoj sekciji (position: absolute na roditelju 200px) */}
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, pointerEvents: "none" }}>
+                        <span style={{ fontSize: 34 }}>🔒</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
                       </div>
                     </>
                   ) : (
-                    // OSTALI dokumenti: skroz blurirani
-                    <div style={{ position: "relative", padding: "0 16px 14px" }}>
-                      <div style={{ filter: "blur(6px)", userSelect: "none" }}>
+                    // OSTALI dokumenti: skroz blurirani + lock centriran
+                    <>
+                      <div style={{ padding: "0 16px 14px", filter: "blur(6px)", userSelect: "none", pointerEvents: "none" }}>
                         {hasPreview
                           ? <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{doc.preview}</div>
                           : <>{[85, 70, 90, 65, 80, 55, 75, 60, 88].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                         }
                       </div>
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, pointerEvents: "none" }}>
                         <span style={{ fontSize: 34 }}>🔒</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
                       </div>
-                    </div>
+                    </>
                   )
                 ) : (
                   // PRO — pun prikaz preview teksta
