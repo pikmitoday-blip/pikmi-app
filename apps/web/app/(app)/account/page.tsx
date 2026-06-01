@@ -596,19 +596,6 @@ function AccountSettingsInner() {
             </div>
           )}
 
-          {/* FAQ */}
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const, color: "var(--text3)", marginBottom: 10 }}>{t("billing_faq")}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[{ q: t("billing_faq_q1"), a: t("billing_faq_a1") }, { q: t("billing_faq_q2"), a: t("billing_faq_a2") }, { q: t("billing_faq_q3"), a: t("billing_faq_a3") }].map(item => (
-                <div key={item.q} style={{ ...SECTION, padding: "14px 16px", marginBottom: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{item.q}</div>
-                  <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.6 }}>{item.a}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Free → Pro upgrade — dva plana isti dizajn kao landing */}
           {plan === "free" && !subLoading && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 0 }}>
@@ -675,6 +662,19 @@ function AccountSettingsInner() {
 
             </div>
           )}
+
+          {/* FAQ — ispod paketa */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const, color: "var(--text3)", marginBottom: 10 }}>{t("billing_faq")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[{ q: t("billing_faq_q1"), a: t("billing_faq_a1") }, { q: t("billing_faq_q2"), a: t("billing_faq_a2") }, { q: t("billing_faq_q3"), a: t("billing_faq_a3") }].map(item => (
+                <div key={item.q} style={{ ...SECTION, padding: "14px 16px", marginBottom: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{item.q}</div>
+                  <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.6 }}>{item.a}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
       {/* ── Uslovi i privatnost ── */}
