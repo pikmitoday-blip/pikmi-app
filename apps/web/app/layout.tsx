@@ -5,10 +5,7 @@ export const metadata = {
   title: "pikmi",
   description: "Tailored portfolios. Real connections.",
   icons: {
-    icon: [
-      { url: "/pikmilogo.jpg", type: "image/jpeg" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: { url: "/pikmilogo.jpg", type: "image/jpeg" },
     shortcut: "/pikmilogo.jpg",
     apple: "/pikmilogo.jpg",
   },
