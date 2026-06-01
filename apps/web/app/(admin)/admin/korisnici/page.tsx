@@ -64,15 +64,26 @@ export default function AdminKorisnici() {
   async function changePlan(userId: string, newPlan: "free" | "pro") {
     setActionLoading(userId + newPlan);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ plan: newPlan })
-        .eq("user_id", userId);
-      if (error) throw error;
+      // Ako se vraca na free, otkazi Stripe pretplatu da webhook ne vrati plan
+      if (newPlan === "free") {
+        const res = await fetch("/api/admin/cancel-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Greška pri otkazivanju pretplate");
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ plan: newPlan })
+          .eq("user_id", userId);
+        if (error) throw error;
+      }
       setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, plan: newPlan } : u));
       showToast(`Plan promenjen u ${newPlan.toUpperCase()}`, true);
-    } catch {
-      showToast("Greška pri promjeni plana", false);
+    } catch (e: any) {
+      showToast(e.message || "Greška pri promjeni plana", false);
     }
     setActionLoading(null);
   }
