@@ -630,7 +630,7 @@ function AccountSettingsInner() {
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t("cancel_anytime")}</div>
                 <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-                  {["Neograničeno pitch linkova", "Sve sekcije profila", "Real-time tracking i notifikacije", "Outreach kit", "Prioritetna podrška"].map(f => (
+                  {["Unikatni portfolio", "Neograničen broj pitch linkova", "Real-time tracking i notifikacije", "Kreiranje ponude - Kit", "Prodaja i Follow-up - Kit", "Upsell - Kit", "AI promptovi - Kit"].map(f => (
                     <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text)" }}>
                       <span style={{ color: "#A855F7", fontSize: 11 }}>✦</span> {f}
                     </li>
