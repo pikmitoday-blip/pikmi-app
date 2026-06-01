@@ -21,11 +21,17 @@ const DEFAULTS: DocSection[] = [
 function getCachedPlan(): "free" | "pro" | null {
   try { return sessionStorage.getItem("pikmi-outreach-plan") as "free" | "pro" | null; } catch { return null; }
 }
+function getCachedDocs(): DocSection[] | null {
+  try { const c = sessionStorage.getItem("pikmi-outreach-docs"); return c ? JSON.parse(c) : null; } catch { return null; }
+}
+function setCachedDocs(docs: DocSection[]) {
+  try { sessionStorage.setItem("pikmi-outreach-docs", JSON.stringify(docs)); } catch {}
+}
 
 export default function Outreach() {
-  // Inicijalizuj iz cache-a — nema više flasha
   const [plan, setPlan] = useState<"loading" | "free" | "pro">(() => getCachedPlan() ?? "loading");
-  const [docs, setDocs] = useState<DocSection[]>(DEFAULTS);
+  // Inicijalizuj iz cache-a — emoji i tekst odmah vidljivi
+  const [docs, setDocs] = useState<DocSection[]>(() => getCachedDocs() ?? DEFAULTS);
   const [openDoc, setOpenDoc] = useState<DocSection | null>(null);
 
   useEffect(() => {
@@ -47,13 +53,15 @@ export default function Outreach() {
         if (settingsRes.data && settingsRes.data.length > 0) {
           const map: Record<string, string> = {};
           settingsRes.data.forEach(r => { map[r.key] = r.value; });
-          setDocs(prev => prev.map((d, i) => ({
+          const updatedDocs = DEFAULTS.map((d, i) => ({
             title:   map[`outreach_doc_${i + 1}_title`]   ?? d.title,
             desc:    map[`outreach_doc_${i + 1}_desc`]    ?? d.desc,
             icon:    map[`outreach_doc_${i + 1}_icon`]    ?? d.icon,
             url:     map[`outreach_doc_${i + 1}_url`]     ?? d.url,
             preview: map[`outreach_doc_${i + 1}_preview`] ?? d.preview,
-          })));
+          }));
+          setDocs(updatedDocs);
+          setCachedDocs(updatedDocs);
         }
       } catch { setPlan("free"); }
     }
