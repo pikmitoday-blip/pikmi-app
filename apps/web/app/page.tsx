@@ -65,11 +65,12 @@ export default async function Home() {
   // ── Pricing ───────────────────────────────────────────────────────────────
   const freeFeatures  = g("pricing_free_features",  "Osnovni profil\nOgraničen broj pitch linkova\nStatistika pregleda").split("\n").filter(Boolean);
   const proFeatures   = g("pricing_pro_features",   "Neograničeno pitch linkova\nSve sekcije profila\nReal-time tracking i notifikacije\nOutreach kit (DM + email + follow-up)\nCustom boje i fontovi\nPriorizetna podrška").split("\n").filter(Boolean);
-  const proPrice      = g("pricing_pro_price",      "990 din");
+  const toLower = (s: string) => s.replace(/\bDIN\b/g, "din").replace(/\bRSD\b/g, "rsd");
+  const proPrice      = toLower(g("pricing_pro_price",      "990 din"));
   const proNote       = g("pricing_pro_note",       "Manje od jedne kafe nedeljno");
-  const pro3Price     = g("pricing_pro3_price",     "2490 din");
+  const pro3Price     = toLower(g("pricing_pro3_price",     "2490 din"));
   const pro3Note      = g("pricing_pro3_note",      "Uštedi 17%");
-  const pro3Saving    = g("pricing_pro3_saving",    "~830 din mesečno · ušteda ~480 din");
+  const pro3Saving    = toLower(g("pricing_pro3_saving",    "~830 din mesečno · ušteda ~480 din"));
 
   // ── CTA / Footer ─────────────────────────────────────────────────────────
   const ctaTitle    = g("cta_title",    "Spreman da zatvoriš prvi deal?");

@@ -98,7 +98,7 @@ function AccountSettingsInner() {
         if (settings) {
           const m: Record<string, string> = {};
           settings.forEach((r: any) => { m[r.key] = r.value; });
-          if (m.pricing_pro3_price)  setPro3Price(m.pricing_pro3_price);
+          if (m.pricing_pro3_price)  setPro3Price(m.pricing_pro3_price.replace(/\bDIN\b/g, "din").replace(/\bRSD\b/g, "rsd"));
           if (m.pricing_pro3_note)   setPro3Note(m.pricing_pro3_note);
           if (m.pricing_pro3_saving) setPro3Saving(m.pricing_pro3_saving);
         }
@@ -487,7 +487,7 @@ function AccountSettingsInner() {
                 }
               </span>
               <span style={{ fontSize: 16, color: "var(--text3)", fontWeight: 600 }}>
-                {plan === "pro" ? ` ${subDetails?.currency?.toUpperCase() ?? "RSD"}/mes` : " din"}
+                {plan === "pro" ? ` ${subDetails?.currency?.toLowerCase() ?? "rsd"}/mes` : " din"}
               </span>
             </div>
             {plan === "pro" && subDetails && (
