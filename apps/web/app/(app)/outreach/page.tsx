@@ -136,23 +136,23 @@ export default function Outreach() {
 
                 {locked ? (
                   isFirst ? (
-                    // PRVI dokument: gornja polovina vidljiva, donja blurirana
+                    // PRVI dokument: tekst vidljiv, donja POLOVINA KONTEJNERA (50% od 200px) blurirana
                     <>
-                      {/* Vidljivi deo — gornja ~50% */}
-                      <div style={{ padding: "0 16px 8px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                      {/* Sav tekst — ne seče se */}
+                      <div style={{ padding: "0 16px 14px", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
                         {hasPreview
-                          ? doc.preview.split("\n").slice(0, Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(0, Math.ceil(doc.preview.length / 2))
-                          : <>{[85, 70, 90, 65].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
+                          ? doc.preview
+                          : <>{[85, 70, 90, 65, 80, 55, 75, 60].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                         }
                       </div>
-                      {/* Bluriran deo — donja ~50%, bez lock ikone */}
-                      <div style={{ padding: "0 16px 14px", filter: "blur(5px)", userSelect: "none", pointerEvents: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
-                        {hasPreview
-                          ? doc.preview.split("\n").slice(Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(Math.ceil(doc.preview.length / 2))
-                          : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
-                        }
-                      </div>
-                      {/* Lock — centriran na celoj sekciji (position: absolute na roditelju 200px) */}
+                      {/* Blur overlay — tačno donja polovina 200px kontejnera */}
+                      <div style={{
+                        position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
+                        backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                        background: "linear-gradient(180deg, transparent 0%, rgba(var(--surface-rgb,17,17,22),0.7) 100%)",
+                        pointerEvents: "none",
+                      }} />
+                      {/* Lock — centriran na celoj sekciji */}
                       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, pointerEvents: "none" }}>
                         <span style={{ fontSize: 34 }}>🔒</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
