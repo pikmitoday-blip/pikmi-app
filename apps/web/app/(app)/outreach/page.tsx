@@ -109,7 +109,7 @@ export default function Outreach() {
           return (
             <div
               key={i}
-              onClick={() => { if (!locked && hasFile) setOpenDoc(doc); }}
+              onClick={() => { if (!locked && hasFile) setOpenDoc({ ...doc }); }}
               style={{
                 background: "rgba(139,92,246,0.04)",
                 border: `1px solid rgba(139,92,246,0.12)`,
@@ -245,13 +245,15 @@ export default function Outreach() {
               </button>
             </div>
 
-            {/* Document content */}
-            <div style={{ flex: 1, overflow: "hidden", borderRadius: "0 0 20px 20px" }}>
+            {/* Document content — key na URL forsira reinicijalizaciju kad se promeni dokument */}
+            <div key={openDoc.url} style={{ flex: 1, overflow: "hidden", borderRadius: "0 0 20px 20px", position: "relative" }}>
               {getFileType(openDoc.url) === "pdf" ? (
                 <iframe
+                  key={`pdf-${openDoc.url}`}
                   src={`${openDoc.url}#toolbar=0&navpanes=0&scrollbar=1`}
-                  style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none" }}
+                  style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none", display: "block" }}
                   title={openDoc.title}
+                  loading="eager"
                 />
               ) : getFileType(openDoc.url) === "image" ? (
                 <div style={{ padding: 24, overflowY: "auto", maxHeight: "70vh" }}>
@@ -260,9 +262,11 @@ export default function Outreach() {
               ) : getFileType(openDoc.url) === "office" ? (
                 // Word/Excel/PPT — Google Docs Viewer
                 <iframe
+                  key={`office-${openDoc.url}`}
                   src={getViewerUrl(openDoc.url)}
-                  style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none" }}
+                  style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none", display: "block" }}
                   title={openDoc.title}
+                  loading="eager"
                 />
               ) : (
                 // Nepoznat tip — direktan link
