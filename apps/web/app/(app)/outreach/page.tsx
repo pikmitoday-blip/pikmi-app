@@ -254,15 +254,27 @@ export default function Outreach() {
                 <div style={{ padding: 24, overflowY: "auto", maxHeight: "70vh" }}>
                   <img src={openDoc.url} alt={openDoc.title} style={{ width: "100%", borderRadius: 12 }} />
                 </div>
-              ) : openDoc.preview ? (
-                // Show preview text if no renderable file
-                <div style={{ padding: "24px", overflowY: "auto", maxHeight: "70vh", fontSize: 14, lineHeight: 1.8, color: "var(--text2)", whiteSpace: "pre-wrap" }}>
-                  {openDoc.preview}
-                </div>
               ) : (
-                <div style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>
-                  <span style={{ fontSize: 40, display: "block", marginBottom: 12 }}>📄</span>
-                  <p>Sadržaj dokumenta nije dostupan za pregled.</p>
+                // Word, txt i ostali fajlovi — otvori u novom tabu
+                <div style={{ padding: 40, textAlign: "center", color: "var(--text3)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                  <span style={{ fontSize: 48 }}>📄</span>
+                  <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 4 }}>
+                    Ovaj dokument se ne može prikazati direktno u aplikaciji.
+                  </p>
+                  <a
+                    href={openDoc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "12px 24px", borderRadius: 12, border: "none",
+                      background: "linear-gradient(135deg,#7C3AED,#6366F1)",
+                      color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none",
+                      boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
+                    }}
+                  >
+                    Otvori dokument ↗
+                  </a>
                 </div>
               )}
             </div>
