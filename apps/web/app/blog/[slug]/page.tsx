@@ -132,7 +132,8 @@ export default async function BlogPostPage(
         justifyContent: "space-between",
         gap: 16,
       }}>
-        <Link href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+        <Link href="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center", gap: 7 }}>
+          <img src="/pikmilogo.jpg" alt="pikmi" width={26} height={26} style={{ objectFit: "contain", display: "block" }} />
           <span style={{ fontWeight: 800, fontSize: 18, background: "linear-gradient(135deg, #7C3AED, #3B82F6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             pikmi
           </span>
