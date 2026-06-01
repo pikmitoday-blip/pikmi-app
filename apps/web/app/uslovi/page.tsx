@@ -47,28 +47,19 @@ export default async function UsloviPage() {
         .pnav-link:hover { color: rgba(255,255,255,0.9); }
       `}</style>
 
-      {/* ── Nav (identičan landingu) ── */}
+      {/* ── Nav — samo logo centiran ── */}
       <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto",
+        display: "flex", justifyContent: "center", alignItems: "center",
+        padding: "0 24px", height: 56,
         position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(8,8,15,0.85)", backdropFilter: "blur(20px)",
+        background: "rgba(8,8,15,0.9)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(139,92,246,0.06)",
       }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: "#fff" }}>P</div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
+          <div style={{ width: 26, height: 26, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#fff" }}>P</div>
+          <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <a href="/#features"  className="pnav-link">Features</a>
-          <a href="/#how"       className="pnav-link">Kako funkcioniše</a>
-          <a href="/#pricing"   className="pnav-link">Cene</a>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Link href="/login"    style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Login</Link>
-          <Link href="/register" style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Napravi profil</Link>
-        </div>
       </nav>
-      <div style={{ height: 1, background: "rgba(139,92,246,0.06)" }} />
 
       {/* ── Sadržaj ── */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "64px 24px 100px" }}>
@@ -85,13 +76,8 @@ export default async function UsloviPage() {
           dangerouslySetInnerHTML={{ __html: html }}
         />
 
-        <div style={{ marginTop: 56, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <Link href="/privatnost" style={{ color: "#A78BFA", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>
-            Politika privatnosti →
-          </Link>
-          <Link href="/" style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, textDecoration: "none" }}>
-            ← Nazad na pikmi
-          </Link>
+        <div style={{ marginTop: 48, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.08)", textAlign: "center" }}>
+          <Link href="/" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>pikmi.today</Link>
         </div>
       </div>
 
