@@ -597,7 +597,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
     ...(p.metric3Value ? [{ value: p.metric3Value, label: p.metric3Label ?? "" }] : []),
   ].filter(m => m.value);
 
-  const csSlots = [0, 1, 2, 3].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
+  const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
 
   return (
     <div style={{

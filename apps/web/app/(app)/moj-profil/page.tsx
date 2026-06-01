@@ -280,7 +280,7 @@ export default function MojProfil() {
     { value: p.metric2Value, label: p.metric2Label },
     ...(p.metric3Value ? [{ value: p.metric3Value!, label: p.metric3Label ?? "" }] : []),
   ].filter(m => m.value);
-  const csSlots = [0, 1, 2, 3].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
+  const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
   const hasWork = csSlots.length > 0;
 
   // ─── Edit form helpers ─────────────────────────────────────────────────────
@@ -539,7 +539,7 @@ export default function MojProfil() {
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    {[0, 1, 2, 3].map(i => (
+                    {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
                       <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 12 }}>
                         <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
                         <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>

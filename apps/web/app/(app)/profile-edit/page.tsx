@@ -38,7 +38,7 @@ interface PortfolioFile {
 }
 
 const DEFAULT: Profile = {
-  csImages: ["", "", "", ""],
+  csImages: ["", "", "", "", "", "", "", ""],
   avatarUrl: "",
   firstName: "Stefan", lastName: "Radović", initials: "SR", city: "Beograd, Srbija",
   openStatus: "OTVOREN ZA RETAINER", badge: "TOP 5%",
@@ -116,7 +116,7 @@ function ProfileEditInner() {
             .single();
           if (data?.profile_url) setProfileUrl(data.profile_url);
           if (data?.profile_data && Object.keys(data.profile_data).length > 0) {
-            const updated = { ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", ""] };
+            const updated = { ...DEFAULT, ...data.profile_data, csImages: data.profile_data.csImages ?? ["", "", "", "", "", "", "", ""] };
             setP(updated);
             try { sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(updated)); } catch {}
             return;
@@ -129,7 +129,7 @@ function ProfileEditInner() {
         const s = localStorage.getItem("pikmi-profile");
         if (s) {
           const loaded = JSON.parse(s);
-          setP({ ...DEFAULT, ...loaded, csImages: loaded.csImages ?? ["", "", "", ""] });
+          setP({ ...DEFAULT, ...loaded, csImages: loaded.csImages ?? ["", "", "", "", "", "", "", ""] });
         }
       } catch {}
     }
@@ -388,7 +388,7 @@ function ProfileEditInner() {
         {/* 02 */}
         <Section label={t("edit_sec_02")}>
           <div className="edit-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            {[0, 1, 2, 3].map(i => (
+            {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
               <div key={i} style={{ borderRadius: 12, border: "1px solid var(--border)", overflow: "hidden" }}>
                 {/* Upload zona */}
                 <label style={{ display: "block", cursor: "pointer" }}>
