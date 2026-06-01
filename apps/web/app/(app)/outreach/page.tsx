@@ -18,8 +18,13 @@ const DEFAULTS: DocSection[] = [
   { title: "Klijentski Onboarding Kit",      desc: "Sve što trebaš za profesionalan onboarding novog klijenta.",      icon: "🤝", url: "", preview: "" },
 ];
 
+function getCachedPlan(): "free" | "pro" | null {
+  try { return sessionStorage.getItem("pikmi-outreach-plan") as "free" | "pro" | null; } catch { return null; }
+}
+
 export default function Outreach() {
-  const [plan, setPlan] = useState<"loading" | "free" | "pro">("loading");
+  // Inicijalizuj iz cache-a — nema više flasha
+  const [plan, setPlan] = useState<"loading" | "free" | "pro">(() => getCachedPlan() ?? "loading");
   const [docs, setDocs] = useState<DocSection[]>(DEFAULTS);
   const [openDoc, setOpenDoc] = useState<DocSection | null>(null);
 
@@ -35,7 +40,9 @@ export default function Outreach() {
           supabase.from("platform_settings").select("key, value").like("key", "outreach_doc_%"),
         ]);
 
-        setPlan(profileRes.data?.plan === "pro" ? "pro" : "free");
+        const currentPlan = profileRes.data?.plan === "pro" ? "pro" : "free";
+        setPlan(currentPlan);
+        try { sessionStorage.setItem("pikmi-outreach-plan", currentPlan); } catch {}
 
         if (settingsRes.data && settingsRes.data.length > 0) {
           const map: Record<string, string> = {};
