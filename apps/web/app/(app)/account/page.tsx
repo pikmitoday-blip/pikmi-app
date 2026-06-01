@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import Checkout3MButton from "../../components/Checkout3MButton";
+import { uploadFile } from "../../../lib/upload";
 
 function AccountSettingsInner() {
   const { t } = useLanguage();
@@ -115,11 +116,7 @@ function AccountSettingsInner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setUploadingAvatar(false); return; }
       if (file.size > 2 * 1024 * 1024) { setAvatarError(t("account_err_too_large")); setUploadingAvatar(false); return; }
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${user.id}/avatar.${ext}`;
-      const { error } = await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: true, contentType: file.type });
-      if (error) { setAvatarError(error.message); setUploadingAvatar(false); return; }
-      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: user.id, filename: `avatar.${file.name.split(".").pop()?.toLowerCase() ?? "jpg"}` });
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
       const { data: profileRow } = await supabase.from("profiles").select("profile_data").eq("user_id", user.id).single();
       const existing = (profileRow?.profile_data as Record<string, unknown>) ?? {};

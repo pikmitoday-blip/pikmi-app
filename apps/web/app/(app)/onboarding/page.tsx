@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { pixel } from "../../../lib/pixel";
+import { uploadFile } from "../../../lib/upload";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function generateSlug(s: string): string {
@@ -92,15 +93,11 @@ export default function Onboarding() {
   }, [profileUrl]);
 
   // ── File upload ────────────────────────────────────────────────────────────
-  async function uploadFile(file: File) {
+  async function uploadPortfolioFile(file: File) {
     if (!userId) return;
     setUploadingFile(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const path = `${userId}/portfolio-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: false, contentType: file.type });
-      if (error) { console.error(error); return; }
-      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: userId, filename: `portfolio-${Date.now()}.${file.name.split(".").pop()?.toLowerCase() ?? "bin"}` });
       const type: "image" | "video" | "document" = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
       setPortfolioFiles(prev => [...prev, { url: publicUrl, name: file.name, type }]);
     } catch {}
@@ -312,7 +309,7 @@ export default function Onboarding() {
                   {uploadingFile ? "⏳ Otpremam..." : <><span style={{ fontSize: 20 }}>+</span> Dodaj sliku, video ili dokument</>}
                 </div>
                 <input type="file" accept="image/*,video/*,application/pdf,.pdf" style={{ display: "none" }} disabled={uploadingFile}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = ""; }} />
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadPortfolioFile(f); e.target.value = ""; }} />
               </label>
               <p style={{ ...HINT, marginTop: 10 }}>PNG, JPG, MP4, MOV, PDF · Možeš dodati više fajlova</p>
             </div>

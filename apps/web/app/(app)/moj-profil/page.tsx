@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import { uploadFile } from "../../../lib/upload";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -239,10 +240,7 @@ export default function MojProfil() {
     if (!userId) return;
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split(".").pop() ?? "bin";
-      const path = `${userId}/avatar.${ext}`;
-      await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: true });
-      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: userId, filename: `avatar.${file.name.split(".").pop() ?? "bin"}` });
       setDraft(prev => prev ? { ...prev, avatarUrl: publicUrl } : null);
     } catch {}
     setUploadingAvatar(false);
@@ -252,10 +250,7 @@ export default function MojProfil() {
     if (!userId) return;
     setUploading(i);
     try {
-      const ext = file.name.split(".").pop() ?? "bin";
-      const path = `${userId}/project-${i}-${Date.now()}.${ext}`;
-      await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: true });
-      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: userId, filename: `project-${i}-${Date.now()}.${file.name.split(".").pop() ?? "bin"}` });
       const imgs = [...(draft?.csImages ?? ["", "", "", ""])];
       imgs[i] = publicUrl;
       setDraft(prev => prev ? { ...prev, csImages: imgs } : null);

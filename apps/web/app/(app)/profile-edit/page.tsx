@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
+import { uploadFile } from "../../../lib/upload";
 
 interface CaseStudy {
   industry: string; metric: string; metricLabel: string;
@@ -196,15 +197,7 @@ function ProfileEditInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const ext = file.name.split(".").pop() ?? "bin";
-      const path = `${user.id}/avatar.${ext}`;
-      const { error } = await supabase.storage
-        .from("pikmi-uploads")
-        .upload(path, file, { upsert: true });
-      if (error) { console.error(error); return; }
-      const { data: { publicUrl } } = supabase.storage
-        .from("pikmi-uploads")
-        .getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: user.id, filename: `avatar.${file.name.split(".").pop() ?? "bin"}` });
       setP(prev => ({ ...prev, avatarUrl: publicUrl }));
     } catch (e) {
       console.error("Avatar upload error:", e);
@@ -217,15 +210,7 @@ function ProfileEditInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const ext = file.name.split(".").pop() ?? "bin";
-      const path = `${user.id}/project-${i}-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("pikmi-uploads")
-        .upload(path, file, { upsert: true });
-      if (error) { console.error(error); return; }
-      const { data: { publicUrl } } = supabase.storage
-        .from("pikmi-uploads")
-        .getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: user.id, filename: `project-${i}-${Date.now()}.${file.name.split(".").pop() ?? "bin"}` });
       const imgs = [...p.csImages];
       imgs[i] = publicUrl;
       setP(prev => ({ ...prev, csImages: imgs }));
@@ -240,11 +225,7 @@ function ProfileEditInner() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-      const path = `${user.id}/portfolio-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("pikmi-uploads").upload(path, file, { upsert: false, contentType: file.type });
-      if (error) { console.error(error); return; }
-      const { data: { publicUrl } } = supabase.storage.from("pikmi-uploads").getPublicUrl(path);
+      const publicUrl = await uploadFile(file, { folder: user.id, filename: `portfolio-${Date.now()}.${file.name.split(".").pop()?.toLowerCase() ?? "bin"}` });
       const fileType: PortfolioFile["type"] = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
       const newFile: PortfolioFile = { url: publicUrl, name: file.name, type: fileType };
       setP(prev => ({ ...prev, portfolioFiles: [...(prev.portfolioFiles ?? []), newFile] }));
