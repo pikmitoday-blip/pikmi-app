@@ -42,31 +42,32 @@ export async function POST(req: NextRequest) {
           .update({ plan: "pro", stripe_subscription_id: subscriptionId })
           .eq("user_id", userId);
 
-        // ── Meta CAPI: Purchase event ───────────────────────────────────────
+        // ── Meta CAPI: Subscribe + Purchase (server-only, no dedup needed) ──
         try {
-          const PIXEL_ID = "980912031509026";
-          const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
-          if (CAPI_TOKEN) {
-            const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
-            const userEmail = userData?.user?.email ?? "";
-            await fetch(`https://graph.facebook.com/v19.0/${PIXEL_ID}/events`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                data: [{
-                  event_name: "Purchase",
-                  event_time: Math.floor(Date.now() / 1000),
-                  action_source: "website",
-                  user_data: {
-                    em: userEmail ? [require("crypto").createHash("sha256").update(userEmail.toLowerCase()).digest("hex")] : [],
-                    external_id: userId,
-                  },
-                  custom_data: { currency: "RSD", value: 990 },
-                }],
-                access_token: CAPI_TOKEN,
-              }),
-            });
-          }
+          const { sendCAPIEvent } = await import("../../../../lib/capi");
+          const { data: authData } = await supabaseAdmin.auth.admin.getUserById(userId);
+          const userEmail = authData?.user?.email ?? "";
+
+          const commonData = {
+            userId,
+            userEmail,
+            currency: "RSD",
+            value: 990,
+          };
+
+          // Subscribe event
+          await sendCAPIEvent({
+            eventName: "Subscribe",
+            eventId: `sub_${subscriptionId}`,
+            ...commonData,
+          });
+
+          // Purchase event (za ROAS tracking)
+          await sendCAPIEvent({
+            eventName: "Purchase",
+            eventId: `pur_${subscriptionId}`,
+            ...commonData,
+          });
         } catch (capiErr) {
           console.error("[webhook] Meta CAPI error:", capiErr);
         }
