@@ -6,10 +6,10 @@ export const metadata = {
   description: "Tailored portfolios. Real connections.",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/pikmilogo.jpg", type: "image/jpeg" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/favicon.svg",
+    shortcut: "/pikmilogo.jpg",
     apple: "/pikmilogo.jpg",
   },
 };
@@ -25,8 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="sr">
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/pikmilogo.jpg" type="image/jpeg" />
+        <link rel="shortcut icon" href="/pikmilogo.jpg" type="image/jpeg" />
         <link rel="apple-touch-icon" href="/pikmilogo.jpg" />
       </head>
       <body>
