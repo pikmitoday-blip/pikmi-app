@@ -37,6 +37,16 @@ export async function POST(req: NextRequest) {
       const subscriptionId = session.subscription as string;
 
       if (userId && subscriptionId) {
+        // Idempotency check — ako već ima ovaj subscription ID, ne obrađuj ponovo
+        const { data: existing } = await supabaseAdmin
+          .from("profiles")
+          .select("plan, stripe_subscription_id")
+          .eq("user_id", userId)
+          .single();
+
+        const alreadyProcessed = existing?.stripe_subscription_id === subscriptionId && existing?.plan === "pro";
+
+        if (!alreadyProcessed) {
         await supabaseAdmin
           .from("profiles")
           .update({ plan: "pro", stripe_subscription_id: subscriptionId })
@@ -190,6 +200,7 @@ export async function POST(req: NextRequest) {
         } catch (emailErr) {
           console.error("[webhook] Welcome email error:", emailErr);
         }
+        } // end if (!alreadyProcessed)
       }
       break;
     }
