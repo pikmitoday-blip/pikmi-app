@@ -612,10 +612,7 @@ function ProfileEditInner() {
         {/* Portfolio fajlovi */}
         <Section label="Portfolio fajlovi" color="#3B82F6">
           <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 20, lineHeight: 1.6 }}>
-            Dodaj do 8 fajlova koji se prikazuju na tvom portfoliju. Podržani formati: PNG, JPG, GIF, WebP, MP4, MOV, PDF.
-            <span style={{ float: "right", fontWeight: 600, color: (p.portfolioFiles ?? []).length >= 8 ? "#EF4444" : "var(--text2)" }}>
-              {(p.portfolioFiles ?? []).length}/8
-            </span>
+            Dodaj slike, videa ili dokumente koji se prikazuju na tvom portfoliju. Podržani formati: PNG, JPG, GIF, WebP, MP4, MOV, PDF.
           </p>
 
           {/* Existing files */}
@@ -644,8 +641,7 @@ function ProfileEditInner() {
             </div>
           )}
 
-          {/* Upload button — sakrij kad je dostignut max od 8 */}
-          {(p.portfolioFiles ?? []).length < 8 && (
+          {/* Upload button */}
           <label style={{ display: "block", cursor: "pointer" }}>
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
@@ -667,12 +663,6 @@ function ProfileEditInner() {
               onChange={e => { const f = e.target.files?.[0]; if (f) uploadPortfolioFile(f); e.target.value = ""; }}
             />
           </label>
-          )}
-          {(p.portfolioFiles ?? []).length >= 8 && (
-            <p style={{ fontSize: 12, color: "#EF4444", textAlign: "center", padding: "10px 0" }}>
-              Dostignut maksimum od 8 fajlova. Ukloni neki da dodaš novi.
-            </p>
-          )}
         </Section>
 
         {/* Save */}
