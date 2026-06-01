@@ -145,18 +145,18 @@ export default function Outreach() {
                           : <>{[85, 70, 90, 65].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                         }
                       </div>
-                      {/* Bluriran deo — donja polovina */}
-                      <div style={{ position: "relative", padding: "0 16px 14px" }}>
-                        <div style={{ filter: "blur(5px)", userSelect: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                      {/* Bluriran deo — donja polovina, isti stil kao ostale kartice */}
+                      <div style={{ position: "relative", minHeight: 80, padding: "8px 16px 14px" }}>
+                        <div style={{ filter: "blur(5px)", userSelect: "none", fontSize: 12, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap", pointerEvents: "none" }}>
                           {hasPreview
                             ? doc.preview.split("\n").slice(Math.ceil(doc.preview.split("\n").length / 2)).join("\n") || doc.preview.substring(Math.ceil(doc.preview.length / 2))
                             : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                           }
                         </div>
-                        {/* Lock overlay — centriran unutar bluriranog dela */}
-                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
-                          <span style={{ fontSize: 26, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }}>🔒</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", background: "var(--surface)", padding: "2px 8px", borderRadius: 6 }}>Pro plan</span>
+                        {/* Lock — isti kao kod ostalih kartica */}
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
+                          <span style={{ fontSize: 34 }}>🔒</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>Zaključano · Pro plan</span>
                         </div>
                       </div>
                     </>
