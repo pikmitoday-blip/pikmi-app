@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { pixel } from "../../../lib/pixel";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -79,6 +80,9 @@ export default function RegisterPage() {
 
       // Sačuvaj trial info lokalno
       localStorage.setItem("pikmi-trial-ends", trialEndsAt);
+
+      // Meta Pixel: korisnik završio registraciju
+      pixel.completeRegistration();
     }
 
     setSuccess(true);

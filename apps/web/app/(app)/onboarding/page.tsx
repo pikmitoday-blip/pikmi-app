@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { pixel } from "../../../lib/pixel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function generateSlug(s: string): string {
@@ -154,6 +155,8 @@ export default function Onboarding() {
         sessionStorage.removeItem("pikmi-moj-profil");
       } catch {}
 
+      // Meta Pixel: korisnik završio onboarding → počinje trial
+      pixel.startTrial();
       router.push("/dashboard");
     } catch (e) {
       console.error(e);

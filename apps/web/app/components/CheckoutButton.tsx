@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { pixel } from "../../lib/pixel";
 
 export default function CheckoutButton() {
   const [loading, setLoading] = useState(false);
@@ -14,6 +15,7 @@ export default function CheckoutButton() {
 
   async function handleClick() {
     setLoading(true);
+    pixel.initiateCheckout(990);
 
     const { data: { user } } = await supabase.auth.getUser();
 
