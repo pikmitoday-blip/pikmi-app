@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const formData  = await req.formData();
     const file      = formData.get("file") as File | null;
     const folder    = (formData.get("folder") as string) || user.id;
-    const filename  = (formData.get("filename") as string) || file?.name ?? "file";
+    const filename  = ((formData.get("filename") as string) || file?.name) ?? "file";
 
     if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
