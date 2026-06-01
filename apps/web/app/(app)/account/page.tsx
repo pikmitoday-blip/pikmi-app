@@ -487,7 +487,7 @@ function AccountSettingsInner() {
                 }
               </span>
               <span style={{ fontSize: 16, color: "var(--text3)", fontWeight: 600 }}>
-                {plan === "pro" ? ` ${subDetails?.currency?.toLowerCase() ?? "rsd"}/mes` : " din"}
+                {plan === "pro" ? " din/mes" : " din"}
               </span>
             </div>
             {plan === "pro" && subDetails && (
