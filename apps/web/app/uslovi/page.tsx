@@ -56,7 +56,7 @@ export default async function UsloviPage() {
         borderBottom: "1px solid rgba(139,92,246,0.06)",
       }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <img src="/pikmilogo.png" alt="pikmi" width={26} height={26} style={{ objectFit: "contain", display: "block" }} />
+          <img src="/pikmilogo.jpg" alt="pikmi" width={26} height={26} style={{ objectFit: "contain", display: "block" }} />
           <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
         <div style={{ display: "flex", gap: 8 }}>

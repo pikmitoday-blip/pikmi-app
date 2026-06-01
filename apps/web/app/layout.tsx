@@ -7,10 +7,10 @@ export const metadata = {
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/pikmilogo.png", type: "image/png" },
+      { url: "/pikmilogo.jpg", type: "image/jpeg" },
     ],
     shortcut: "/favicon.svg",
-    apple: "/pikmilogo.png",
+    apple: "/pikmilogo.jpg",
   },
 };
 
@@ -26,8 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/pikmilogo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/pikmilogo.png" />
+        <link rel="icon" href="/pikmilogo.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/pikmilogo.jpg" />
       </head>
       <body>
         {/* Postavi temu prije rendera da spriječi flash */}

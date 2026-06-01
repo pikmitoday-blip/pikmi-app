@@ -152,7 +152,7 @@ export default async function Home() {
         background: "rgba(8,8,15,0.85)", backdropFilter: "blur(20px)",
       }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <img src="/pikmilogo.png" alt="pikmi" width={28} height={28} style={{ objectFit: "contain", display: "block" }} />
+          <img src="/pikmilogo.jpg" alt="pikmi" width={28} height={28} style={{ objectFit: "contain", display: "block" }} />
           <span style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
 
@@ -427,7 +427,7 @@ export default async function Home() {
       <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "32px 48px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/pikmilogo.png" alt="pikmi" width={24} height={24} style={{ objectFit: "contain", display: "block" }} />
+            <img src="/pikmilogo.jpg" alt="pikmi" width={24} height={24} style={{ objectFit: "contain", display: "block" }} />
             <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>pikmi</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{footerCopy}</div>
