@@ -125,8 +125,8 @@ export default function Outreach() {
                 <p style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5, margin: 0 }}>{doc.desc}</p>
               </div>
 
-              {/* Document preview area */}
-              <div style={{ margin: "0 14px 14px", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)", position: "relative" }}>
+              {/* Document preview area — fiksna visina */}
+              <div style={{ margin: "0 14px 14px", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)", position: "relative", height: 200 }}>
 
                 <div style={{ padding: "14px 16px 0" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>
