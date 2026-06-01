@@ -55,11 +55,16 @@ export default function Outreach() {
 
   const isPro = plan === "pro";
 
-  function getFileType(url: string): "pdf" | "image" | "other" {
+  function getFileType(url: string): "pdf" | "image" | "office" | "other" {
     const ext = url.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
     if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
     if (ext === "pdf") return "pdf";
+    if (["doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"].includes(ext)) return "office";
     return "other";
+  }
+
+  function getViewerUrl(url: string): string {
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
   }
 
   return (
@@ -148,10 +153,10 @@ export default function Outreach() {
                             : <>{[80, 55, 75, 60, 88, 72].map((w, j) => <div key={j} style={{ height: 8, borderRadius: 4, background: "var(--border)", width: `${w}%`, marginBottom: 8 }} />)}</>
                           }
                         </div>
-                        {/* Lock overlay na bluriranom delu */}
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, background: "linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.12) 100%)" }}>
-                          <span style={{ fontSize: 28, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}>🔒</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)" }}>Pro plan</span>
+                        {/* Lock overlay — centriran unutar bluriranog dela */}
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
+                          <span style={{ fontSize: 26, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }}>🔒</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", background: "var(--surface)", padding: "2px 8px", borderRadius: 6 }}>Pro plan</span>
                         </div>
                       </div>
                     </>
@@ -254,25 +259,19 @@ export default function Outreach() {
                 <div style={{ padding: 24, overflowY: "auto", maxHeight: "70vh" }}>
                   <img src={openDoc.url} alt={openDoc.title} style={{ width: "100%", borderRadius: 12 }} />
                 </div>
+              ) : getFileType(openDoc.url) === "office" ? (
+                // Word/Excel/PPT — Google Docs Viewer
+                <iframe
+                  src={getViewerUrl(openDoc.url)}
+                  style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none" }}
+                  title={openDoc.title}
+                />
               ) : (
-                // Word, txt i ostali fajlovi — otvori u novom tabu
+                // Nepoznat tip — direktan link
                 <div style={{ padding: 40, textAlign: "center", color: "var(--text3)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
                   <span style={{ fontSize: 48 }}>📄</span>
-                  <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 4 }}>
-                    Ovaj dokument se ne može prikazati direktno u aplikaciji.
-                  </p>
-                  <a
-                    href={openDoc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "12px 24px", borderRadius: 12, border: "none",
-                      background: "linear-gradient(135deg,#7C3AED,#6366F1)",
-                      color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none",
-                      boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
-                    }}
-                  >
+                  <a href={openDoc.url} target="_blank" rel="noopener noreferrer"
+                    style={{ padding: "12px 24px", borderRadius: 12, background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
                     Otvori dokument ↗
                   </a>
                 </div>
