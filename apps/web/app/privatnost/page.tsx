@@ -54,7 +54,7 @@ export default async function PrivatnostPage() {
         borderBottom: "1px solid rgba(139,92,246,0.06)",
       }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <div style={{ width: 26, height: 26, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#fff" }}>P</div>
+          <img src="/pikmilogo.png" alt="pikmi" width={26} height={26} style={{ objectFit: "contain", display: "block" }} />
           <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
         <div style={{ display: "flex", gap: 8 }}>
