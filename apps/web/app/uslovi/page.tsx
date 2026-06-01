@@ -47,10 +47,10 @@ export default async function UsloviPage() {
         .pnav-link:hover { color: rgba(255,255,255,0.9); }
       `}</style>
 
-      {/* ── Nav — samo logo centiran ── */}
+      {/* ── Nav — logo levo, dugmad desno ── */}
       <nav style={{
-        display: "flex", justifyContent: "center", alignItems: "center",
-        padding: "0 24px", height: 56,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "0 24px", height: 60,
         position: "sticky", top: 0, zIndex: 50,
         background: "rgba(8,8,15,0.9)", backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(139,92,246,0.06)",
@@ -59,6 +59,10 @@ export default async function UsloviPage() {
           <div style={{ width: 26, height: 26, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#A855F7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#fff" }}>P</div>
           <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>pikmi</span>
         </Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link href="/login" style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Login</Link>
+          <Link href="/register" style={{ padding: "7px 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Napravi profil</Link>
+        </div>
       </nav>
 
       {/* ── Sadržaj ── */}
