@@ -346,7 +346,7 @@ export default function MojProfil() {
           {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
           {(p as any).yearsExperience && (
             <p style={{ margin: "6px 0 0", fontSize: 11, color: C.accent, fontWeight: 600 }}>
-              🗓 {(p as any).yearsExperience}
+              {(p as any).yearsExperience} godina iskustva
             </p>
           )}
         </div>

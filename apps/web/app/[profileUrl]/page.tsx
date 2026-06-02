@@ -736,7 +736,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   padding: "5px 12px", background: C.accentLight, color: C.accent,
                   fontSize: 11, borderRadius: 999, fontWeight: 600,
                 }}>
-                  🗓 {(p as any).yearsExperience}
+                  {(p as any).yearsExperience} godina iskustva
                 </div>
               </div>
             )}
