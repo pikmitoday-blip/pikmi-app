@@ -411,6 +411,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [loading, setLoading] = useState(true);
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
   const [showContactModal, setShowContactModal] = useState(false);
+  const [docPreview, setDocPreview] = useState<string | null>(null);
   const [senderEmail, setSenderEmail] = useState("");
   useEffect(() => {
     async function loadProfile() {
@@ -827,10 +828,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                         {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
                           <VideoPlayer src={img} />
                         ) : (
-                          <div style={{ height: 110, borderRadius: 14, overflow: "hidden" }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          </div>
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
                         )}
                       </div>
                     );
@@ -981,10 +980,10 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                       <VideoPlayer src={f.url} />
                     )}
                     {f.type === "document" && (
-                      <a href={f.url} target="_blank" rel="noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, gap: 8, textDecoration: "none" }}>
+                      <button onClick={() => setDocPreview(f.url)} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 120, gap: 8, width: "100%", background: "none", border: "none", cursor: "pointer" }}>
                         <span style={{ fontSize: 36 }}>📄</span>
-                        <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>Otvori PDF</span>
-                      </a>
+                        <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>Prikaži dokument</span>
+                      </button>
                     )}
                     <div style={{ padding: "8px 10px", borderTop: `1px solid ${C.border}` }}>
                       <p style={{ margin: 0, fontSize: 11, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</p>
@@ -1047,6 +1046,45 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           setSenderEmail={setSenderEmail}
           onClose={() => setShowContactModal(false)}
         />
+      )}
+
+      {/* ── Document preview modal ── */}
+      {docPreview && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setDocPreview(null); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          {/* Header */}
+          <div style={{
+            width: "100%", maxWidth: 860, display: "flex", justifyContent: "flex-end", marginBottom: 10,
+          }}>
+            <button onClick={() => setDocPreview(null)} style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
+              color: "#fff", fontSize: 18, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>×</button>
+          </div>
+          {/* PDF iframe */}
+          <div style={{ width: "100%", maxWidth: 860, flex: 1, maxHeight: "80vh", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
+            <iframe
+              src={`${docPreview}#toolbar=0`}
+              style={{ width: "100%", height: "100%", border: "none", minHeight: "70vh" }}
+              title="Dokument"
+            />
+          </div>
+          {/* Download link */}
+          <a href={docPreview} target="_blank" rel="noreferrer" style={{
+            marginTop: 12, fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none",
+          }}>
+            ↓ Preuzmi dokument
+          </a>
+        </div>
       )}
     </div>
   );
