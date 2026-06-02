@@ -597,7 +597,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
     ...(p.metric3Value ? [{ value: p.metric3Value, label: p.metric3Label ?? "" }] : []),
   ].filter(m => m.value);
 
-  const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => p.csImages?.[i] || p.caseStudies?.[i]?.client);
+  const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !!p.csImages?.[i]);
 
   return (
     <div style={{
@@ -822,28 +822,15 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                   {csSlots.map(i => {
                     const img = p.csImages?.[i];
-                    const cs  = p.caseStudies?.[i];
                     return (
                       <div key={i}>
                         {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
                           <VideoPlayer src={img} />
                         ) : (
-                          <div style={{ height: 110, background: img ? "transparent" : CS_GRADIENTS[i % CS_GRADIENTS.length], borderRadius: 14, overflow: "hidden" }}>
-                            {img && (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={img} alt={cs?.client || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                            )}
+                          <div style={{ height: 110, borderRadius: 14, overflow: "hidden" }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
-                        )}
-                        {cs?.client && (
-                          <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 600 }}>
-                            {cs.client}
-                          </p>
-                        )}
-                        {(cs?.platform || cs?.year) && (
-                          <p style={{ margin: 0, fontSize: 10, color: C.muted }}>
-                            {[cs.platform, cs.year].filter(Boolean).join(" · ")}
-                          </p>
                         )}
                       </div>
                     );
@@ -886,47 +873,55 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
 
           {/* ─── 05 — Iskustvo ───────────────────────────────────────────────── */}
-          {p.experience && p.experience.length > 0 && (
-            <>
-              <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
-                <SectionLabel number="05" text="Prethodno iskustvo" />
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {p.experience.map((exp, i) => {
-                    const isActive = i === 0;
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          paddingLeft: 12,
-                          borderLeft: `2px solid ${isActive ? C.accent : C.border}`,
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                          <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
-                          {(exp.dateFrom || exp.dateTo) && (
-                            <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>
-                              {exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}
-                            </p>
-                          )}
-                        </div>
-                        {exp.role && (
-                          <p style={{ margin: "0 0 6px", fontSize: 11, color: isActive ? C.accent : C.muted }}>
-                            {exp.role}
-                          </p>
+          {(() => {
+            // Spoji caseStudies (iz kviza) i experience (ručno dodano)
+            const csItems = (p.caseStudies ?? []).filter(cs => cs.client);
+            const expItems = p.experience ?? [];
+            if (csItems.length === 0 && expItems.length === 0) return null;
+            return (
+              <>
+                <SectionSep />
+                <div style={{ padding: "24px 20px" }}>
+                  <SectionLabel number="05" text="Prethodno iskustvo" />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+                    {/* Klijenti iz kviza */}
+                    {csItems.map((cs, i) => (
+                      <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 && expItems.length === 0 ? C.accent : C.border}` }}>
+                        <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 600 }}>{cs.client}</p>
+                        {cs.platform && (
+                          <p style={{ margin: "0 0 4px", fontSize: 11, color: C.accent }}>{cs.platform}</p>
                         )}
-                        {exp.desc && (
-                          <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>
-                            {exp.desc}
-                          </p>
+                        {cs.industry && (
+                          <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{cs.industry}</p>
                         )}
                       </div>
-                    );
-                  })}
+                    ))}
+
+                    {/* Experience ručno dodan */}
+                    {expItems.map((exp, i) => {
+                      const isActive = i === 0 && csItems.length === 0;
+                      return (
+                        <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${isActive ? C.accent : C.border}` }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                            <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
+                            {(exp.dateFrom || exp.dateTo) && (
+                              <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>
+                                {exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}
+                              </p>
+                            )}
+                          </div>
+                          {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: isActive ? C.accent : C.muted }}>{exp.role}</p>}
+                          {exp.desc && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{exp.desc}</p>}
+                        </div>
+                      );
+                    })}
+
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            );
+          })()}
 
           {/* ─── 06 — Reči klijenata ─────────────────────────────────────────── */}
           {(() => {
