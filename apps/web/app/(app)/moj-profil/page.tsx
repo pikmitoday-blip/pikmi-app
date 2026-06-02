@@ -168,6 +168,7 @@ export default function MojProfil() {
               csImages: pd.csImages ?? ["", "", "", ""],
               caseStudies: pd.caseStudies ?? [{}, {}, {}, {}],
               experience: pd.experience ?? [],
+              testimonials: pd.testimonials ?? [],
             };
             setP(merged);
             try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
@@ -666,21 +667,34 @@ export default function MojProfil() {
               ) : (
                 <>
                   <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} />
-                  {(p.experience ?? []).length > 0
-                    ? <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                        {(p.experience ?? []).map((exp, i) => (
-                          <div key={i} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 ? C.accent : C.border}` }}>
+                  {(() => {
+                    const csItems = (p.caseStudies ?? []).filter((cs, i) => cs.client && !p.csImages?.[i]);
+                    const expItems = p.experience ?? [];
+                    if (csItems.length === 0 && expItems.length === 0) {
+                      return <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema iskustva — klikni Uredi</p>;
+                    }
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                        {csItems.map((cs, i) => (
+                          <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${C.accent}` }}>
+                            <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 600 }}>{cs.client}</p>
+                            {cs.platform && <p style={{ margin: "0 0 4px", fontSize: 11, color: C.accent }}>{cs.platform}</p>}
+                            {cs.industry && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{cs.industry}</p>}
+                          </div>
+                        ))}
+                        {expItems.map((exp, i) => (
+                          <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${C.border}` }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                               <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
                               {(exp.dateFrom || exp.dateTo) && <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>{exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}</p>}
                             </div>
-                            {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: i === 0 ? C.accent : C.muted }}>{exp.role}</p>}
+                            {exp.role && <p style={{ margin: "0 0 6px", fontSize: 11, color: C.muted }}>{exp.role}</p>}
                             {exp.desc && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{exp.desc}</p>}
                           </div>
                         ))}
                       </div>
-                    : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema iskustva — klikni Uredi</p>
-                  }
+                    );
+                  })()}
                 </>
               )}
             </div>
