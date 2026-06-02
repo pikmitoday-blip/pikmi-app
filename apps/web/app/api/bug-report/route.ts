@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    await fetch("https://api.resend.com/emails", {
+    const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${RESEND_KEY}`,
@@ -54,6 +54,12 @@ export async function POST(req: NextRequest) {
         `,
       }),
     });
+
+    if (!resendRes.ok) {
+      const errBody = await resendRes.text();
+      console.error("[bug-report] Resend greška:", resendRes.status, errBody);
+      return NextResponse.json({ error: `Email greška: ${errBody}` }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
