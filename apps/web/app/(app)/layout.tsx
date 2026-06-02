@@ -57,6 +57,29 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [bugSending,    setBugSending]    = useState(false);
   const [bugSent,       setBugSent]       = useState(false);
 
+  // ── Trial expired ─────────────────────────────────────────────────────────
+  const [trialExpired,    setTrialExpired]    = useState(false);
+  const [proPrice,        setProPrice]        = useState("990 din");
+  const [pro3Price,       setPro3Price]       = useState("2490 din");
+  const [checkoutLoading, setCheckoutLoading] = useState<"monthly" | "3m" | null>(null);
+
+  async function handleTrialCheckout(plan: "monthly" | "3m") {
+    setCheckoutLoading(plan);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const priceId = plan === "3m" ? process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_3M : undefined;
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: session.user.id, userEmail: session.user.email, priceId }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch {}
+    setCheckoutLoading(null);
+  }
+
   async function sendBugReport() {
     if (!bugMsg.trim() || bugSending) return;
     setBugSending(true);
@@ -121,6 +144,28 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             .select("first_name, last_name, profile_data, plan, profile_url")
             .eq("user_id", user.id)
             .single();
+
+          // Provjeri da li je free trial istekao (7 dana od registracije)
+          if (data?.plan === "free" || !data?.plan) {
+            const createdAt = new Date(user.created_at).getTime();
+            const daysSince = (Date.now() - createdAt) / (1000 * 60 * 60 * 24);
+            if (daysSince >= 7) {
+              setTrialExpired(true);
+              // Učitaj cijene iz platform_settings
+              try {
+                const { data: settings } = await supabase
+                  .from("platform_settings")
+                  .select("key, value")
+                  .in("key", ["pricing_pro_price", "pricing_pro3_price"]);
+                if (settings) {
+                  const pp = settings.find((s: any) => s.key === "pricing_pro_price")?.value;
+                  const p3 = settings.find((s: any) => s.key === "pricing_pro3_price")?.value;
+                  if (pp) setProPrice(pp);
+                  if (p3) setPro3Price(p3);
+                }
+              } catch {}
+            }
+          }
 
           // Novi korisnik koji nije završio onboarding → redirect
           if (!data?.profile_url && !path.includes("/onboarding") && !path.includes("/profile-edit")) {
@@ -740,6 +785,86 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </Link>
         ))}
       </nav>
+
+      {/* ── Trial expired modal (blocking) ── */}
+      {trialExpired && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 10000,
+          background: "rgba(0,0,0,0.92)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 20, backdropFilter: "blur(8px)",
+        }}>
+          <div style={{
+            width: "100%", maxWidth: 480,
+            background: "#0F0B1F",
+            border: "1px solid rgba(139,92,246,0.25)",
+            borderRadius: 24, padding: "36px 28px",
+            boxShadow: "0 32px 100px rgba(0,0,0,0.8)",
+            textAlign: "center",
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
+            <h2 style={{ margin: "0 0 10px", fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
+              Tvoj besplatni trial je istekao
+            </h2>
+            <p style={{ margin: "0 0 28px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+              7 dana besplatnog korišćenja je završeno.<br/>
+              Odaberi plan da nastaviš sa korišćenjem pikmi.
+            </p>
+
+            {/* Plan cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+              {/* Mesečni */}
+              <button onClick={() => handleTrialCheckout("monthly")} disabled={checkoutLoading !== null} style={{
+                background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.25)",
+                borderRadius: 16, padding: "20px 14px", cursor: checkoutLoading ? "wait" : "pointer",
+                textAlign: "center", transition: "all 0.2s", fontFamily: "inherit",
+              }}
+                onMouseEnter={e => { if (!checkoutLoading) e.currentTarget.style.background = "rgba(139,92,246,0.15)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(139,92,246,0.08)"; }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Pro mesečno</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 4 }}>{proPrice}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>/ mesec</div>
+                <div style={{
+                  padding: "10px", borderRadius: 10, border: "none",
+                  background: checkoutLoading === "monthly" ? "rgba(139,92,246,0.5)" : "linear-gradient(135deg,#7C3AED,#6366F1)",
+                  color: "#fff", fontSize: 13, fontWeight: 700,
+                }}>
+                  {checkoutLoading === "monthly" ? "..." : "Odaberi →"}
+                </div>
+              </button>
+
+              {/* 3-mesečni */}
+              <button onClick={() => handleTrialCheckout("3m")} disabled={checkoutLoading !== null} style={{
+                background: "rgba(139,92,246,0.12)", border: "2px solid rgba(139,92,246,0.5)",
+                borderRadius: 16, padding: "20px 14px", cursor: checkoutLoading ? "wait" : "pointer",
+                textAlign: "center", transition: "all 0.2s", fontFamily: "inherit", position: "relative",
+              }}
+                onMouseEnter={e => { if (!checkoutLoading) e.currentTarget.style.background = "rgba(139,92,246,0.2)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(139,92,246,0.12)"; }}
+              >
+                <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, whiteSpace: "nowrap" }}>
+                  NAJPOPULARNIJE
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Pro 3 meseca</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 4 }}>{pro3Price}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>/ 3 meseca</div>
+                <div style={{
+                  padding: "10px", borderRadius: 10, border: "none",
+                  background: checkoutLoading === "3m" ? "rgba(139,92,246,0.5)" : "linear-gradient(135deg,#7C3AED,#6366F1)",
+                  color: "#fff", fontSize: 13, fontWeight: 700,
+                }}>
+                  {checkoutLoading === "3m" ? "..." : "Odaberi →"}
+                </div>
+              </button>
+            </div>
+
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+              Sigurno plaćanje • Otkaži bilo kad
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Bug report modal ── */}
       {showBugReport && (
