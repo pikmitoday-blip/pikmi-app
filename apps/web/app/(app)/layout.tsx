@@ -653,6 +653,18 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
       <main className="main-content">
         {children}
+        {/* Mobile bug report trigger — na kraju dashboard stranice */}
+        {path === "/dashboard" && (
+          <div className="mobile-only" style={{ padding: "4px 0 8px", textAlign: "center" }}>
+            <button onClick={() => { setShowBugReport(true); setBugSent(false); }} style={{
+              background: "none", border: "none", padding: "6px 10px",
+              color: "rgba(167,139,250,0.5)", fontSize: 12, fontWeight: 500,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>
+              🐛 prijavi bag
+            </button>
+          </div>
+        )}
       </main>
 
       {/* ── Sva obaveštenja — modal ── */}
@@ -712,19 +724,6 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ── Mobile bug report trigger (vidljivo samo na /dashboard) ── */}
-      {path === "/dashboard" && (
-        <div className="mobile-only" style={{ padding: "0 20px 12px", textAlign: "center" }}>
-          <button onClick={() => { setShowBugReport(true); setBugSent(false); }} style={{
-            background: "none", border: "none", padding: "6px 10px",
-            color: "rgba(167,139,250,0.5)", fontSize: 12, fontWeight: 500,
-            cursor: "pointer", fontFamily: "inherit",
-          }}>
-            🐛 prijavi bag
-          </button>
         </div>
       )}
 
