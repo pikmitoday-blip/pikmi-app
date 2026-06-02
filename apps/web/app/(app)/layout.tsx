@@ -52,6 +52,30 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [showAllNotifs, setShowAllNotifs] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
   const desktopBellRef = useRef<HTMLDivElement>(null);
+  const [showBugReport, setShowBugReport] = useState(false);
+  const [bugMsg,        setBugMsg]        = useState("");
+  const [bugSending,    setBugSending]    = useState(false);
+  const [bugSent,       setBugSent]       = useState(false);
+
+  async function sendBugReport() {
+    if (!bugMsg.trim() || bugSending) return;
+    setBugSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch("/api/bug-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ message: bugMsg }),
+      });
+      setBugSent(true);
+      setBugMsg("");
+      setTimeout(() => { setShowBugReport(false); setBugSent(false); }, 2000);
+    } catch {}
+    setBugSending(false);
+  }
 
   // Zatvori bell dropdown klikom van njega
   useEffect(() => {
@@ -311,6 +335,20 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="sidebar-footer" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+
+          {/* Bug report — iznad bell-a */}
+          <button onClick={() => { setShowBugReport(true); setBugSent(false); }} style={{
+            width: "100%", padding: "8px 12px", borderRadius: 10,
+            background: "transparent", border: "none",
+            color: "rgba(167,139,250,0.5)", fontSize: 12, fontWeight: 500,
+            cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+            transition: "color 0.15s",
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = "rgba(167,139,250,0.85)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(167,139,250,0.5)")}
+          >
+            🙏 prijavi bag ako ga pronađeš
+          </button>
 
           {/* Desktop bell — na vrhu footer-a */}
           <div ref={desktopBellRef} style={{ position: "relative" }}>
@@ -677,6 +715,19 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
+      {/* ── Mobile bug report trigger (vidljivo samo na /dashboard) ── */}
+      {path === "/dashboard" && (
+        <div className="mobile-only" style={{ padding: "0 20px 12px", textAlign: "center" }}>
+          <button onClick={() => { setShowBugReport(true); setBugSent(false); }} style={{
+            background: "none", border: "none", padding: "6px 10px",
+            color: "rgba(167,139,250,0.5)", fontSize: 12, fontWeight: 500,
+            cursor: "pointer", fontFamily: "inherit",
+          }}>
+            🙏 prijavi bag ako ga pronađeš
+          </button>
+        </div>
+      )}
+
       {/* ── Mobile bottom nav ── */}
       <nav className="mobile-nav">
         {mobileLinks.map(l => (
@@ -690,6 +741,76 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </Link>
         ))}
       </nav>
+
+      {/* ── Bug report modal ── */}
+      {showBugReport && (
+        <div onClick={e => { if (e.target === e.currentTarget) setShowBugReport(false); }} style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, padding: 20,
+        }}>
+          <div style={{
+            width: "100%", maxWidth: 420,
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 20, padding: 28,
+            boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "var(--text1)" }}>🐛 Prijavi bag</h3>
+              <button onClick={() => setShowBugReport(false)} style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: "var(--hover)", border: "none",
+                color: "var(--text3)", fontSize: 16, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>×</button>
+            </div>
+
+            {bugSent ? (
+              <div style={{ textAlign: "center", padding: "20px 0" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <p style={{ margin: 0, color: "var(--text2)", fontSize: 14 }}>Hvala! Primili smo tvoj report.</p>
+              </div>
+            ) : (
+              <>
+                <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text3)", lineHeight: 1.5 }}>
+                  Opiši šta se desilo — gdje, šta si radio i šta je pošlo po krivu.
+                </p>
+                <textarea
+                  autoFocus
+                  rows={5}
+                  value={bugMsg}
+                  onChange={e => setBugMsg(e.target.value)}
+                  placeholder="npr. Kada kliknem na dugme 'Sačuvaj' na Moj profil ništa se ne desi..."
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    padding: "12px 14px", borderRadius: 12,
+                    background: "var(--hover)", border: "1px solid var(--border)",
+                    color: "var(--text1)", fontSize: 13, fontFamily: "inherit",
+                    resize: "vertical", outline: "none", lineHeight: 1.6,
+                  }}
+                />
+                <button
+                  onClick={sendBugReport}
+                  disabled={!bugMsg.trim() || bugSending}
+                  style={{
+                    width: "100%", marginTop: 14, padding: "13px",
+                    borderRadius: 12, border: "none",
+                    background: bugMsg.trim() && !bugSending
+                      ? "linear-gradient(135deg,#7C3AED,#6366F1)"
+                      : "rgba(255,255,255,0.06)",
+                    color: bugMsg.trim() && !bugSending ? "#fff" : "rgba(255,255,255,0.25)",
+                    fontSize: 14, fontWeight: 700, cursor: bugMsg.trim() && !bugSending ? "pointer" : "not-allowed",
+                    fontFamily: "inherit", transition: "all 0.2s",
+                    boxShadow: bugMsg.trim() && !bugSending ? "0 4px 20px rgba(124,58,237,0.35)" : "none",
+                  }}
+                >
+                  {bugSending ? "Slanje..." : "Pošalji report →"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
