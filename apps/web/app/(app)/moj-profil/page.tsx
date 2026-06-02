@@ -314,7 +314,7 @@ export default function MojProfil() {
 
         {/* Godine iskustva */}
         <label style={LBL}>GODINE ISKUSTVA</label>
-        <input style={INP} value={(draft as any).yearsExperience ?? ""} onChange={e => setD("yearsExperience" as any, e.target.value)} placeholder="npr. 3+ godine, 5 godina..." />
+        <input style={INP} value={(draft as any).yearsExperience ?? ""} onChange={e => setD("yearsExperience" as any, e.target.value)} placeholder="npr. 5" type="text" />
 
         <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
       </div>
@@ -347,7 +347,7 @@ export default function MojProfil() {
           {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
           {(p as any).yearsExperience && (
             <p style={{ margin: "6px 0 0", fontSize: 11, color: C.accent, fontWeight: 600 }}>
-              {(p as any).yearsExperience} godina iskustva
+              {String((p as any).yearsExperience).replace(/\s*godin.*/i, "").trim()} godina iskustva
             </p>
           )}
         </div>
@@ -542,12 +542,12 @@ export default function MojProfil() {
                     {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
                       <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 12 }}>
                         <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: C.muted }}>PROJEKAT {i + 1}</p>
-                        <div style={{ height: 80, borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, minHeight: 80, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {draft.csImages?.[i]
                             ? (/\.(mp4|mov|webm|avi)$/i.test(draft.csImages[i])
-                                ? <video src={draft.csImages[i]} muted controls style={{ width: "100%", objectFit: "contain", display: "block", background: "#000", maxHeight: 200 }} />
-                                : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />)
-                            : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Bez fajla</span>
+                                ? <video src={draft.csImages[i]} muted controls style={{ width: "100%", objectFit: "contain", display: "block", background: "#000" }} />
+                                : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "auto", display: "block" }} />)
+                            : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", padding: "28px 0" }}>Bez fajla</span>
                           }
                         </div>
                         <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
