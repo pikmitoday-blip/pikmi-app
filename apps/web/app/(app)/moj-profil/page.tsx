@@ -799,8 +799,8 @@ export default function MojProfil() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                     <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px", flex: 1 }}>
                       {(p.ctaTitle || p.ctaHighlight)
-                        ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}?</>
-                        : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?</>
+                        ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}</>
+                        : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span></>
                       }
                     </h2>
                     <button onClick={() => startEdit("cta")} style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer", lineHeight: 1, flexShrink: 0, marginLeft: 10 }}>✏️</button>

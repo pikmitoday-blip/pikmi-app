@@ -1007,12 +1007,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     {p.ctaTitle}
                     {p.ctaHighlight && (
                       <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>
-                    )}?
+                    )}
                   </>
                 ) : (
                   <>
                     Da napravimo{" "}
-                    tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>?
+                    tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>
                   </>
                 )}
               </h2>
