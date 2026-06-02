@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { pixel } from "../../../lib/pixel";
-import { uploadFile } from "../../../lib/upload";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function generateSlug(s: string): string {
@@ -12,6 +11,7 @@ function generateSlug(s: string): string {
 }
 
 const TOTAL_STEPS = 8;
+const STORAGE_KEY = "pikmi-onboarding-step";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const INP: React.CSSProperties = {
@@ -33,45 +33,43 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState("");
-  const [uploadingFile, setUploadingFile] = useState(false);
 
   // ── Per-step data ─────────────────────────────────────────────────────────
-  // Step 1: portfolio title + desc
+  // Step 1: portfolio title + desc + city + years exp
   const [serviceTitle, setServiceTitle] = useState("");
-  const [serviceDesc, setServiceDesc] = useState("");
+  const [serviceDesc,  setServiceDesc]  = useState("");
+  const [city,         setCity]         = useState("");
+  const [yearsExperience, setYearsExperience] = useState("");
 
   // Step 2: pricing packages
   const [pricing, setPricing] = useState<{ name: string; price: string; desc: string }[]>([
     { name: "", price: "", desc: "" },
   ]);
 
-  // Step 3: portfolio files (upload)
-  const [portfolioFiles, setPortfolioFiles] = useState<{ url: string; name: string; type: "image" | "video" | "document" }[]>([]);
-
-  // Step 4: skills/tools
+  // Step 3: skills/tools
   const [stack, setStack] = useState("");
 
-  // Step 5: previous clients
+  // Step 4: previous clients
   const [clients, setClients] = useState<{ name: string; service: string; desc: string }[]>([
     { name: "", service: "", desc: "" },
   ]);
 
-  // Step 6: testimonials
+  // Step 5: testimonials
   const [testimonials, setTestimonials] = useState<{ name: string; quote: string; title: string }[]>([
     { name: "", quote: "", title: "" },
   ]);
 
-  // Step 7: CTA
-  const [ctaTitle, setCtaTitle] = useState("");
+  // Step 6: CTA
+  const [ctaTitle,     setCtaTitle]     = useState("");
   const [ctaHighlight, setCtaHighlight] = useState("");
 
-  // Step 8: contact + URL
+  // Step 7: contact + URL
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [profileUrl, setProfileUrl] = useState("");
+  const [profileUrl,   setProfileUrl]   = useState("");
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "ok" | "taken">("idle");
 
-  // Load user info on mount
+  // Load user info + restore saved step on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -79,7 +77,20 @@ export default function Onboarding() {
         setContactEmail(session.user.email ?? "");
       }
     });
+    // Restore step from sessionStorage (survives refresh)
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (n >= 1 && n <= TOTAL_STEPS) setStep(n);
+      }
+    } catch {}
   }, []);
+
+  // Persist step on every change
+  useEffect(() => {
+    try { sessionStorage.setItem(STORAGE_KEY, String(step)); } catch {}
+  }, [step]);
 
   // Slug check
   useEffect(() => {
@@ -92,56 +103,42 @@ export default function Onboarding() {
     return () => clearTimeout(t);
   }, [profileUrl]);
 
-  // ── File upload ────────────────────────────────────────────────────────────
-  async function uploadPortfolioFile(file: File) {
-    if (!userId) return;
-    setUploadingFile(true);
-    try {
-      const publicUrl = await uploadFile(file, { folder: userId, filename: `portfolio-${Date.now()}.${file.name.split(".").pop()?.toLowerCase() ?? "bin"}` });
-      const type: "image" | "video" | "document" = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
-      setPortfolioFiles(prev => [...prev, { url: publicUrl, name: file.name, type }]);
-    } catch {}
-    setUploadingFile(false);
-  }
-
   // ── Validation ────────────────────────────────────────────────────────────
   const canNext: Record<number, boolean> = {
     1: !!serviceTitle.trim(),
     2: pricing.some(p => p.name.trim() && p.price.trim()),
-    3: true, // optional
-    4: !!stack.trim(),
-    5: clients.some(c => c.name.trim()),
-    6: true, // optional
-    7: !!ctaTitle.trim(),
-    8: !!profileUrl && slugStatus === "ok" && !!contactEmail.trim(),
+    3: !!stack.trim(),
+    4: clients.some(c => c.name.trim()),
+    5: true, // optional
+    6: !!ctaTitle.trim(),
+    7: !!profileUrl && slugStatus === "ok" && !!contactEmail.trim(),
+    8: true, // final info screen
   };
 
   // ── Save & finish ─────────────────────────────────────────────────────────
   async function finish() {
-    if (!canNext[8] || !userId) return;
+    if (!userId) return;
     setSaving(true);
     try {
-      // Build caseStudies from clients
       const caseStudies = clients.filter(c => c.name.trim()).map(c => ({
-        client: c.name, platform: c.service, industry: c.desc, metric: "", metricLabel: "", bg: "", lightText: true,
+        client: c.name, platform: c.service, industry: c.desc,
+        metric: "", metricLabel: "", bg: "", lightText: true,
       }));
-      // Build testimonials (filter empty)
-      const testiList = testimonials.filter(t => t.name.trim() && t.quote.trim());
-      // Build pricing (filter empty)
+      const testiList   = testimonials.filter(t => t.name.trim() && t.quote.trim());
       const pricingList = pricing.filter(p => p.name.trim() && p.price.trim());
 
       await supabase.from("profiles").update({
         profile_url: profileUrl,
         profile_data: {
           serviceTitle, serviceDesc,
+          city, yearsExperience,
           pricing: pricingList,
-          portfolioFiles,
+          portfolioFiles: [],
           stack,
           caseStudies,
           testimonials: testiList,
           ctaTitle, ctaHighlight,
           contactEmail, contactPhone,
-          // Keep these from existing data
           openStatus: "OTVOREN ZA SARADNJU",
         },
       }).eq("user_id", userId);
@@ -150,37 +147,37 @@ export default function Onboarding() {
         sessionStorage.removeItem("pikmi-sidebar");
         sessionStorage.removeItem("pikmi-dashboard");
         sessionStorage.removeItem("pikmi-moj-profil");
+        sessionStorage.removeItem(STORAGE_KEY);
       } catch {}
 
-      // Meta Pixel: korisnik završio onboarding → počinje trial
       pixel.startTrial();
-      router.push("/dashboard");
+      router.push("/moj-profil");
     } catch (e) {
       console.error(e);
       setSaving(false);
     }
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // ── Step metadata ─────────────────────────────────────────────────────────
   const stepTitles = [
     "Čime se baviš?",
     "Tvoji cenovni paketi",
-    "Prethodni radovi",
     "Veštine i alati",
     "Prethodni klijenti",
     "Testimoniali klijenata",
     "Poziv na akciju",
     "Kontakt i portfolio link",
+    "Sve je spremno!",
   ];
   const stepSubtitles = [
-    "Napiši naslov i opis svog portfolia.",
+    "Napiši naslov, opis, grad i iskustvo.",
     "Dodaj 1–3 paketa sa cenama.",
-    "Dodaj slike, videe ili dokumente svojih radova. (Možeš preskočiti)",
     "Nabroji veštine i alate koje koristiš, odvojeno zarezima.",
     "Navedi klijente sa kojima si radio.",
     "Dodaj recenzije zadovoljnih klijenata.",
     "Napiši poziv na akciju koji će biti na kraju tvog portfolia.",
     "Kako te klijenti mogu kontaktirati i gde će biti tvoj portfolio.",
+    "Tvoj profil je kreiran i spreman za radove.",
   ];
 
   return (
@@ -222,7 +219,7 @@ export default function Onboarding() {
             <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{stepSubtitles[step - 1]}</p>
           </div>
 
-          {/* ── STEP 1: Portfolio title + desc ── */}
+          {/* ── STEP 1: Portfolio title + desc + city + years exp ── */}
           {step === 1 && (
             <div>
               <div style={{ marginBottom: 14 }}>
@@ -231,12 +228,21 @@ export default function Onboarding() {
                   placeholder="npr. Meta & TikTok Ads za e-commerce brendove" autoFocus />
                 <p style={HINT}>Jedna rečenica koja opisuje čime se baviš i za koga.</p>
               </div>
-              <div>
+              <div style={{ marginBottom: 14 }}>
                 <label style={LBL}>Opis usluge</label>
-                <textarea value={serviceDesc} onChange={e => setServiceDesc(e.target.value)} rows={4}
-                  placeholder="npr. Skaliram performance kampanje za D2C brendove na Balkanu i u EU. Specijalizujem se za kreativnu optimizaciju i full-funnel strategiju."
+                <textarea value={serviceDesc} onChange={e => setServiceDesc(e.target.value)} rows={3}
+                  placeholder="npr. Skaliram performance kampanje za D2C brendove na Balkanu i u EU."
                   style={{ ...INP, resize: "none" } as React.CSSProperties} />
-                <p style={HINT}>Kratki opis šta radiš, za koga i kako pomažeš klijentima.</p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={LBL}>Grad</label>
+                  <input style={INP} value={city} onChange={e => setCity(e.target.value)} placeholder="npr. Beograd" />
+                </div>
+                <div>
+                  <label style={LBL}>Godine iskustva</label>
+                  <input style={INP} value={yearsExperience} onChange={e => setYearsExperience(e.target.value)} placeholder="npr. 5" type="number" min="0" max="50" />
+                </div>
               </div>
             </div>
           )}
@@ -281,42 +287,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 3: Portfolio files (optional) ── */}
+          {/* ── STEP 3: Skills ── */}
           {step === 3 && (
-            <div>
-              <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.15)", marginBottom: 16, display: "flex", gap: 10 }}>
-                <span>💡</span>
-                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>Ovaj korak je opcionalan. Možeš preskočiti i dodati radove kasnije iz "Moj profil" sekcije.</p>
-              </div>
-              {portfolioFiles.length > 0 && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10, marginBottom: 14 }}>
-                  {portfolioFiles.map((f, i) => (
-                    <div key={i} style={{ borderRadius: 10, overflow: "hidden", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", position: "relative" }}>
-                      {f.type === "image" && <img src={f.url} alt={f.name} style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />}
-                      {f.type === "video" && <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🎬</div>}
-                      {f.type === "document" && <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📄</div>}
-                      <div style={{ padding: "5px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
-                        <button onClick={() => setPortfolioFiles(prev => prev.filter((_, j) => j !== i))}
-                          style={{ background: "none", border: "none", color: "#F87171", cursor: "pointer", fontSize: 14, padding: 0, flexShrink: 0 }}>×</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label style={{ display: "block", cursor: "pointer" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "16px", borderRadius: 12, border: "2px dashed rgba(139,92,246,0.25)", background: "rgba(139,92,246,0.04)", color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}>
-                  {uploadingFile ? "⏳ Otpremam..." : <><span style={{ fontSize: 20 }}>+</span> Dodaj sliku, video ili dokument</>}
-                </div>
-                <input type="file" accept="image/*,video/*,application/pdf,.pdf" style={{ display: "none" }} disabled={uploadingFile}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadPortfolioFile(f); e.target.value = ""; }} />
-              </label>
-              <p style={{ ...HINT, marginTop: 10 }}>PNG, JPG, MP4, MOV, PDF · Možeš dodati više fajlova</p>
-            </div>
-          )}
-
-          {/* ── STEP 4: Skills ── */}
-          {step === 4 && (
             <div>
               <label style={LBL}>Veštine i alati *</label>
               <textarea value={stack} onChange={e => setStack(e.target.value)} rows={4}
@@ -326,8 +298,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 5: Previous clients ── */}
-          {step === 5 && (
+          {/* ── STEP 4: Previous clients ── */}
+          {step === 4 && (
             <div>
               <p style={{ ...HINT, marginBottom: 14 }}>Navedi klijente sa kojima si radio. Ovi podaci popunjavaju sekciju "Radovi" na tvom portfoliu.</p>
               {clients.map((c, i) => (
@@ -364,8 +336,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 6: Testimonials ── */}
-          {step === 6 && (
+          {/* ── STEP 5: Testimonials ── */}
+          {step === 5 && (
             <div>
               <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.15)", marginBottom: 14, display: "flex", gap: 10 }}>
                 <span>💡</span>
@@ -409,8 +381,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 7: CTA ── */}
-          {step === 7 && (
+          {/* ── STEP 6: CTA ── */}
+          {step === 6 && (
             <div>
               <div style={{ marginBottom: 14 }}>
                 <label style={LBL}>Poziv na akciju *</label>
@@ -420,22 +392,22 @@ export default function Onboarding() {
               </div>
               <div>
                 <label style={LBL}>Istaknuta reč (ljubičasto)</label>
-                <input style={INP} value={ctaHighlight} onChange={e => setCtaHighlight(e.target.value)} placeholder="npr. tvoj sledeći hit" />
-                <p style={HINT}>Ova reč/fraza će biti istaknuta ljubičastom bojom.</p>
+                <input style={INP} value={ctaHighlight} onChange={e => setCtaHighlight(e.target.value)} placeholder="npr. tvoj sledeći projekat" />
+                <p style={HINT}>Ova reč/fraza će biti istaknuta ljubičastom bojom. Dodaj upitnik na kraju ako želiš.</p>
               </div>
               {(ctaTitle || ctaHighlight) && (
                 <div style={{ marginTop: 16, padding: "14px 16px", borderRadius: 12, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)" }}>
                   <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>Pregled:</p>
                   <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#fff" }}>
-                    {ctaTitle} <span style={{ color: "#A855F7" }}>{ctaHighlight}</span>?
+                    {ctaTitle}{ctaTitle && ctaHighlight ? " " : ""}<span style={{ color: "#A855F7" }}>{ctaHighlight}</span>
                   </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* ── STEP 8: Contact + URL ── */}
-          {step === 8 && (
+          {/* ── STEP 7: Contact + URL ── */}
+          {step === 7 && (
             <div>
               <div style={{ marginBottom: 14 }}>
                 <label style={LBL}>Email adresa *</label>
@@ -457,11 +429,31 @@ export default function Onboarding() {
                     onChange={e => setProfileUrl(generateSlug(e.target.value))}
                     placeholder="tvoje-ime" />
                 </div>
-                <p style={{ ...HINT, marginTop: 6, color: slugStatus === "ok" ? "#4ADE80" : slugStatus === "taken" ? "#F87171" : slugStatus === "checking" ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.3)" }}>
-                  {slugStatus === "ok" && "✓ URL je slobodan!"}
-                  {slugStatus === "taken" && "✗ Ovaj URL je već zauzet — pokušaj drugi."}
+                <p style={{ ...HINT, marginTop: 6, color: slugStatus === "ok" ? "#4ADE80" : slugStatus === "taken" ? "#F87171" : "rgba(255,255,255,0.3)" }}>
+                  {slugStatus === "ok"       && "✓ URL je slobodan!"}
+                  {slugStatus === "taken"    && "✗ Ovaj URL je već zauzet — pokušaj drugi."}
                   {slugStatus === "checking" && "Proveravam dostupnost..."}
-                  {slugStatus === "idle" && "Ovaj URL možeš promeniti kasnije u podešavanjima."}
+                  {slugStatus === "idle"     && "Ovaj URL možeš promeniti kasnije u podešavanjima."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 8: Final info screen ── */}
+          {step === 8 && (
+            <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
+              <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
+              <h3 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 800, color: "#fff" }}>
+                Profil je kreiran!
+              </h3>
+              <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>
+                Bićeš preusmjeren na portfolio gdje možeš da uploaduješ svoje prethodne radove.
+              </p>
+              <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", textAlign: "left" }}>
+                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
+                  📸 Dodaj slike i videe svojih radova<br />
+                  🔗 Podijeli portfolio link sa klijentima<br />
+                  📊 Prati ko gleda tvoj profil
                 </p>
               </div>
             </div>
@@ -477,13 +469,13 @@ export default function Onboarding() {
 
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               {/* Skip button for optional steps */}
-              {(step === 3 || step === 6) && (
+              {step === 5 && (
                 <button onClick={() => setStep(s => s + 1)} style={{ padding: "11px 18px", borderRadius: 12, background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
                   Preskoči
                 </button>
               )}
 
-              {step < TOTAL_STEPS ? (
+              {step < 7 ? (
                 <button onClick={() => setStep(s => s + 1)} disabled={!canNext[step]} style={{
                   padding: "12px 28px", borderRadius: 12, border: "none",
                   background: canNext[step] ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
@@ -494,17 +486,70 @@ export default function Onboarding() {
                 }}>
                   Dalje →
                 </button>
-              ) : (
-                <button onClick={finish} disabled={!canNext[8] || saving} style={{
+              ) : step === 7 ? (
+                // Step 7: save and go to final screen
+                <button onClick={async () => {
+                  if (!canNext[7] || !userId) return;
+                  setSaving(true);
+                  try {
+                    const caseStudies = clients.filter(c => c.name.trim()).map(c => ({
+                      client: c.name, platform: c.service, industry: c.desc,
+                      metric: "", metricLabel: "", bg: "", lightText: true,
+                    }));
+                    const testiList   = testimonials.filter(t => t.name.trim() && t.quote.trim());
+                    const pricingList = pricing.filter(p => p.name.trim() && p.price.trim());
+                    await supabase.from("profiles").update({
+                      profile_url: profileUrl,
+                      profile_data: {
+                        serviceTitle, serviceDesc,
+                        city, yearsExperience,
+                        pricing: pricingList,
+                        portfolioFiles: [],
+                        stack,
+                        caseStudies,
+                        testimonials: testiList,
+                        ctaTitle, ctaHighlight,
+                        contactEmail, contactPhone,
+                        openStatus: "OTVOREN ZA SARADNJU",
+                      },
+                    }).eq("user_id", userId);
+                    try {
+                      sessionStorage.removeItem("pikmi-sidebar");
+                      sessionStorage.removeItem("pikmi-dashboard");
+                      sessionStorage.removeItem("pikmi-moj-profil");
+                    } catch {}
+                    pixel.startTrial();
+                    setSaving(false);
+                    setStep(8);
+                  } catch (e) {
+                    console.error(e);
+                    setSaving(false);
+                  }
+                }} disabled={!canNext[7] || saving} style={{
                   padding: "12px 28px", borderRadius: 12, border: "none",
-                  background: (canNext[8] && !saving) ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
-                  color: (canNext[8] && !saving) ? "#fff" : "rgba(255,255,255,0.2)",
+                  background: (canNext[7] && !saving) ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
+                  color: (canNext[7] && !saving) ? "#fff" : "rgba(255,255,255,0.2)",
                   fontSize: 14, fontWeight: 700,
-                  cursor: (canNext[8] && !saving) ? "pointer" : "not-allowed",
-                  fontFamily: "inherit", boxShadow: (canNext[8] && !saving) ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
+                  cursor: (canNext[7] && !saving) ? "pointer" : "not-allowed",
+                  fontFamily: "inherit",
+                  boxShadow: (canNext[7] && !saving) ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
                   transition: "all 0.2s",
                 }}>
-                  {saving ? "Čuvanje..." : "Završi i otvori profil →"}
+                  {saving ? "Čuvanje..." : "Dalje →"}
+                </button>
+              ) : (
+                // Step 8: go to moj-profil
+                <button onClick={() => {
+                  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+                  router.push("/moj-profil");
+                }} style={{
+                  padding: "12px 28px", borderRadius: 12, border: "none",
+                  background: "linear-gradient(135deg,#7C3AED,#6366F1)",
+                  color: "#fff", fontSize: 14, fontWeight: 700,
+                  cursor: "pointer", fontFamily: "inherit",
+                  boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
+                }}>
+                  Idi na portfolio →
                 </button>
               )}
             </div>
