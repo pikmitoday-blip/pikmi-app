@@ -580,13 +580,17 @@ export default function MojProfil() {
                       <div className="pp-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                         {csSlots.map(i => {
                           const img = p.csImages?.[i];
+                          const cs  = p.caseStudies?.[i];
                           return (
                             <div key={i}>
                               {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
-                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: 14, display: "block", background: "#000", maxHeight: 160, objectFit: "contain" }} />
+                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: 14, display: "block", background: "#000", objectFit: "contain" }} />
                               ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
                               )}
+                              {cs?.client && <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 600, color: C.text }}>{cs.client}</p>}
+                              {cs?.platform && <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>{cs.platform}</p>}
                             </div>
                           );
                         })}

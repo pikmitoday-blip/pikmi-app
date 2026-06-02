@@ -599,8 +599,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   ].filter(m => m.value);
 
   const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !!p.csImages?.[i]);
-  // Svi klijenti idu u "Prethodno iskustvo"
-  const iskustvoItems = (p.caseStudies ?? []).filter(cs => cs.client);
+  // Klijenti bez uploadovanog fajla idu u "Prethodno iskustvo"
+  const iskustvoItems = (p.caseStudies ?? []).filter((cs, i) => cs.client && !p.csImages?.[i]);
 
   return (
     <div style={{
