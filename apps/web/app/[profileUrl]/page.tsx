@@ -825,6 +825,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                   {csSlots.map(i => {
                     const img = p.csImages?.[i];
+                    const cs  = p.caseStudies?.[i];
                     return (
                       <div key={i}>
                         {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
@@ -832,6 +833,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
+                        )}
+                        {cs?.client && (
+                          <p style={{ margin: "6px 0 0", fontSize: 12, fontWeight: 600, color: C.text }}>{cs.client}</p>
+                        )}
+                        {cs?.platform && (
+                          <p style={{ margin: "2px 0 0", fontSize: 11, color: C.muted }}>{cs.platform}</p>
                         )}
                       </div>
                     );
