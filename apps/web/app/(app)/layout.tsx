@@ -751,16 +751,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         }}>
           <div style={{
             width: "100%", maxWidth: 420,
-            background: "var(--card)", border: "1px solid var(--border)",
+            background: "#1A1A2E", border: "1px solid rgba(139,92,246,0.2)",
             borderRadius: 20, padding: 28,
-            boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.8)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "var(--text1)" }}>🐛 Prijavi bag</h3>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#fff" }}>🐛 Prijavi bag</h3>
               <button onClick={() => setShowBugReport(false)} style={{
                 width: 28, height: 28, borderRadius: "50%",
-                background: "var(--hover)", border: "none",
-                color: "var(--text3)", fontSize: 16, cursor: "pointer",
+                background: "rgba(255,255,255,0.08)", border: "none",
+                color: "rgba(255,255,255,0.5)", fontSize: 16, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>×</button>
             </div>
@@ -772,7 +772,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
               </div>
             ) : (
               <>
-                <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--text3)", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 14px", fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
                   Opiši šta se desilo — gdje, šta si radio i šta je pošlo po krivu.
                 </p>
                 <textarea
@@ -784,8 +784,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
                   style={{
                     width: "100%", boxSizing: "border-box",
                     padding: "12px 14px", borderRadius: 12,
-                    background: "var(--hover)", border: "1px solid var(--border)",
-                    color: "var(--text1)", fontSize: 13, fontFamily: "inherit",
+                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(139,92,246,0.2)",
+                    color: "#fff", fontSize: 13, fontFamily: "inherit",
                     resize: "vertical", outline: "none", lineHeight: 1.6,
                   }}
                 />
