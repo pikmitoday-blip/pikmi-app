@@ -89,14 +89,14 @@ export default async function PrivatnostPage() {
       </div>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "28px 24px", position: "relative" }}>
+      <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "28px 24px" }}>
         <style>{`@media(max-width:640px){.pf-footer{flex-direction:column!important;align-items:center!important;text-align:center!important;}}`}</style>
         <div className="pf-footer" style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/pikmilogo.jpg" alt="pikmi" width={24} height={24} style={{ objectFit: "contain", display: "block" }} />
             <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>pikmi</span>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>© 2026 pikmi. Sva prava zadržana.</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", flex: 1, textAlign: "center" }}>© 2026 pikmi. Sva prava zadržana.</div>
           <div style={{ display: "flex", gap: 20 }}>
             <Link href="/uslovi"     style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Uslovi korišćenja</Link>
             <Link href="/privatnost" style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Politika privatnosti</Link>
