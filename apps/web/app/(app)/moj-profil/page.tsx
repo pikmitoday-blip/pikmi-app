@@ -78,7 +78,8 @@ const DEFAULT_PROFILE: Profile = {
 };
 
 function getCached(): Profile | null {
-  try { const c = sessionStorage.getItem("pikmi-moj-profil"); if (c) return JSON.parse(c); } catch {}
+  // Ne koristi cache — uvijek učitaj svježe iz baze da ne bi
+  // pokazivali tuđe podatke kada se drugi korisnik uloguje
   return null;
 }
 
@@ -139,7 +140,7 @@ export default function MojProfil() {
   const [profileUrl, setProfileUrl] = useState<string>(() => {
     try { return sessionStorage.getItem("pikmi-profile-url") ?? ""; } catch { return ""; }
   });
-  const [loading, setLoading] = useState(!getCached());
+  const [loading, setLoading] = useState(true);
   const [editSection, setEditSection] = useState<string | null>(null);
   const [draft, setDraft] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
