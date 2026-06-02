@@ -56,6 +56,10 @@ const CS_GRADIENTS = [
   "linear-gradient(135deg,#EC4899,#7C3AED)",
   "linear-gradient(135deg,#3B82F6,#0B0F19)",
   "linear-gradient(135deg,#7C3AED,#EC4899)",
+  "linear-gradient(135deg,#6366F1,#EC4899)",
+  "linear-gradient(135deg,#A855F7,#3B82F6)",
+  "linear-gradient(135deg,#EC4899,#6366F1)",
+  "linear-gradient(135deg,#3B82F6,#7C3AED)",
 ];
 
 const DEFAULT_PROFILE: Profile = {
