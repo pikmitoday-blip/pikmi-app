@@ -140,7 +140,8 @@ export default async function Home() {
           section { padding-left: 16px !important; padding-right: 16px !important; padding-top: 40px !important; padding-bottom: 40px !important; }
           nav { padding-left: 16px !important; padding-right: 16px !important; }
           footer { padding: 24px 16px !important; }
-          footer > div { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; }
+          .footer-inner { grid-template-columns: 1fr !important; justify-items: center !important; text-align: center !important; gap: 12px !important; }
+          .footer-inner > div:last-child { justify-content: center !important; }
         }
       `}</style>
 
@@ -425,13 +426,13 @@ export default async function Home() {
 
       {/* ══ FOOTER ══ */}
       <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "32px 48px" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div className="footer-inner" style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <img src="/pikmilogo.jpg" alt="pikmi" width={24} height={24} style={{ objectFit: "contain", display: "block" }} />
             <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>pikmi</span>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", flex: 1, textAlign: "center" }}>{footerCopy}</div>
-          <div style={{ display: "flex", gap: 20 }}>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textAlign: "center" }}>{footerCopy}</div>
+          <div style={{ display: "flex", gap: 20, justifyContent: "flex-end" }}>
             <Link href="/uslovi"     style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Uslovi korišćenja</Link>
             <Link href="/privatnost" style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", textDecoration: "none" }}>Politika privatnosti</Link>
           </div>
