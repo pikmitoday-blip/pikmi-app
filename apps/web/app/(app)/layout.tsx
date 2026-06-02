@@ -347,7 +347,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             onMouseEnter={e => (e.currentTarget.style.color = "rgba(167,139,250,0.85)")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(167,139,250,0.5)")}
           >
-            🙏 prijavi bag ako ga pronađeš
+            🐛 prijavi bag
           </button>
 
           {/* Desktop bell — na vrhu footer-a */}
@@ -723,7 +723,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             color: "rgba(167,139,250,0.5)", fontSize: 12, fontWeight: 500,
             cursor: "pointer", fontFamily: "inherit",
           }}>
-            🙏 prijavi bag ako ga pronađeš
+            🐛 prijavi bag
           </button>
         </div>
       )}
