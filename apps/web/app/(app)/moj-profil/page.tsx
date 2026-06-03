@@ -547,6 +547,11 @@ export default function MojProfil() {
                           {draft.csImages?.[i]
                             ? (/\.(mp4|mov|webm|avi)$/i.test(draft.csImages[i])
                                 ? <video src={draft.csImages[i]} muted controls style={{ width: "100%", objectFit: "contain", display: "block", background: "#000" }} />
+                                : /\.(pdf|doc|docx)$/i.test(draft.csImages[i])
+                                ? <div style={{ padding: "18px 10px", textAlign: "center" }}>
+                                    <div style={{ fontSize: 32, marginBottom: 4 }}>{/\.pdf$/i.test(draft.csImages[i]) ? "📄" : "📝"}</div>
+                                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{/\.pdf$/i.test(draft.csImages[i]) ? "PDF" : "Word"}</div>
+                                  </div>
                                 : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "auto", display: "block" }} />)
                             : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", padding: "28px 0" }}>Bez fajla</span>
                           }
@@ -554,7 +559,7 @@ export default function MojProfil() {
                         <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
                           <label style={{ padding: "5px 10px", background: C.accentLight, color: C.accent, borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
                             {uploading === i ? "..." : "Dodaj fajl"}
-                            <input type="file" accept="image/*,video/*,application/pdf,.pdf,.mp4,.mov,.webm" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
+                            <input type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.mp4,.mov,.webm" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) uploadImage(i, e.target.files[0]); }} />
                           </label>
                           {draft.csImages?.[i] && (
                             <button onClick={() => { const imgs = [...(draft.csImages ?? ["","","",""])]; imgs[i] = ""; setDraft(prev => prev ? { ...prev, csImages: imgs } : null); }}

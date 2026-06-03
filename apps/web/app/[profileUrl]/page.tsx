@@ -826,10 +826,23 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   {csSlots.map(i => {
                     const img = p.csImages?.[i];
                     const cs  = p.caseStudies?.[i];
+                    const isVideo = img && /\.(mp4|mov|webm|avi)$/i.test(img);
+                    const isDoc   = img && /\.(pdf|doc|docx)$/i.test(img);
+                    const isPdf   = img && /\.pdf$/i.test(img);
                     return (
                       <div key={i}>
-                        {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
+                        {isVideo ? (
                           <VideoPlayer src={img} />
+                        ) : isDoc ? (
+                          <button onClick={() => setDocPreview(img)} style={{
+                            width: "100%", background: C.accentLight, border: `1px solid ${C.border}`,
+                            borderRadius: 14, padding: "24px 16px", cursor: "pointer",
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                          }}>
+                            <span style={{ fontSize: 40 }}>{isPdf ? "📄" : "📝"}</span>
+                            <span style={{ fontSize: 12, color: C.accent, fontWeight: 700 }}>{isPdf ? "PDF dokument" : "Word dokument"}</span>
+                            <span style={{ fontSize: 11, color: C.muted }}>Klikni za pregled</span>
+                          </button>
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
@@ -1048,10 +1061,12 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>×</button>
           </div>
-          {/* PDF iframe */}
+          {/* Dokument viewer */}
           <div style={{ width: "100%", maxWidth: 860, flex: 1, maxHeight: "80vh", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
             <iframe
-              src={`${docPreview}#toolbar=0`}
+              src={/\.(doc|docx)$/i.test(docPreview ?? "")
+                ? `https://docs.google.com/viewer?url=${encodeURIComponent(docPreview!)}&embedded=true`
+                : `${docPreview}#toolbar=0`}
               style={{ width: "100%", height: "100%", border: "none", minHeight: "70vh" }}
               title="Dokument"
             />
