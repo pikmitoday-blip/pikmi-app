@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
+import { THEMES, BLOCK_STYLES, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ interface Profile {
   experience?: ExperienceItem[];
   ctaTitle: string; ctaHighlight: string; ctaBtn1: string; ctaBtn2: string;
   pdfUrl?: string;
+  portfolioAppearance?: { templateId: number; blockStyle: BlockStyleId };
 }
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
@@ -802,6 +804,99 @@ export default function MojProfil() {
                   })()}
                 </>
               )}
+            </div>
+
+            {/* ── Izgled (tema + oblik blokova) ── */}
+            <SectionSep />
+            <div className="pp-right-section" style={{ padding: "20px 20px" }}>
+              {(() => {
+                const app = (p as any).portfolioAppearance as PortfolioAppearance | undefined;
+                const currentTpl  = app?.templateId  ?? 33;
+                const currentBlk  = app?.blockStyle   ?? "default";
+                const categories = [
+                  { key: "soft",    label: "🌸 Soft" },
+                  { key: "dark",    label: "🌑 Dark" },
+                  { key: "bold",    label: "⚡ Bold" },
+                  { key: "neutral", label: "🤍 Neutral" },
+                  { key: "special", label: "✨ Special" },
+                ];
+
+                async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
+                  if (!p) return;
+                  const newApp: PortfolioAppearance = { templateId, blockStyle };
+                  const updated = { ...p, portfolioAppearance: newApp } as any;
+                  setP(updated);
+                  try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
+                  await supabase.from("profiles").upsert({
+                    user_id: userId,
+                    profile_data: updated,
+                  }, { onConflict: "user_id" });
+                }
+
+                return (
+                  <div>
+                    <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Izgled portfolia</p>
+
+                    {/* Block shape picker */}
+                    <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                      {BLOCK_STYLES.map(bs => (
+                        <button
+                          key={bs.id}
+                          onClick={() => applyTheme(currentTpl, bs.id)}
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: bs.previewRadius,
+                            border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
+                            background: currentBlk === bs.id ? C.accentLight : "#fff",
+                            color: currentBlk === bs.id ? C.accent : C.dark,
+                            fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {bs.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Template picker by category */}
+                    {categories.map(cat => (
+                      <div key={cat.key} style={{ marginBottom: 16 }}>
+                        <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>{cat.label}</p>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {THEMES.filter(t => t.category === cat.key).map(t => (
+                            <button
+                              key={t.id}
+                              title={t.name}
+                              onClick={() => applyTheme(t.id, currentBlk)}
+                              style={{
+                                width: 44, height: 44,
+                                borderRadius: 12,
+                                background: t.bg,
+                                border: currentTpl === t.id ? `3px solid ${C.accent}` : "2px solid rgba(0,0,0,0.08)",
+                                cursor: "pointer",
+                                position: "relative",
+                                flexShrink: 0,
+                                boxShadow: currentTpl === t.id ? `0 0 0 2px ${C.accentLight}` : "none",
+                                transition: "transform 0.12s",
+                              }}
+                              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.1)")}
+                              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                            >
+                              {currentTpl === t.id && (
+                                <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✓</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <p style={{ margin: "4px 0 0", fontSize: 11, color: C.muted }}>
+                      Promjene se odmah primjenjuju na tvoj portfolio.
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* CTA / Kontakt */}

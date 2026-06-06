@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, type BlockStyleId } from "../../lib/themes";
 
 // ── Custom video player (no download, adaptive ratio, play/pause + mute) ─────
 function VideoPlayer({ src }: { src: string }) {
@@ -144,21 +145,20 @@ interface Profile {
   contactPhone?: string;
 }
 
-// ─── Design tokens (iz HTML reference-a) ────────────────────────────────────
-
+// ─── Default light tokens — used by ContactModal & loading states ────────────
 const C = {
-  accent:       "#7C3AED",
-  accentLight:  "#F5F1FE",
-  accentMuted:  "#A78BFA",
-  dark:         "#0B0F19",
-  text:         "#374151",
-  muted:        "#6B7280",
-  border:       "#E5E7EB",
-  divider:      "#F3F4F6",
-  sectionBg:    "#FAFAFB",
-  tagGrayBg:    "#F3F4F6",
-  tagGrayText:  "#374151",
-  green:        "#22C55E",
+  accent:      "#7C3AED",
+  accentLight: "#F5F1FE",
+  accentMuted: "#A78BFA",
+  dark:        "#0B0F19",
+  text:        "#374151",
+  muted:       "#6B7280",
+  border:      "#E5E7EB",
+  divider:     "#F3F4F6",
+  sectionBg:   "#FAFAFB",
+  tagGrayBg:   "#F3F4F6",
+  tagGrayText: "#374151",
+  green:       "#22C55E",
 };
 
 const CS_GRADIENTS = [
@@ -551,6 +551,28 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
     loadProfile();
   }, [params.profileUrl]);
 
+  // ─── Theme tokens (computed defensively; profile may be null) ────────────────
+  const appearance = (profile as any)?.portfolioAppearance as { templateId?: number; blockStyle?: BlockStyleId } | undefined;
+  const activeTheme = getTheme(appearance?.templateId ?? DEFAULT_THEME_ID);
+  const bStyle      = appearance?.blockStyle ?? DEFAULT_BLOCK_STYLE;
+  const TK          = themeTokens(activeTheme, bStyle);
+
+  // Local themed C — shadows the module-level light C inside this component
+  const C = {
+    accent:      TK.accent,
+    accentLight: TK.accentBg,
+    accentMuted: TK.accent,
+    dark:        TK.textPrimary,
+    text:        TK.textSecond,
+    muted:       TK.textMuted,
+    border:      TK.blockBorder,
+    divider:     TK.divider,
+    sectionBg:   TK.sectionBg,
+    tagGrayBg:   TK.tagBg,
+    tagGrayText: TK.tagText,
+    green:       "#22C55E",
+  };
+
   // ─── Loading ─────────────────────────────────────────────────────────────────
   if (loading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F7F7F9" }}>
@@ -589,6 +611,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
   // ─── Render ──────────────────────────────────────────────────────────────────
   const p = profile;
+
   const stackTags = p.stack ? p.stack.split(",").map(s => s.trim()).filter(Boolean) : [];
   const fullName = `${p.firstName} ${p.lastName}`.trim();
 
@@ -604,43 +627,61 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
   return (
     <div style={{
-      background: "#F7F7F9",
+      background: TK.pageBg,
+      backgroundAttachment: "fixed",
       minHeight: "100vh",
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      color: C.dark,
+      color: TK.textPrimary,
     }}>
       {/* ── Responsive CSS ── */}
       <style>{`
-        .pf-card { width:100%; max-width:480px; background:#fff; min-height:100vh; overflow:hidden; }
+        .pf-card { width:100%; max-width:480px; min-height:100vh; overflow:hidden; }
+        @media (max-width: 768px) {
+          .pf-card { background: transparent; padding: 12px 0 40px; display: flex; flex-direction: column; gap: 10px; }
+          /* Profile block + each section becomes its own card */
+          .pf-block-mobile, .pf-sec {
+            background: ${TK.blockBg};
+            border: 1px solid ${TK.blockBorder};
+            box-shadow: ${TK.blockShadow};
+            border-radius: ${TK.blockRadius}px;
+            margin: 0 12px;
+            overflow: hidden;
+          }
+          .pf-right { display: flex; flex-direction: column; gap: 10px; }
+          .pf-section-sep { display: none; }
+          ${bStyle === "glass" ? `.pf-block-mobile, .pf-sec { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }` : ""}
+        }
         .pf-grid { display:block; }
         .pf-left { }
         .pf-right { }
-        .pf-section-sep { border-top: 6px solid ${C.sectionBg}; }
+        .pf-section-sep { border-top: 6px solid ${TK.divider}; }
         @media (min-width: 769px) {
           .pf-card {
             max-width: 1060px;
             margin: 0 auto;
             border-radius: 24px;
-            box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+            box-shadow: 0 8px 60px rgba(0,0,0,0.18);
             overflow: hidden;
           }
+          .pf-block { margin: 0; border-radius: 0; border: none; box-shadow: none; background: transparent; }
           .pf-grid {
             display: grid;
             grid-template-columns: 300px 1fr;
             align-items: start;
-            min-height: calc(100vh - 56px);
+            min-height: 100vh;
           }
           .pf-left {
-            border-right: 1px solid ${C.divider};
+            border-right: 1px solid ${TK.divider};
             position: sticky;
-            top: 56px;
-            max-height: calc(100vh - 56px);
+            top: 0;
+            max-height: 100vh;
             overflow-y: auto;
             scrollbar-width: none;
+            background: ${TK.blockBg};
           }
           .pf-left::-webkit-scrollbar { display: none; }
-          .pf-right { min-width: 0; }
-          .pf-section-sep { border-top: 1px solid ${C.divider}; }
+          .pf-right { min-width: 0; background: ${TK.blockBg}; }
+          .pf-section-sep { border-top: 1px solid ${TK.divider}; }
         }
         @media (min-width: 769px) {
           .pf-wrap { padding: 32px 24px !important; }
@@ -648,50 +689,17 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       `}</style>
 
       {/* ── Outer centering wrapper ── */}
-      <div style={{ display: "flex", justifyContent: "center", padding: "0", minHeight: "100vh" }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: "0", minHeight: "100vh", backgroundAttachment: "fixed" }}>
 
         {/* ── Card ── */}
         <div className="pf-card">
 
-          {/* ─── Nav ─────────────────────────────────────────────────────────── */}
-          <div style={{
-            padding: "14px 20px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: `0.5px solid ${C.divider}`,
-            position: "sticky",
-            top: 0,
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(16px)",
-            zIndex: 50,
-          }}>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>
-              pik<span style={{ color: C.accent }}>mi</span>
-            </p>
-            <div
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  if (window.history.length > 1) window.history.back();
-                  else window.location.href = "/";
-                }
-              }}
-              style={{
-                width: 30, height: 30, borderRadius: "50%",
-                background: C.divider,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, color: C.muted, cursor: "pointer", flexShrink: 0,
-              }}
-            >
-              ×
-            </div>
-          </div>
 
           {/* ── Desktop grid: left (info) + right (sections) ── */}
           <div className="pf-grid">
 
           {/* ── LEFT: Avatar + Name + Badges + Stats ── */}
-          <div className="pf-left">
+          <div className="pf-left pf-block-mobile">
           <div style={{ padding: 20 }}>
 
             {/* Avatar + Name */}
@@ -777,7 +785,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {p.serviceTitle && (
             <>
               <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
+              <div className="pf-sec" style={{ padding: "24px 20px" }}>
                 <SectionLabel number="01" text="Šta radim" />
                 <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>
                   {p.serviceTitle}
@@ -795,7 +803,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {p.pricing && p.pricing.length > 0 && (
             <>
               <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
+              <div className="pf-sec" style={{ padding: "24px 20px" }}>
                 <SectionLabel number="" text="Paketi" />
                 <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
                   {p.pricing.map((tier, i) => (
@@ -819,7 +827,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {csSlots.length > 0 && (
             <>
               <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
+              <div className="pf-sec" style={{ padding: "24px 20px" }}>
                 <SectionLabel number="02" text="Prethodni radovi" />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
@@ -866,7 +874,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {stackTags.length > 0 && (
             <>
               <SectionSep />
-              <div style={{ padding: "24px 20px" }}>
+              <div className="pf-sec" style={{ padding: "24px 20px" }}>
                 <SectionLabel number="03" text="Veštine" />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {stackTags.map((tag, i) => {
@@ -902,7 +910,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             return (
               <>
                 <SectionSep />
-                <div style={{ padding: "24px 20px" }}>
+                <div className="pf-sec" style={{ padding: "24px 20px" }}>
                   <SectionLabel number="05" text="Prethodno iskustvo" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
@@ -956,7 +964,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             return (
               <>
                 <SectionSep />
-                <div style={{ padding: "24px 20px" }}>
+                <div className="pf-sec" style={{ padding: "24px 20px" }}>
                   <SectionLabel number="06" text="Reči klijenata" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {list.map((t, i) => (
@@ -989,20 +997,20 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           </div>{/* end pf-grid */}
 
           {/* ─── CTA / Kontakt — full width, van grid-a ──────────────────────── */}
-          <div style={{ padding: "40px 32px 32px", background: C.dark, color: "#fff" }}>
+          <div className="pf-sec" style={{ padding: "40px 32px 32px", background: "#13131a", color: "#fff" }}>
             <div style={{ maxWidth: 700, margin: "0 auto" }}>
               <h2 style={{ margin: "0 0 24px", fontSize: 28, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
                 {p.ctaTitle ? (
                   <>
                     {p.ctaTitle}
                     {p.ctaHighlight && (
-                      <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>
+                      <> <span style={{ color: TK.accent }}>{p.ctaHighlight}</span></>
                     )}
                   </>
                 ) : (
                   <>
                     Da napravimo{" "}
-                    tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span>
+                    tvoj <span style={{ color: TK.accent }}>sledeći hit</span>
                   </>
                 )}
               </h2>
