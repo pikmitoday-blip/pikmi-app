@@ -36,6 +36,12 @@ interface LandingSettings {
   pricing_pro3_price: string; pricing_pro3_note: string; pricing_pro3_saving: string;
   // CTA / Footer
   cta_title: string; cta_subtitle: string; footer_copy: string;
+  // Feature sections (full-width, alternating)
+  feat1_eyebrow: string; feat1_title: string; feat1_desc: string; feat1_extra: string; feat1_image: string; feat1_code: string;
+  feat2_eyebrow: string; feat2_title: string; feat2_desc: string; feat2_extra: string; feat2_image: string; feat2_code: string;
+  feat3_eyebrow: string; feat3_title: string; feat3_desc: string; feat3_extra: string; feat3_image: string; feat3_code: string;
+  // Central CTA
+  mid_cta_title: string; mid_cta_button: string;
 }
 
 type Field = keyof LandingSettings;
@@ -82,6 +88,18 @@ const DEFAULTS: LandingSettings = {
   cta_title:    "Spreman da zatvoriš prvi deal?",
   cta_subtitle: "Kreiraj profil za 5 minuta. Besplatno.",
   footer_copy:  "© 2026 pikmi. Sva prava zadržana.",
+  // Feature sections
+  feat1_eyebrow: "Pitch Linkovi", feat1_title: "Personalizovan link za svakog klijenta",
+  feat1_desc: "Napravi poseban pitch link za svakog klijenta i prati ko ga je otvorio, koliko puta i koliko se dugo zadržao. Saznaj ko je spreman za saradnju — u realnom vremenu.",
+  feat1_extra: "Notifikacije te obaveste čim klijent otvori link.", feat1_image: "", feat1_code: "",
+  feat2_eyebrow: "Portfolio za 3 minuta", feat2_title: "Biraj između 50 tema i napravi profil koji se pamti",
+  feat2_desc: "Izaberi temu, oblik blokova i boju — i tvoj portfolio je spreman. Bez dizajnera, bez kodiranja. Sve prilagodiš za par klikova, na telefonu ili kompjuteru.",
+  feat2_extra: "Svaka tema se prilagođava — od blokova do badge-ova.", feat2_image: "", feat2_code: "",
+  feat3_eyebrow: "Outreach Kit", feat3_title: "Gotovi šabloni za cold DM, email i follow-up",
+  feat3_desc: "Ne znaš kako da započneš razgovor sa klijentom? Dobijaš provjerene šablone za prvi kontakt, ponudu i follow-up — samo zalijepi svoj link i pošalji.",
+  feat3_extra: "Sve što ti treba da pretvoriš lead u klijenta.", feat3_image: "", feat3_code: "",
+  mid_cta_title: "Napravi svoj portfolio za 3 minuta i počni da šalješ ponude klijentima već danas.",
+  mid_cta_button: "Kreiraj profil besplatno →",
 };
 
 const DEFAULT_MOCKUP_LINKS: MockupRow[] = [
@@ -92,7 +110,7 @@ const DEFAULT_MOCKUP_LINKS: MockupRow[] = [
 
 // ─── Section definitions ───────────────────────────────────────────────────────
 
-const SECTIONS: { title: string; fields: { key: Field; label: string; type: "input" | "textarea" }[] }[] = [
+const SECTIONS: { title: string; fields: { key: Field; label: string; type: "input" | "textarea" | "image" }[] }[] = [
   {
     title: "Hero sekcija",
     fields: [
@@ -104,16 +122,43 @@ const SECTIONS: { title: string; fields: { key: Field; label: string; type: "inp
     ],
   },
   {
-    title: "Features",
+    title: "Feature sekcija 1 — Pitch Linkovi (animacija levo)",
     fields: [
-      { key: "feature1_title", label: "Feature 1 — naslov", type: "input"    },
-      { key: "feature1_sub",   label: "Feature 1 — podnaslov", type: "input" },
-      { key: "feature2_title", label: "Feature 2 — naslov", type: "input"    },
-      { key: "feature2_sub",   label: "Feature 2 — podnaslov", type: "input" },
-      { key: "feature3_title", label: "Feature 3 — naslov", type: "input"    },
-      { key: "feature3_sub",   label: "Feature 3 — podnaslov", type: "input" },
-      { key: "feature4_title", label: "Feature 4 — naslov", type: "input"    },
-      { key: "feature4_desc",  label: "Feature 4 — opis",   type: "textarea" },
+      { key: "feat1_eyebrow", label: "Nadnaslov (eyebrow)", type: "input"    },
+      { key: "feat1_title",   label: "Naslov",              type: "input"    },
+      { key: "feat1_desc",    label: "Opis",                type: "textarea" },
+      { key: "feat1_extra",   label: "Dodatni tekst",       type: "input"    },
+      { key: "feat1_image",   label: "Slika / GIF (ostavi prazno za default animaciju)", type: "image" },
+      { key: "feat1_code",    label: "Custom HTML animacija (override slike)", type: "textarea" },
+    ],
+  },
+  {
+    title: "Feature sekcija 2 — (tekst levo, animacija desno)",
+    fields: [
+      { key: "feat2_eyebrow", label: "Nadnaslov (eyebrow)", type: "input"    },
+      { key: "feat2_title",   label: "Naslov",              type: "input"    },
+      { key: "feat2_desc",    label: "Opis",                type: "textarea" },
+      { key: "feat2_extra",   label: "Dodatni tekst",       type: "input"    },
+      { key: "feat2_image",   label: "Slika / GIF (ostavi prazno za default)", type: "image" },
+      { key: "feat2_code",    label: "Custom HTML animacija (override slike)", type: "textarea" },
+    ],
+  },
+  {
+    title: "Feature sekcija 3 — Outreach (animacija levo)",
+    fields: [
+      { key: "feat3_eyebrow", label: "Nadnaslov (eyebrow)", type: "input"    },
+      { key: "feat3_title",   label: "Naslov",              type: "input"    },
+      { key: "feat3_desc",    label: "Opis",                type: "textarea" },
+      { key: "feat3_extra",   label: "Dodatni tekst",       type: "input"    },
+      { key: "feat3_image",   label: "Slika / GIF (ostavi prazno za default)", type: "image" },
+      { key: "feat3_code",    label: "Custom HTML animacija (override slike)", type: "textarea" },
+    ],
+  },
+  {
+    title: "Centralni CTA (prelaz ka cenovniku)",
+    fields: [
+      { key: "mid_cta_title",  label: "CTA naslov",  type: "textarea" },
+      { key: "mid_cta_button", label: "CTA dugme",   type: "input"    },
     ],
   },
   {
@@ -199,6 +244,20 @@ export default function AdminLanding() {
 
   function update(key: Field, val: string) {
     setValues(prev => ({ ...prev, [key]: val }));
+  }
+
+  const [uploadingKey, setUploadingKey] = useState<Field | null>(null);
+  async function uploadImageFor(key: Field, file: File) {
+    setUploadingKey(key);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "landing");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) update(key, data.url);
+    } catch {}
+    setUploadingKey(null);
   }
 
   // Badge helpers
@@ -430,6 +489,16 @@ CREATE POLICY "Admin only" ON platform_settings USING (true) WITH CHECK (true);`
                     </label>
                     {f.type === "textarea" ? (
                       <textarea value={values[f.key]} onChange={e => update(f.key, e.target.value)} rows={3} style={{ ...INP, resize: "vertical" }} />
+                    ) : f.type === "image" ? (
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        {values[f.key] && <img src={values[f.key]} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(255,255,255,0.1)" }} />}
+                        <input type="text" value={values[f.key]} onChange={e => update(f.key, e.target.value)} placeholder="URL ili upload →" style={{ ...INP, flex: 1, minWidth: 160 }} />
+                        <label style={{ padding: "9px 14px", borderRadius: 8, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)", color: "#A78BFA", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+                          {uploadingKey === f.key ? "Upload..." : "📤 Upload"}
+                          <input type="file" accept="image/*,.gif" style={{ display: "none" }} disabled={uploadingKey === f.key} onChange={e => { const file = e.target.files?.[0]; if (file) uploadImageFor(f.key, file); e.target.value = ""; }} />
+                        </label>
+                        {values[f.key] && <button onClick={() => update(f.key, "")} style={{ padding: "9px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 12, cursor: "pointer" }}>Ukloni</button>}
+                      </div>
                     ) : (
                       <input type="text" value={values[f.key]} onChange={e => update(f.key, e.target.value)} style={INP} />
                     )}

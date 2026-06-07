@@ -4,6 +4,8 @@ import CheckoutButton from "./components/CheckoutButton";
 import Checkout3MButton from "./components/Checkout3MButton";
 import LandingMockup, { MockupLink } from "./components/LandingMockup";
 import HeroSlugCTA from "./components/HeroSlugCTA";
+import PortfolioCarousel from "./components/PortfolioCarousel";
+import FeatureSection from "./components/FeatureSection";
 
 export const revalidate = 300; // 5 min cache
 
@@ -114,6 +116,13 @@ export default async function Home() {
         .landing-nav-link { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s; }
         .landing-nav-link:hover { color: rgba(255,255,255,0.9); }
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
+        /* Feature sections — clip carousel overflow */
+        .feat-visual { overflow: hidden; }
+        @media (max-width: 900px) {
+          .feat-inner { flex-direction: column-reverse !important; gap: 32px !important; }
+          .feat-text { text-align: center !important; }
+          .feat-text h2 { font-size: 28px !important; }
+        }
         @media (max-width: 768px) {
           * { box-sizing: border-box; }
           body { overflow-x: hidden; }
@@ -202,16 +211,9 @@ export default async function Home() {
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{heroNote}</p>
           </div>
 
-          {/* Right — mockup */}
-          <div className="hero-mockup" style={{ width: 420, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
-            <LandingMockup
-              links={mockupLinks}
-              hotleadName={hotleadName}
-              hotleadViews={hotleadViews}
-              hotleadTime={hotleadTime}
-              hotleadDuration={hotleadDuration}
-              hotleadOpens={hotleadOpens}
-            />
+          {/* Right — portfolio template carousel */}
+          <div className="hero-mockup" style={{ width: 520, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
+            <PortfolioCarousel />
           </div>
         </div>
       </section>
@@ -226,90 +228,81 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ══ FEATURES ══ */}
-      <div style={{ background: "linear-gradient(180deg,rgba(139,92,246,0.04) 0%,transparent 100%)", width: "100%" }}>
-      <section id="features" style={{ maxWidth: 1280, margin: "0 auto", padding: "64px 48px 40px" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Features</div>
-          <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, fontFamily: fontHeading }}>Sve što ti treba da<br />zatvoriš posao</h2>
-        </div>
+      {/* ══ FEATURE SECTIONS (full-width, alternating) ══ */}
+      <div id="features" style={{ background: "linear-gradient(180deg,rgba(139,92,246,0.04) 0%,transparent 100%)", width: "100%" }}>
 
-        <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          {/* Feature 1 — Personalization */}
-          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.08)", borderRadius: 20, padding: "28px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎯</div>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature1_title", "Personalizovano")}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature1_sub", "Svaki klijent dobija svoj link")}</div>
-              </div>
+        {/* Feature 1 — Pitch Linkovi (animation moved from hero) */}
+        <FeatureSection
+          eyebrow={g("feat1_eyebrow", "Pitch Linkovi")}
+          title={g("feat1_title", "Personalizovan link za svakog klijenta")}
+          description={g("feat1_desc", "Napravi poseban pitch link za svakog klijenta i prati ko ga je otvorio, koliko puta i koliko se dugo zadržao. Saznaj ko je spreman za saradnju — u realnom vremenu.")}
+          extra={g("feat1_extra", "Notifikacije te obaveste čim klijent otvori link.")}
+          imageUrl={g("feat1_image", "")}
+          customCode={g("feat1_code", "")}
+          visual={!g("feat1_image", "") && !g("feat1_code", "") ? (
+            <div style={{ width: 420, maxWidth: "100%" }}>
+              <LandingMockup
+                links={mockupLinks}
+                hotleadName={hotleadName}
+                hotleadViews={hotleadViews}
+                hotleadTime={hotleadTime}
+                hotleadDuration={hotleadDuration}
+                hotleadOpens={hotleadOpens}
+              />
             </div>
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, padding: "14px 16px", border: "1px solid rgba(139,92,246,0.06)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg,#3B82F6,#6366F1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>C</div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Hey Coca Cola, ovo je za vas.</span>
-              </div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>pikmi.today/coca-cola</div>
-            </div>
-          </div>
+          ) : undefined}
+        />
 
-          {/* Feature 2 — Tracking */}
-          <div className="landing-feature-card" style={{ background: "rgba(245,158,11,0.03)", border: "1px solid rgba(245,158,11,0.07)", borderRadius: 20, padding: "28px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(245,158,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>👁</div>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature2_title", "Prati interes")}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature2_sub", "Real-time otvaranja i notifikacije")}</div>
-              </div>
-            </div>
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, padding: "12px 16px", border: "1px solid rgba(245,158,11,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 16 }}>✉️</span>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Klijent je otvorio tvoj link</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>upravo sada</div>
-                </div>
-              </div>
-              <span style={{ fontSize: 9, fontWeight: 700, color: "#EF4444", background: "rgba(239,68,68,0.12)", padding: "3px 9px", borderRadius: 100 }}>🔥</span>
-            </div>
-          </div>
+        {/* Feature 2 — text left, visual right */}
+        <FeatureSection
+          reverse
+          eyebrow={g("feat2_eyebrow", "Portfolio za 3 minuta")}
+          title={g("feat2_title", "Biraj između 50 tema i napravi profil koji se pamti")}
+          description={g("feat2_desc", "Izaberi temu, oblik blokova i boju — i tvoj portfolio je spreman. Bez dizajnera, bez kodiranja. Sve prilagodiš za par klikova, na telefonu ili kompjuteru.")}
+          extra={g("feat2_extra", "Svaka tema se prilagođava — od blokova do badge-ova.")}
+          imageUrl={g("feat2_image", "")}
+          customCode={g("feat2_code", "")}
+          visual={!g("feat2_image", "") && !g("feat2_code", "") ? (
+            <div style={{ width: 360, maxWidth: "100%" }}><PortfolioCarousel /></div>
+          ) : undefined}
+        />
 
-          {/* Feature 3 — Outreach Kit */}
-          <div className="landing-feature-card" style={{ background: "rgba(16,185,129,0.03)", border: "1px solid rgba(16,185,129,0.07)", borderRadius: 20, padding: "28px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>✉️</div>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3 }}>{g("feature3_title", "Outreach kit")}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>{g("feature3_sub", "Cold DM, email i follow-up šabloni")}</div>
-              </div>
-            </div>
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: 12, border: "1px solid rgba(16,185,129,0.06)", overflow: "hidden", position: "relative" }}>
-              <div style={{ padding: "14px 16px 6px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(16,185,129,0.5)", marginBottom: 8 }}>Outreach dokument</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>Pozicioniranje — morate se predstaviti kao ekspert koji edukuje klijenta.</div>
-              </div>
-              <div style={{ position: "relative", padding: "4px 16px 14px" }}>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.7, filter: "blur(4px)", userSelect: "none" }}>
-                  Ponuda mora biti jasna i specifična. Klijent mora razumeti šta dobija, u kom roku i za koju cenu.
-                </div>
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(180deg,transparent,rgba(0,0,0,0.5))" }}>
-                  <span style={{ fontSize: 24 }}>🔒</span>
+        {/* Feature 3 — animation left, text right */}
+        <FeatureSection
+          eyebrow={g("feat3_eyebrow", "Outreach Kit")}
+          title={g("feat3_title", "Gotovi šabloni za cold DM, email i follow-up")}
+          description={g("feat3_desc", "Ne znaš kako da započneš razgovor sa klijentom? Dobijaš provjerene šablone za prvi kontakt, ponudu i follow-up — samo zalijepi svoj link i pošalji.")}
+          extra={g("feat3_extra", "Sve što ti treba da pretvoriš lead u klijenta.")}
+          imageUrl={g("feat3_image", "")}
+          customCode={g("feat3_code", "")}
+          visual={!g("feat3_image", "") && !g("feat3_code", "") ? (
+            <div style={{ width: 400, maxWidth: "100%", background: "rgba(0,0,0,0.35)", borderRadius: 20, border: "1px solid rgba(16,185,129,0.12)", overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.35)" }}>
+              <div style={{ padding: "20px 22px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(16,185,129,0.6)", marginBottom: 12 }}>Outreach dokument</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {["📩 Cold DM šablon", "✉️ Email pristup", "🔁 Follow-up sekvenca", "💬 Ponuda i pregovaranje"].map((t, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600 }}>
+                      {t}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
+          ) : undefined}
+        />
+      </div>
 
-          {/* Feature 4 — Quick Setup */}
-          <div className="landing-feature-card" style={{ background: "rgba(139,92,246,0.03)", border: "1px solid rgba(139,92,246,0.07)", borderRadius: 20, padding: "28px 24px", display: "flex", alignItems: "flex-start", gap: 16 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(250,204,21,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, marginTop: 2 }}>⚡</div>
-            <div>
-              <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8 }}>{g("feature4_title", "Profil spreman za 5 minuta")}</div>
-              <div style={{ fontSize: fsBody, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>{g("feature4_desc", "Bez dizajnera. Bez kodiranja. Bez čekanja. Onboarding te vodi korak po korak.")}</div>
-            </div>
-          </div>
+      {/* ══ CENTRAL CTA (transition to pricing) ══ */}
+      <section style={{ width: "100%", padding: "72px 24px", textAlign: "center" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1, lineHeight: 1.18, color: "#fff", marginBottom: 28 }}>
+            {g("mid_cta_title", "Napravi svoj portfolio za 3 minuta i počni da šalješ ponude klijentima već danas.")}
+          </h2>
+          <Link href="/register" style={{ display: "inline-block", padding: "16px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)" }}>
+            {g("mid_cta_button", "Kreiraj profil besplatno →")}
+          </Link>
         </div>
       </section>
-      </div> {/* end features full-width bg */}
 
       {/* ══ HOW IT WORKS ══ */}
       <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "48px 48px 56px", textAlign: "center" }}>
