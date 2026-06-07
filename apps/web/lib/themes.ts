@@ -16,13 +16,20 @@ export interface PortfolioTheme {
 // dark. Only the page background changes colour per theme. (Matches the pikmi
 // HTML references where every block is white on a coloured bg.)
 export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
-  // Dark backgrounds get a crisper, more solid white card for strong contrast.
-  // Light backgrounds get a slightly translucent white so the bg tint peeks through.
-  const blockBg      = t.dark ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.88)";
-  const blockBorder  = t.dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.055)";
+  // Blocks are SOLID white (never transparent) with just a faint wash of the
+  // theme accent (~5%). White always dominates the card.
+  const blockBg      = `linear-gradient(0deg, ${t.accent}0d, ${t.accent}0d), #ffffff`;
+  const blockBorder  = t.dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.05)";
   const blockShadow  = t.dark
-    ? "0 4px 18px rgba(0,0,0,0.30)"
-    : "0 2px 10px rgba(0,0,0,0.06)";
+    ? "0 4px 18px rgba(0,0,0,0.32)"
+    : "0 2px 12px rgba(0,0,0,0.07)";
+
+  // The PAGE keeps only a soft hint of the theme colour. For light themes we wash
+  // the gradient toward white so the page reads pale — colour shows only as
+  // details (in the gaps between the white blocks). Dark themes stay rich.
+  const pageBg = t.dark
+    ? t.bg
+    : `linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.55)), ${t.bg}`;
 
   // Text always dark — it sits on white blocks regardless of theme.
   const textPrimary  = "#1a1a2e";
@@ -41,7 +48,7 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
   const geom = BLOCK_GEOM[blockStyle] ?? BLOCK_GEOM.rounded;
 
   return {
-    pageBg: t.bg,
+    pageBg,
     textPrimary, textSecond, textMuted,
     accent: t.accent, accentBg, accentLight: accentBg,
     tagBg, tagText, tagBorder,
