@@ -20,6 +20,7 @@ interface LandingSettings {
   mockup_hotlead_name: string; mockup_hotlead_views: string;
   mockup_hotlead_time: string; mockup_hotlead_duration: string;
   mockup_hotlead_opens: string;
+  mockup_hotlead_when: string; mockup_hotlead_device: string;
   // Features
   feature1_title: string; feature1_sub: string;
   feature2_title: string; feature2_sub: string;
@@ -75,6 +76,8 @@ const DEFAULTS: LandingSettings = {
   mockup_hotlead_time:     "danas u 14:27",
   mockup_hotlead_duration: "4m 12s",
   mockup_hotlead_opens:    "3",
+  mockup_hotlead_when:     "02.06.2026. 16:27",
+  mockup_hotlead_device:   "Telefon",
   feature1_title: "Personalizovano",    feature1_sub: "Svaki klijent dobija svoj link",
   feature2_title: "Prati interes",      feature2_sub: "Real-time otvaranja i notifikacije",
   feature3_title: "Outreach kit",       feature3_sub: "Cold DM, email i follow-up šabloni",
@@ -146,14 +149,18 @@ const SECTIONS: { title: string; fields: { key: Field; label: string; type: "inp
     ],
   },
   {
-    title: "Feature sekcija 2 — (tekst levo, animacija desno)",
+    title: "Feature sekcija 2 — Email notifikacija (tekst levo, animacija desno)",
     fields: [
-      { key: "feat2_eyebrow", label: "Nadnaslov (eyebrow)", type: "input"    },
-      { key: "feat2_title",   label: "Naslov",              type: "input"    },
-      { key: "feat2_desc",    label: "Opis",                type: "textarea" },
-      { key: "feat2_extra",   label: "Dodatni tekst",       type: "input"    },
-      { key: "feat2_image",   label: "Slika / GIF (ostavi prazno za default)", type: "image" },
-      { key: "feat2_code",    label: "Custom HTML animacija (override slike)", type: "textarea" },
+      { key: "feat2_eyebrow",        label: "Nadnaslov (eyebrow)", type: "input"    },
+      { key: "feat2_title",          label: "Naslov",              type: "input"    },
+      { key: "feat2_desc",           label: "Opis",                type: "textarea" },
+      { key: "feat2_extra",          label: "Dodatni tekst",       type: "input"    },
+      { key: "mockup_hotlead_name",  label: "Notifikacija — ime klijenta",    type: "input" },
+      { key: "mockup_hotlead_when",  label: "Notifikacija — kada (datum/vreme)", type: "input" },
+      { key: "mockup_hotlead_device",label: "Notifikacija — uređaj",          type: "input" },
+      { key: "mockup_hotlead_views", label: "Notifikacija — ukupno pregleda", type: "input" },
+      { key: "feat2_image",          label: "Slika / GIF (override animacije)", type: "image" },
+      { key: "feat2_code",           label: "Custom HTML animacija (override slike)", type: "textarea" },
     ],
   },
   {
