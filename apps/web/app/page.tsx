@@ -7,6 +7,7 @@ import HeroSlugCTA from "./components/HeroSlugCTA";
 import PortfolioCarousel from "./components/PortfolioCarousel";
 import FeatureSection from "./components/FeatureSection";
 import LandingFAQ, { type FaqItem } from "./components/LandingFAQ";
+import EmailNotifAnimation from "./components/EmailNotifAnimation";
 
 export const revalidate = 300; // 5 min cache
 
@@ -270,17 +271,22 @@ export default async function Home() {
           ) : undefined}
         />
 
-        {/* Feature 2 — text left, visual right */}
+        {/* Feature 2 — text left, email-notification animation right */}
         <FeatureSection
           reverse
-          eyebrow={g("feat2_eyebrow", "Portfolio za 3 minuta")}
-          title={g("feat2_title", "Biraj između 50 tema i napravi profil koji se pamti")}
-          description={g("feat2_desc", "Izaberi temu, oblik blokova i boju — i tvoj portfolio je spreman. Bez dizajnera, bez kodiranja. Sve prilagodiš za par klikova, na telefonu ili kompjuteru.")}
-          extra={g("feat2_extra", "Svaka tema se prilagođava — od blokova do badge-ova.")}
+          eyebrow={g("feat2_eyebrow", "Real-time notifikacije")}
+          title={g("feat2_title", "Saznaj čim klijent otvori tvoj portfolio")}
+          description={g("feat2_desc", "Dobijaš email i notifikaciju u trenutku kad klijent otvori tvoj link — ko je, kada, sa kog uređaja i koliko puta. Javiš mu se baš kad je zainteresovan.")}
+          extra={g("feat2_extra", "Pravi momenat za follow-up = veća šansa za saradnju.")}
           imageUrl={g("feat2_image", "")}
           customCode={g("feat2_code", "")}
           visual={!g("feat2_image", "") && !g("feat2_code", "") ? (
-            <div style={{ width: 360, maxWidth: "100%" }}><PortfolioCarousel /></div>
+            <EmailNotifAnimation
+              client={hotleadName}
+              when={g("mockup_hotlead_when", "02.06.2026. 16:27")}
+              device={g("mockup_hotlead_device", "Telefon")}
+              views={hotleadViews}
+            />
           ) : undefined}
         />
 
