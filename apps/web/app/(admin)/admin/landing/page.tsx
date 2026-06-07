@@ -42,6 +42,8 @@ interface LandingSettings {
   feat3_eyebrow: string; feat3_title: string; feat3_desc: string; feat3_extra: string; feat3_image: string; feat3_code: string;
   // Central CTA
   mid_cta_title: string; mid_cta_button: string;
+  // FAQ
+  faq_title: string;
 }
 
 type Field = keyof LandingSettings;
@@ -100,7 +102,15 @@ const DEFAULTS: LandingSettings = {
   feat3_extra: "Sve što ti treba da pretvoriš lead u klijenta.", feat3_image: "", feat3_code: "",
   mid_cta_title: "Napravi svoj portfolio za 3 minuta i počni da šalješ ponude klijentima već danas.",
   mid_cta_button: "Kreiraj profil besplatno →",
+  faq_title: "Najčešća pitanja",
 };
+
+interface FaqRow { q: string; a: string; }
+const DEFAULT_FAQ: FaqRow[] = [
+  { q: "Da li je pikmi besplatan?", a: "Da — imaš 7 dana besplatnog triala sa svim funkcijama, bez kreditne kartice." },
+  { q: "Da li mi treba dizajner ili znanje kodiranja?", a: "Ne. Biraš jednu od 50 gotovih tema i popuniš podatke kroz kratak kviz." },
+  { q: "Šta su pitch linkovi?", a: "Personalizovani linkovi za svakog klijenta — vidiš ko je otvorio link i koliko se zadržao." },
+];
 
 const DEFAULT_MOCKUP_LINKS: MockupRow[] = [
   { name: "Elon Musk",  slug: "elon-musk",  views: 12, hot: true  },
@@ -200,6 +210,7 @@ const SECTIONS: { title: string; fields: { key: Field; label: string; type: "inp
 export default function AdminLanding() {
   const [values, setValues] = useState<LandingSettings>(DEFAULTS);
   const [mockupLinks, setMockupLinks] = useState<MockupRow[]>(DEFAULT_MOCKUP_LINKS);
+  const [faqItems, setFaqItems] = useState<FaqRow[]>(DEFAULT_FAQ);
   const [newBadge, setNewBadge] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -221,6 +232,9 @@ export default function AdminLanding() {
       // Load mockup links
       const raw = (data ?? []).find(r => r.key === "mockup_links")?.value;
       if (raw) { try { setMockupLinks(JSON.parse(raw)); } catch {} }
+      // Load FAQ
+      const rawFaq = (data ?? []).find(r => r.key === "faq_items")?.value;
+      if (rawFaq) { try { const p = JSON.parse(rawFaq); if (Array.isArray(p)) setFaqItems(p); } catch {} }
     } catch { setDbError(true); }
     setLoading(false);
   }
@@ -231,6 +245,7 @@ export default function AdminLanding() {
       const rows = [
         ...(Object.keys(values) as Field[]).map(key => ({ key, value: values[key], updated_at: new Date().toISOString() })),
         { key: "mockup_links", value: JSON.stringify(mockupLinks), updated_at: new Date().toISOString() },
+        { key: "faq_items", value: JSON.stringify(faqItems.filter(f => f.q.trim())), updated_at: new Date().toISOString() },
       ];
       const { error } = await supabase.from("platform_settings").upsert(rows, { onConflict: "key" });
       if (error) throw error;
@@ -507,6 +522,38 @@ CREATE POLICY "Admin only" ON platform_settings USING (true) WITH CHECK (true);`
               </div>
             </div>
           ))}
+
+          {/* ── FAQ editor ── */}
+          <div style={{ background: "#111116", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: "#E5E7EB", margin: 0 }}>Najčešća pitanja (FAQ)</h2>
+              <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4, marginBottom: 0 }}>Dropdown sekcija pre footera — max 10 pitanja</p>
+            </div>
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* FAQ title */}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Naslov sekcije</label>
+                <input value={values.faq_title} onChange={e => update("faq_title", e.target.value)} style={INP} />
+              </div>
+
+              {faqItems.map((item, i) => (
+                <div key={i} style={{ padding: "14px 16px", background: "rgba(255,255,255,0.02)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#6B7280" }}>Pitanje {i + 1}</span>
+                    <button onClick={() => setFaqItems(prev => prev.filter((_, j) => j !== i))} style={{ padding: "3px 10px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 11, cursor: "pointer" }}>Ukloni</button>
+                  </div>
+                  <input value={item.q} onChange={e => setFaqItems(prev => prev.map((x, j) => j === i ? { ...x, q: e.target.value } : x))} placeholder="Pitanje" style={{ ...INP, marginBottom: 8 }} />
+                  <textarea value={item.a} onChange={e => setFaqItems(prev => prev.map((x, j) => j === i ? { ...x, a: e.target.value } : x))} placeholder="Odgovor" rows={3} style={{ ...INP, resize: "vertical" }} />
+                </div>
+              ))}
+
+              {faqItems.length < 10 && (
+                <button onClick={() => setFaqItems(prev => [...prev, { q: "", a: "" }])} style={{ width: "100%", padding: "11px", borderRadius: 10, background: "rgba(124,58,237,0.1)", border: "1px dashed rgba(124,58,237,0.3)", color: "#A78BFA", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                  + Dodaj pitanje ({faqItems.length}/10)
+                </button>
+              )}
+            </div>
+          </div>
 
         </div>
       )}

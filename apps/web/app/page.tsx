@@ -6,6 +6,7 @@ import LandingMockup, { MockupLink } from "./components/LandingMockup";
 import HeroSlugCTA from "./components/HeroSlugCTA";
 import PortfolioCarousel from "./components/PortfolioCarousel";
 import FeatureSection from "./components/FeatureSection";
+import LandingFAQ, { type FaqItem } from "./components/LandingFAQ";
 
 export const revalidate = 300; // 5 min cache
 
@@ -50,6 +51,19 @@ export default async function Home() {
   // ── Freelancer badges ─────────────────────────────────────────────────────
   const badges = g("freelancer_badges", "Dizajneri,Video editori,SMM menadžeri,Copywriteri,Fotografi,Web developeri")
     .split(",").map(b => b.trim()).filter(Boolean);
+
+  // ── FAQ ───────────────────────────────────────────────────────────────────
+  let faqItems: FaqItem[] = [
+    { q: "Da li je pikmi besplatan?", a: "Da — imaš 7 dana besplatnog triala sa svim funkcijama, bez kreditne kartice. Nakon toga biraš Pro plan ako želiš da nastaviš." },
+    { q: "Da li mi treba dizajner ili znanje kodiranja?", a: "Ne. Biraš jednu od 50 gotovih tema, popuniš podatke kroz kratak kviz i portfolio je spreman za par minuta." },
+    { q: "Šta su pitch linkovi?", a: "Personalizovani linkovi za svakog klijenta. Vidiš ko je otvorio link, koliko puta i koliko se zadržao — pa znaš kome da se javiš u pravom momentu." },
+    { q: "Mogu li da promenim temu kasnije?", a: "Naravno. U bilo kom trenutku iz sekcije „Moj profil“ menjaš temu, oblik blokova i boje — promene se vide odmah." },
+    { q: "Kako otkazujem pretplatu?", a: "Pretplatu možeš otkazati bilo kad iz podešavanja naloga. Bez ugovora i skrivenih uslova." },
+  ];
+  try {
+    const raw = settings["faq_items"];
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) faqItems = parsed.slice(0, 10); }
+  } catch {}
 
   // ── Hero ─────────────────────────────────────────────────────────────────
   const heroBadge    = g("hero_badge",    "✦ Tailored portfolios. Real connections.");
@@ -415,6 +429,9 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      {/* ══ FAQ ══ */}
+      <LandingFAQ title={g("faq_title", "Najčešća pitanja")} items={faqItems} />
 
       {/* ══ FOOTER ══ */}
       <footer style={{ borderTop: "1px solid rgba(139,92,246,0.06)", padding: "32px 48px" }}>
