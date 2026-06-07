@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, type BlockStyleId } from "../../lib/themes";
+import { getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, TORN_CSS, type BlockStyleId } from "../../lib/themes";
 
 // ── Custom video player (no download, adaptive ratio, play/pause + mute) ─────
 function VideoPlayer({ src }: { src: string }) {
@@ -650,7 +650,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           .pf-grid { display: flex; flex-direction: column; gap: 10px; }
           .pf-right { display: flex; flex-direction: column; gap: 10px; }
           .pf-section-sep { display: none; }
-          ${bStyle === "glass" ? `.pf-block-mobile, .pf-sec { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }` : ""}
+          ${TK.isTorn ? TORN_CSS : ""}
         }
         .pf-left { }
         .pf-right { }
@@ -699,7 +699,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           <div className="pf-grid">
 
           {/* ── LEFT: Avatar + Name + Badges + Stats ── */}
-          <div className="pf-left pf-block-mobile">
+          <div className={`pf-left pf-block-mobile${TK.isTorn ? " pf-torn" : ""}`}>
           <div style={{ padding: 20 }}>
 
             {/* Avatar + Name */}
@@ -709,11 +709,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 <img
                   src={p.avatarUrl}
                   alt={fullName}
-                  style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: `0 8px 22px ${TK.accent}55` }}
+                  style={{ width: 84, height: 84, borderRadius: TK.geom.avatar, objectFit: "cover", flexShrink: 0, boxShadow: `0 8px 22px ${TK.accent}55` }}
                 />
               ) : (
                 <div style={{
-                  width: 84, height: 84, borderRadius: 20, flexShrink: 0,
+                  width: 84, height: 84, borderRadius: TK.geom.avatar, flexShrink: 0,
                   background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`,
                   color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -745,7 +745,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "5px 12px", background: C.accentLight, color: C.accent,
-                  fontSize: 11, borderRadius: 999, fontWeight: 600,
+                  fontSize: 11, borderRadius: TK.geom.pill, fontWeight: 600,
                 }}>
                   Godine iskustva: {String((p as any).yearsExperience).replace(/\s*godin.*/i, "").trim()}
                 </div>
@@ -785,7 +785,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {p.serviceTitle && (
             <>
               <SectionSep />
-              <div className="pf-sec" style={{ padding: "24px 20px" }}>
+              <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                 <SectionLabel number="01" text="Šta radim" />
                 <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>
                   {p.serviceTitle}
@@ -803,14 +803,14 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {p.pricing && p.pricing.length > 0 && (
             <>
               <SectionSep />
-              <div className="pf-sec" style={{ padding: "24px 20px" }}>
+              <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                 <SectionLabel number="" text="Paketi" />
                 <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(p.pricing.length, 3)}, 1fr)`, gap: 12 }}>
                   {p.pricing.map((tier, i) => (
                     <div key={i} style={{
                       background: tier.green ? C.accent : C.sectionBg,
                       border: `1px solid ${tier.green ? C.accent : C.border}`,
-                      borderRadius: 14, padding: "18px 16px",
+                      borderRadius: TK.geom.inner, padding: "18px 16px",
                       color: tier.green ? "#fff" : C.text,
                     }}>
                       <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
@@ -827,7 +827,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {csSlots.length > 0 && (
             <>
               <SectionSep />
-              <div className="pf-sec" style={{ padding: "24px 20px" }}>
+              <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                 <SectionLabel number="02" text="Prethodni radovi" />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
@@ -844,7 +844,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                         ) : isDoc ? (
                           <button onClick={() => setDocPreview(img)} style={{
                             width: "100%", background: C.accentLight, border: `1px solid ${C.border}`,
-                            borderRadius: 14, padding: "24px 16px", cursor: "pointer",
+                            borderRadius: TK.geom.inner, padding: "24px 16px", cursor: "pointer",
                             display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
                           }}>
                             <span style={{ fontSize: 40 }}>{isPdf ? "📄" : "📝"}</span>
@@ -853,7 +853,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                           </button>
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
+                          <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: TK.geom.inner }} />
                         )}
                         {cs?.client && (
                           <p style={{ margin: "6px 0 0", fontSize: 12, fontWeight: 600, color: C.text }}>{cs.client}</p>
@@ -874,7 +874,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           {stackTags.length > 0 && (
             <>
               <SectionSep />
-              <div className="pf-sec" style={{ padding: "24px 20px" }}>
+              <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                 <SectionLabel number="03" text="Veštine" />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {stackTags.map((tag, i) => {
@@ -887,7 +887,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                           padding: "7px 13px",
                           background: isPrimary ? C.accentLight : C.tagGrayBg,
                           color:      isPrimary ? C.accent      : C.tagGrayText,
-                          borderRadius: 999,
+                          borderRadius: TK.geom.pill,
                           fontWeight: isPrimary ? 500 : 400,
                         }}
                       >
@@ -910,7 +910,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             return (
               <>
                 <SectionSep />
-                <div className="pf-sec" style={{ padding: "24px 20px" }}>
+                <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                   <SectionLabel number="05" text="Prethodno iskustvo" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
@@ -964,11 +964,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             return (
               <>
                 <SectionSep />
-                <div className="pf-sec" style={{ padding: "24px 20px" }}>
+                <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "24px 20px" }}>
                   <SectionLabel number="06" text="Reči klijenata" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {list.map((t, i) => (
-                      <div key={i} style={{ background: C.accentLight, borderRadius: 16, padding: 18 }}>
+                      <div key={i} style={{ background: C.accentLight, borderRadius: TK.geom.inner, padding: 18 }}>
                         <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>
                           "{t.quote}"
                         </p>
@@ -997,7 +997,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
           </div>{/* end pf-grid */}
 
           {/* ─── CTA / Kontakt — full width, van grid-a ──────────────────────── */}
-          <div className="pf-sec" style={{ padding: "40px 32px 32px", background: "#13131a", color: "#fff" }}>
+          <div className={`pf-sec${TK.isTorn ? " pf-torn" : ""}`} style={{ padding: "40px 32px 32px", background: "#13131a", color: "#fff" }}>
             <div style={{ maxWidth: 700, margin: "0 auto" }}>
               <h2 style={{ margin: "0 0 24px", fontSize: 28, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px" }}>
                 {p.ctaTitle ? (

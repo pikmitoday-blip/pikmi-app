@@ -37,46 +37,20 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
   const divider      = "rgba(0,0,0,0.05)";
   const sectionBg    = "rgba(0,0,0,0.02)";
 
-  // Glass override
-  const isGlass = blockStyle === "glass";
-  const glassExtra = isGlass
-    ? { backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }
-    : {};
-
-  // Glass uses a more translucent white so the bg shows through the blur.
-  const finalBlockBg = isGlass
-    ? (t.dark ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.55)")
-    : blockBg;
-  // For glass on dark themes, text needs to stay readable → keep dark text but
-  // the glass card is bright enough; on dark-glass push text slightly stronger.
-
-  // Outline override
-  const isOutline = blockStyle === "outline";
-  const outlineBg  = isOutline ? "transparent" : finalBlockBg;
-  const outlineBdr = isOutline
-    ? (t.dark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.14)")
-    : blockBorder;
-
-  // When the card itself is dark/transparent (outline or glass on a dark theme),
-  // text must be light to stay readable.
-  const outlineDarkText = (isOutline && t.dark) || (isGlass && t.dark);
-  const tp = outlineDarkText ? "#ffffff" : textPrimary;
-  const ts = outlineDarkText ? "rgba(255,255,255,0.70)" : textSecond;
-  const tm = outlineDarkText ? "rgba(255,255,255,0.45)" : textMuted;
-
-  const radius = BLOCK_RADIUS[blockStyle] ?? 18;
+  // Geometry for the whole portfolio (cards, avatar, tags, thumbnails…)
+  const geom = BLOCK_GEOM[blockStyle] ?? BLOCK_GEOM.rounded;
 
   return {
     pageBg: t.bg,
-    textPrimary: tp, textSecond: ts, textMuted: tm,
+    textPrimary, textSecond, textMuted,
     accent: t.accent, accentBg, accentLight: accentBg,
-    tagBg: outlineDarkText ? "rgba(255,255,255,0.10)" : tagBg,
-    tagText: outlineDarkText ? "rgba(255,255,255,0.85)" : tagText,
-    tagBorder,
-    divider: outlineDarkText ? "rgba(255,255,255,0.08)" : divider,
-    sectionBg: outlineDarkText ? "rgba(255,255,255,0.05)" : sectionBg,
-    blockBg: outlineBg, blockBorder: outlineBdr, blockShadow,
-    blockRadius: radius, glassExtra,
+    tagBg, tagText, tagBorder,
+    divider, sectionBg,
+    blockBg, blockBorder, blockShadow,
+    blockRadius: geom.block,
+    geom,
+    isTorn: geom.torn,
+    glassExtra: {} as Record<string, never>,
   };
 }
 
@@ -149,35 +123,69 @@ export const THEMES: PortfolioTheme[] = [
   T(50, "Neo Purple",     "special", "linear-gradient(135deg,#1a0533 0%,#3d0066 30%,#5b00a0 65%,#7c00d4 100%)",      true,  "#e9d5ff"),
 ];
 
-// ─── Block Styles ─────────────────────────────────────────────────────────────
+// ─── Block Styles (4 curated shapes) ─────────────────────────────────────────
+// Each shape defines a full GEOMETRY scale applied across the whole portfolio —
+// not just the cards. Picking "sharp" makes everything sharp (avatar, tags,
+// badges, thumbnails…); "pill" makes everything super-round; "torn" gives the
+// ripped-paper edge look from the Linktree references.
 
-export type BlockStyleId = "default" | "rounded" | "sharp" | "pill" | "glass" | "outline" | "flat";
+export type BlockStyleId = "rounded" | "sharp" | "pill" | "torn";
+
+export interface BlockGeometry {
+  block:  number;          // main section/card radius
+  inner:  number;          // package cards, thumbnails, inner cards
+  pill:   number;          // tags, badges, buttons
+  avatar: number | string; // avatar radius (string allows "50%")
+  torn:   boolean;         // ripped-paper edges on blocks
+}
 
 export interface BlockStyleDef {
   id: BlockStyleId;
   name: string;
-  previewRadius: number;
+  previewRadius: number;   // radius for the picker button itself
+  geom: BlockGeometry;
 }
 
 export const BLOCK_STYLES: BlockStyleDef[] = [
-  { id: "default", name: "Standardni", previewRadius: 16 },
-  { id: "rounded", name: "Zaobljeni",  previewRadius: 24 },
-  { id: "sharp",   name: "Oštar",      previewRadius: 4  },
-  { id: "pill",    name: "Pilula",     previewRadius: 32 },
-  { id: "glass",   name: "Staklo",     previewRadius: 18 },
-  { id: "outline", name: "Okvir",      previewRadius: 16 },
-  { id: "flat",    name: "Flat",       previewRadius: 10 },
+  { id: "rounded", name: "Zaobljeni", previewRadius: 20, geom: { block: 20, inner: 14, pill: 999, avatar: 20,    torn: false } },
+  { id: "sharp",   name: "Oštri",     previewRadius: 3,  geom: { block: 3,  inner: 3,  pill: 4,   avatar: 4,     torn: false } },
+  { id: "pill",    name: "Pilula",    previewRadius: 22, geom: { block: 30, inner: 22, pill: 999, avatar: "50%", torn: false } },
+  { id: "torn",    name: "Pocepano",  previewRadius: 14, geom: { block: 16, inner: 12, pill: 999, avatar: 18,    torn: true  } },
 ];
 
-export const BLOCK_RADIUS: Record<BlockStyleId, number> = {
-  default: 18,
-  rounded: 26,
-  sharp:   5,
-  pill:    36,
-  glass:   18,
-  outline: 18,
-  flat:    10,
+export const BLOCK_GEOM: Record<BlockStyleId, BlockGeometry> = {
+  rounded: BLOCK_STYLES[0].geom,
+  sharp:   BLOCK_STYLES[1].geom,
+  pill:    BLOCK_STYLES[2].geom,
+  torn:    BLOCK_STYLES[3].geom,
 };
+
+export const BLOCK_RADIUS: Record<BlockStyleId, number> = {
+  rounded: 20,
+  sharp:   3,
+  pill:    30,
+  torn:    16,
+};
+
+// Torn-paper mask — fixed-height teeth that tile horizontally, so the rip stays
+// crisp regardless of block height. Applied via the `.pf-torn` class.
+export const TORN_CSS = `
+  .pf-torn {
+    border: none !important;
+    box-shadow: none !important;
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.14));
+    -webkit-mask:
+      linear-gradient(#000 0 0) 0 7px / 100% calc(100% - 14px) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 8 L0 4 L3 6 L6 2 L9 5 L12 1 L15 5 L18 2 L21 6 L24 3 L24 8 Z' fill='%23000'/%3E%3C/svg%3E") top / 24px 8px repeat-x,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 4 L3 2 L6 6 L9 3 L12 7 L15 3 L18 6 L21 2 L24 5 L24 0 Z' fill='%23000'/%3E%3C/svg%3E") bottom / 24px 8px repeat-x;
+    -webkit-mask-composite: source-over;
+    mask:
+      linear-gradient(#000 0 0) 0 7px / 100% calc(100% - 14px) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 8 L0 4 L3 6 L6 2 L9 5 L12 1 L15 5 L18 2 L21 6 L24 3 L24 8 Z' fill='%23000'/%3E%3C/svg%3E") top / 24px 8px repeat-x,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 4 L3 2 L6 6 L9 3 L12 7 L15 3 L18 6 L21 2 L24 5 L24 0 Z' fill='%23000'/%3E%3C/svg%3E") bottom / 24px 8px repeat-x;
+    mask-composite: add;
+  }
+`;
 
 // Helper: get theme by id
 export function getTheme(id?: number): PortfolioTheme {
@@ -185,7 +193,7 @@ export function getTheme(id?: number): PortfolioTheme {
 }
 
 export const DEFAULT_THEME_ID    = 33; // Pure White (safe default)
-export const DEFAULT_BLOCK_STYLE: BlockStyleId = "default";
+export const DEFAULT_BLOCK_STYLE: BlockStyleId = "rounded";
 
 export interface PortfolioAppearance {
   templateId:  number;

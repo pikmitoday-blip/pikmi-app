@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
-import { THEMES, BLOCK_STYLES, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
+import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, TORN_CSS, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -99,7 +99,8 @@ const LBL: React.CSSProperties = {
 };
 
 function SectionSep() {
-  return <div style={{ borderTop: `6px solid ${C.sectionBg}` }} />;
+  // Sections are now individual blocks; the separator is no longer needed.
+  return null;
 }
 
 function SectionHead({ number: _number, text, section, onEdit }: {
@@ -162,6 +163,28 @@ export default function MojProfil() {
       profile_data: updated,
     }, { onConflict: "user_id" });
   }
+
+  // ── Live theme tokens for the editor preview (updates in real time) ─────────
+  const appearance = (p as any)?.portfolioAppearance as { templateId?: number; blockStyle?: BlockStyleId } | undefined;
+  const activeTheme = getTheme(appearance?.templateId ?? DEFAULT_THEME_ID);
+  const bStyle      = appearance?.blockStyle ?? DEFAULT_BLOCK_STYLE;
+  const TK          = themeTokens(activeTheme, bStyle);
+
+  // Local themed C — shadows the module light C so the preview reflects the theme
+  const C = {
+    accent:      TK.accent,
+    accentLight: TK.accentBg,
+    accentMuted: TK.accent,
+    dark:        TK.textPrimary,
+    text:        TK.textSecond,
+    muted:       TK.textMuted,
+    border:      TK.blockBorder,
+    divider:     TK.divider,
+    sectionBg:   TK.sectionBg,
+    tagGrayBg:   TK.tagBg,
+    tagGrayText: TK.tagText,
+    green:       "#22C55E",
+  };
 
   useEffect(() => {
     async function load() {
@@ -353,8 +376,8 @@ export default function MojProfil() {
         {/* Avatar + Name */}
         <div style={{ marginBottom: 16 }}>
           {p.avatarUrl
-            ? <img src={p.avatarUrl} alt="" style={{ width: "100%", maxWidth: 220, height: 200, borderRadius: 20, objectFit: "cover", display: "block", marginBottom: 14, boxShadow: "0 8px 20px rgba(124,58,237,0.2)" }} />
-            : <div style={{ width: 88, height: 88, borderRadius: 20, background: `linear-gradient(135deg,${C.accent},#3B82F6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 14, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}>
+            ? <img src={p.avatarUrl} alt="" style={{ width: "100%", maxWidth: 220, height: 200, borderRadius: TK.geom.avatar, objectFit: "cover", display: "block", marginBottom: 14, boxShadow: `0 8px 20px ${TK.accent}40` }} />
+            : <div style={{ width: 88, height: 88, borderRadius: TK.geom.avatar, background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 14, boxShadow: `0 8px 20px ${TK.accent}40` }}>
                 {p.initials || "?"}
               </div>
           }
@@ -373,31 +396,46 @@ export default function MojProfil() {
 
   return (
     <div>
-      {/* ── Responsive CSS ── */}
+      {/* ── Responsive CSS — live themed preview ── */}
       <style>{`
         .pp-card {
           width: 100%;
-          background: #fff;
+          background: ${TK.pageBg};
+          background-attachment: fixed;
           border-radius: 24px;
-          border: 0.5px solid ${C.border};
           overflow: hidden;
           font-family: 'Inter', -apple-system, sans-serif;
-          color: ${C.dark};
+          color: ${TK.textPrimary};
+          padding: 12px;
         }
-        .pp-grid { display: block; }
-        .pp-left { }
-        .pp-right { min-width: 0; }
+        .pp-grid { display: flex; flex-direction: column; gap: 10px; }
+        .pp-left {
+          background: ${TK.blockBg};
+          border: 1px solid ${TK.blockBorder};
+          box-shadow: ${TK.blockShadow};
+          border-radius: ${TK.blockRadius}px;
+          overflow: hidden;
+        }
+        .pp-right { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+        .pp-right-section {
+          background: ${TK.blockBg};
+          border: 1px solid ${TK.blockBorder};
+          box-shadow: ${TK.blockShadow};
+          border-radius: ${TK.blockRadius}px;
+          overflow: hidden;
+        }
+        .pp-sep-hidden { display: none; }
         @media (min-width: 769px) {
           .pp-grid {
             display: grid;
             grid-template-columns: 320px 1fr;
             align-items: start;
+            gap: 10px;
           }
           .pp-left {
-            border-right: 1px solid ${C.divider};
             position: sticky;
-            top: 0;
-            max-height: calc(100vh - 80px);
+            top: 12px;
+            max-height: calc(100vh - 90px);
             overflow-y: auto;
           }
           .pp-right-section { padding: 28px 36px !important; }
@@ -406,6 +444,7 @@ export default function MojProfil() {
         @media (max-width: 768px) {
           .pp-card { max-width: 480px; margin: 0 auto; }
         }
+        ${TK.isTorn ? TORN_CSS.replace(/\.pf-torn/g, ".pp-left, .pp-right-section") : ""}
       `}</style>
 
       {/* ── Page header ── */}
@@ -440,14 +479,6 @@ export default function MojProfil() {
 
       {/* ── Card ── */}
       <div className="pp-card" style={{ marginBottom: 60 }}>
-
-        {/* Nav */}
-        <div style={{ padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `0.5px solid ${C.divider}` }}>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>
-            pik<span style={{ color: C.accent }}>mi</span>
-          </p>
-          <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.divider, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: C.muted }}>×</div>
-        </div>
 
         {/* Grid: left + right */}
         <div className="pp-grid">
@@ -546,7 +577,7 @@ export default function MojProfil() {
                         <div key={i} style={{
                           background: tier.green ? C.accent : C.sectionBg,
                           border: `1px solid ${tier.green ? C.accent : C.border}`,
-                          borderRadius: 14, padding: "14px 12px",
+                          borderRadius: TK.geom.inner, padding: "14px 12px",
                           color: tier.green ? "#fff" : C.text,
                         }}>
                           <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 600, color: tier.green ? "rgba(255,255,255,0.7)" : C.muted }}>{tier.name}</p>
@@ -619,10 +650,10 @@ export default function MojProfil() {
                           return (
                             <div key={i}>
                               {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
-                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: 14, display: "block", background: "#000", objectFit: "contain" }} />
+                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: TK.geom.inner, display: "block", background: "#000", objectFit: "contain" }} />
                               ) : (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: 14 }} />
+                                <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: TK.geom.inner }} />
                               )}
                               {cs?.client && <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 600, color: C.text }}>{cs.client}</p>}
                               {cs?.platform && <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>{cs.platform}</p>}
@@ -655,7 +686,7 @@ export default function MojProfil() {
                   {stackTags.length > 0
                     ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {stackTags.map((tag, i) => (
-                          <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: 999, fontWeight: i < 2 ? 500 : 400 }}>{tag}</span>
+                          <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: TK.geom.pill, fontWeight: i < 2 ? 500 : 400 }}>{tag}</span>
                         ))}
                       </div>
                     : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema veština — klikni Uredi</p>
@@ -815,7 +846,7 @@ export default function MojProfil() {
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {list.map((t, i) => (
-                          <div key={i} style={{ background: C.accentLight, borderRadius: 14, padding: 16 }}>
+                          <div key={i} style={{ background: C.accentLight, borderRadius: TK.geom.inner, padding: 16 }}>
                             <p style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{t.quote}"</p>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
@@ -834,7 +865,7 @@ export default function MojProfil() {
             </div>
 
             {/* CTA / Kontakt */}
-            <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
+            <div style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
               {editSection === "cta" && draft ? (
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
                   <label style={LBL}>NASLOV</label>
@@ -894,7 +925,7 @@ export default function MojProfil() {
       {showThemeSheet && p && (() => {
         const app = (p as any).portfolioAppearance as PortfolioAppearance | undefined;
         const currentTpl = app?.templateId ?? 33;
-        const currentBlk = app?.blockStyle  ?? "default";
+        const currentBlk = app?.blockStyle  ?? DEFAULT_BLOCK_STYLE;
         const categories = [
           { key: "soft",    label: "🌸 Soft" },
           { key: "dark",    label: "🌑 Dark" },
