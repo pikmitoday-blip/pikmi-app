@@ -131,8 +131,6 @@ export default async function Home() {
         .landing-nav-link { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s; }
         .landing-nav-link:hover { color: rgba(255,255,255,0.9); }
         .landing-btn-ghost:hover { border-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
-        /* Feature sections — clip carousel overflow */
-        .feat-visual { overflow: hidden; }
         @media (max-width: 900px) {
           .feat-section { padding-left: 20px !important; padding-right: 20px !important; }
           .feat-inner { flex-direction: column-reverse !important; gap: 32px !important; }

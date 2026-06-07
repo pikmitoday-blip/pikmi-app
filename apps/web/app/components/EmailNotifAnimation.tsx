@@ -7,16 +7,16 @@ export default function EmailNotifAnimation({
   views = "5",
 }: { client?: string; when?: string; device?: string; views?: string }) {
   return (
-    <div className="enotif-stage" style={{ perspective: 1200, width: "100%", maxWidth: 420 }}>
+    <div className="enotif-stage" style={{ perspective: 1300, width: "100%", maxWidth: 420, padding: "26px 14px", overflow: "visible" }}>
       <style>{`
         @keyframes enotifFloat {
-          0%   { transform: rotateX(8deg) rotateY(-12deg) translateY(0); }
-          50%  { transform: rotateX(4deg) rotateY(-6deg) translateY(-12px); }
-          100% { transform: rotateX(8deg) rotateY(-12deg) translateY(0); }
+          0%   { transform: rotateX(4deg) rotateY(-6deg) translateY(0); }
+          50%  { transform: rotateX(4deg) rotateY(-6deg) translateY(-9px); }
+          100% { transform: rotateX(4deg) rotateY(-6deg) translateY(0); }
         }
         @keyframes enotifGlow {
-          0%,100% { box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(139,92,246,0.15); }
-          50%     { box-shadow: 0 40px 90px rgba(124,58,237,0.35), 0 0 0 1px rgba(139,92,246,0.3); }
+          0%,100% { box-shadow: 0 26px 60px rgba(0,0,0,0.5), 0 8px 30px rgba(124,58,237,0.12); }
+          50%     { box-shadow: 0 34px 75px rgba(0,0,0,0.5), 0 12px 40px rgba(124,58,237,0.28); }
         }
         .enotif-card {
           transform-style: preserve-3d;
