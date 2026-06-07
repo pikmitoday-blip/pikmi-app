@@ -9,25 +9,33 @@ export interface PortfolioTheme {
   accent: string;      // main accent colour (last name, prices, highlights)
 }
 
-// Derive all other colour tokens from the 3 base values
+// Derive all other colour tokens from the 3 base values.
+//
+// DESIGN RULE: blocks are ALWAYS white-ish (lighter than the page bg) so there
+// is always contrast against the themed background. Text inside blocks is always
+// dark. Only the page background changes colour per theme. (Matches the pikmi
+// HTML references where every block is white on a coloured bg.)
 export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
-  const blockBg      = t.dark ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.90)";
-  const blockBorder  = t.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.055)";
+  // Dark backgrounds get a crisper, more solid white card for strong contrast.
+  // Light backgrounds get a slightly translucent white so the bg tint peeks through.
+  const blockBg      = t.dark ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.88)";
+  const blockBorder  = t.dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.055)";
   const blockShadow  = t.dark
-    ? "0 2px 12px rgba(0,0,0,0.28)"
-    : "0 1px 6px rgba(0,0,0,0.055)";
+    ? "0 4px 18px rgba(0,0,0,0.30)"
+    : "0 2px 10px rgba(0,0,0,0.06)";
 
-  const textPrimary  = t.dark ? "#ffffff"               : "#1a1a2e";
-  const textSecond   = t.dark ? "rgba(255,255,255,0.65)" : "#555566";
-  const textMuted    = t.dark ? "rgba(255,255,255,0.38)" : "#9898a6";
+  // Text always dark — it sits on white blocks regardless of theme.
+  const textPrimary  = "#1a1a2e";
+  const textSecond   = "#555566";
+  const textMuted    = "#9898a6";
 
   const accentBg     = t.accent + "18";
-  const tagBg        = t.dark ? "rgba(255,255,255,0.10)" : t.accent + "12";
-  const tagText      = t.dark ? "rgba(255,255,255,0.80)" : t.accent;
-  const tagBorder    = t.dark ? "rgba(255,255,255,0.08)" : t.accent + "30";
+  const tagBg        = t.accent + "12";
+  const tagText      = t.accent;
+  const tagBorder    = t.accent + "30";
 
-  const divider      = t.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.045)";
-  const sectionBg    = t.dark ? "rgba(255,255,255,0.045)" : "rgba(0,0,0,0.018)";
+  const divider      = "rgba(0,0,0,0.05)";
+  const sectionBg    = "rgba(0,0,0,0.02)";
 
   // Glass override
   const isGlass = blockStyle === "glass";
@@ -35,21 +43,38 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
     ? { backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }
     : {};
 
+  // Glass uses a more translucent white so the bg shows through the blur.
+  const finalBlockBg = isGlass
+    ? (t.dark ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.55)")
+    : blockBg;
+  // For glass on dark themes, text needs to stay readable → keep dark text but
+  // the glass card is bright enough; on dark-glass push text slightly stronger.
+
   // Outline override
   const isOutline = blockStyle === "outline";
-  const outlineBg  = isOutline ? "transparent" : blockBg;
+  const outlineBg  = isOutline ? "transparent" : finalBlockBg;
   const outlineBdr = isOutline
-    ? (t.dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.14)")
+    ? (t.dark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.14)")
     : blockBorder;
+
+  // When the card itself is dark/transparent (outline or glass on a dark theme),
+  // text must be light to stay readable.
+  const outlineDarkText = (isOutline && t.dark) || (isGlass && t.dark);
+  const tp = outlineDarkText ? "#ffffff" : textPrimary;
+  const ts = outlineDarkText ? "rgba(255,255,255,0.70)" : textSecond;
+  const tm = outlineDarkText ? "rgba(255,255,255,0.45)" : textMuted;
 
   const radius = BLOCK_RADIUS[blockStyle] ?? 18;
 
   return {
     pageBg: t.bg,
-    textPrimary, textSecond, textMuted,
+    textPrimary: tp, textSecond: ts, textMuted: tm,
     accent: t.accent, accentBg, accentLight: accentBg,
-    tagBg, tagText, tagBorder,
-    divider, sectionBg,
+    tagBg: outlineDarkText ? "rgba(255,255,255,0.10)" : tagBg,
+    tagText: outlineDarkText ? "rgba(255,255,255,0.85)" : tagText,
+    tagBorder,
+    divider: outlineDarkText ? "rgba(255,255,255,0.08)" : divider,
+    sectionBg: outlineDarkText ? "rgba(255,255,255,0.05)" : sectionBg,
     blockBg: outlineBg, blockBorder: outlineBdr, blockShadow,
     blockRadius: radius, glassExtra,
   };
