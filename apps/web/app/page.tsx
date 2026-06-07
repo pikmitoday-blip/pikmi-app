@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import CheckoutButton from "./components/CheckoutButton";
 import Checkout3MButton from "./components/Checkout3MButton";
 import LandingMockup, { MockupLink } from "./components/LandingMockup";
+import HeroSlugCTA from "./components/HeroSlugCTA";
 
 export const revalidate = 300; // 5 min cache
 
@@ -196,9 +197,7 @@ export default async function Home() {
               {heroSubtitle}
             </p>
             <div className="hero-cta-wrap" style={{ display: "flex", justifyContent: "flex-start", marginBottom: 14 }}>
-              <Link href="/register" style={{ padding: "15px 36px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)", letterSpacing: -0.2, display: "inline-block" }}>
-                {heroCta1}
-              </Link>
+              <HeroSlugCTA ctaLabel={heroCta1} />
             </div>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{heroNote}</p>
           </div>
