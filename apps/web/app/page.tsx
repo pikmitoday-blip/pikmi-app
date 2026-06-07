@@ -133,9 +133,12 @@ export default async function Home() {
         /* Feature sections — clip carousel overflow */
         .feat-visual { overflow: hidden; }
         @media (max-width: 900px) {
+          .feat-section { padding-left: 20px !important; padding-right: 20px !important; }
           .feat-inner { flex-direction: column-reverse !important; gap: 32px !important; }
           .feat-text { text-align: center !important; }
           .feat-text h2 { font-size: 28px !important; }
+          .feat-visual { width: 100% !important; }
+          .feat-visual > div { width: 100% !important; max-width: 420px !important; margin-left: auto !important; margin-right: auto !important; }
         }
         @media (max-width: 768px) {
           * { box-sizing: border-box; }
