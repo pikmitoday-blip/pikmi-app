@@ -40,6 +40,7 @@ interface LandingSettings {
   feat1_eyebrow: string; feat1_title: string; feat1_desc: string; feat1_extra: string; feat1_image: string; feat1_code: string;
   feat2_eyebrow: string; feat2_title: string; feat2_desc: string; feat2_extra: string; feat2_image: string; feat2_code: string;
   feat3_eyebrow: string; feat3_title: string; feat3_desc: string; feat3_extra: string; feat3_image: string; feat3_code: string;
+  feat3_graphic_title: string; feat3_items: string;
   // Central CTA
   mid_cta_title: string; mid_cta_button: string;
   // FAQ
@@ -100,6 +101,8 @@ const DEFAULTS: LandingSettings = {
   feat3_eyebrow: "Outreach Kit", feat3_title: "Gotovi šabloni za cold DM, email i follow-up",
   feat3_desc: "Ne znaš kako da započneš razgovor sa klijentom? Dobijaš provjerene šablone za prvi kontakt, ponudu i follow-up — samo zalijepi svoj link i pošalji.",
   feat3_extra: "Sve što ti treba da pretvoriš lead u klijenta.", feat3_image: "", feat3_code: "",
+  feat3_graphic_title: "Outreach dokument",
+  feat3_items: "📩 Cold DM šablon\n✉️ Email pristup\n🔁 Follow-up sekvenca\n💬 Ponuda i pregovaranje",
   mid_cta_title: "Napravi svoj portfolio za 3 minuta i počni da šalješ ponude klijentima već danas.",
   mid_cta_button: "Kreiraj profil besplatno →",
   faq_title: "Najčešća pitanja",
@@ -160,7 +163,9 @@ const SECTIONS: { title: string; fields: { key: Field; label: string; type: "inp
       { key: "feat3_title",   label: "Naslov",              type: "input"    },
       { key: "feat3_desc",    label: "Opis",                type: "textarea" },
       { key: "feat3_extra",   label: "Dodatni tekst",       type: "input"    },
-      { key: "feat3_image",   label: "Slika / GIF (ostavi prazno za default)", type: "image" },
+      { key: "feat3_graphic_title", label: "Grafik — naslov (npr. Outreach dokument)", type: "input" },
+      { key: "feat3_items",   label: "Grafik — stavke (1 po redu, sa emojijem)", type: "textarea" },
+      { key: "feat3_image",   label: "Slika / GIF (override grafika)", type: "image" },
       { key: "feat3_code",    label: "Custom HTML animacija (override slike)", type: "textarea" },
     ],
   },

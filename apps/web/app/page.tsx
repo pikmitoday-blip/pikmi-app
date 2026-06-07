@@ -301,9 +301,9 @@ export default async function Home() {
           visual={!g("feat3_image", "") && !g("feat3_code", "") ? (
             <div style={{ width: 400, maxWidth: "100%", background: "rgba(0,0,0,0.35)", borderRadius: 20, border: "1px solid rgba(16,185,129,0.12)", overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.35)" }}>
               <div style={{ padding: "20px 22px" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(16,185,129,0.6)", marginBottom: 12 }}>Outreach dokument</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(16,185,129,0.6)", marginBottom: 12 }}>{g("feat3_graphic_title", "Outreach dokument")}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {["📩 Cold DM šablon", "✉️ Email pristup", "🔁 Follow-up sekvenca", "💬 Ponuda i pregovaranje"].map((t, i) => (
+                  {g("feat3_items", "📩 Cold DM šablon\n✉️ Email pristup\n🔁 Follow-up sekvenca\n💬 Ponuda i pregovaranje").split("\n").map(s => s.trim()).filter(Boolean).map((t, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 600 }}>
                       {t}
                     </div>
