@@ -647,11 +647,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             margin: 0 12px;
             overflow: hidden;
           }
+          .pf-grid { display: flex; flex-direction: column; gap: 10px; }
           .pf-right { display: flex; flex-direction: column; gap: 10px; }
           .pf-section-sep { display: none; }
           ${bStyle === "glass" ? `.pf-block-mobile, .pf-sec { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }` : ""}
         }
-        .pf-grid { display:block; }
         .pf-left { }
         .pf-right { }
         .pf-section-sep { border-top: 6px solid ${TK.divider}; }
@@ -709,16 +709,16 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                 <img
                   src={p.avatarUrl}
                   alt={fullName}
-                  style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: "0 8px 20px rgba(124,58,237,0.25)" }}
+                  style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", flexShrink: 0, boxShadow: `0 8px 22px ${TK.accent}55` }}
                 />
               ) : (
                 <div style={{
                   width: 84, height: 84, borderRadius: 20, flexShrink: 0,
-                  background: `linear-gradient(135deg,${C.accent},#3B82F6)`,
+                  background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`,
                   color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 30, fontWeight: 700,
-                  boxShadow: "0 8px 20px rgba(124,58,237,0.25)",
+                  boxShadow: `0 8px 22px ${TK.accent}55`,
                 }}>
                   {p.initials || (p.firstName?.[0] ?? "?")}
                 </div>

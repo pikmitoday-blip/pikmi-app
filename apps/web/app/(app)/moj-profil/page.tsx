@@ -149,6 +149,19 @@ export default function MojProfil() {
   const [savedMsg, setSavedMsg] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showThemeSheet, setShowThemeSheet] = useState(false);
+
+  async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
+    if (!p) return;
+    const newApp: PortfolioAppearance = { templateId, blockStyle };
+    const updated = { ...p, portfolioAppearance: newApp } as any;
+    setP(updated);
+    try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
+    await supabase.from("profiles").upsert({
+      user_id: userId,
+      profile_data: updated,
+    }, { onConflict: "user_id" });
+  }
 
   useEffect(() => {
     async function load() {
@@ -403,6 +416,20 @@ export default function MojProfil() {
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {savedMsg && <span style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Sačuvano ✓</span>}
+          {/* Customize (palette) button */}
+          <button
+            onClick={() => setShowThemeSheet(true)}
+            title="Prilagodi izgled"
+            style={{
+              width: 40, height: 40, borderRadius: 12,
+              border: "1px solid rgba(139,92,246,0.25)",
+              background: "linear-gradient(135deg, rgba(124,58,237,0.12), rgba(99,102,241,0.12))",
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, flexShrink: 0,
+            }}
+          >
+            🎨
+          </button>
           {profileUrl && (
             <a href={`https://www.pikmi.today/${profileUrl}`} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
               <span style={{ fontSize: 14 }}>👁</span>{t("profile_view_live")}<span style={{ fontSize: 12, opacity: 0.8 }}>↗</span>
@@ -806,99 +833,6 @@ export default function MojProfil() {
               )}
             </div>
 
-            {/* ── Izgled (tema + oblik blokova) ── */}
-            <SectionSep />
-            <div className="pp-right-section" style={{ padding: "20px 20px" }}>
-              {(() => {
-                const app = (p as any).portfolioAppearance as PortfolioAppearance | undefined;
-                const currentTpl  = app?.templateId  ?? 33;
-                const currentBlk  = app?.blockStyle   ?? "default";
-                const categories = [
-                  { key: "soft",    label: "🌸 Soft" },
-                  { key: "dark",    label: "🌑 Dark" },
-                  { key: "bold",    label: "⚡ Bold" },
-                  { key: "neutral", label: "🤍 Neutral" },
-                  { key: "special", label: "✨ Special" },
-                ];
-
-                async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
-                  if (!p) return;
-                  const newApp: PortfolioAppearance = { templateId, blockStyle };
-                  const updated = { ...p, portfolioAppearance: newApp } as any;
-                  setP(updated);
-                  try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
-                  await supabase.from("profiles").upsert({
-                    user_id: userId,
-                    profile_data: updated,
-                  }, { onConflict: "user_id" });
-                }
-
-                return (
-                  <div>
-                    <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Izgled portfolia</p>
-
-                    {/* Block shape picker */}
-                    <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-                      {BLOCK_STYLES.map(bs => (
-                        <button
-                          key={bs.id}
-                          onClick={() => applyTheme(currentTpl, bs.id)}
-                          style={{
-                            padding: "6px 14px",
-                            borderRadius: bs.previewRadius,
-                            border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
-                            background: currentBlk === bs.id ? C.accentLight : "#fff",
-                            color: currentBlk === bs.id ? C.accent : C.dark,
-                            fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                          }}
-                        >
-                          {bs.name}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Template picker by category */}
-                    {categories.map(cat => (
-                      <div key={cat.key} style={{ marginBottom: 16 }}>
-                        <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>{cat.label}</p>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {THEMES.filter(t => t.category === cat.key).map(t => (
-                            <button
-                              key={t.id}
-                              title={t.name}
-                              onClick={() => applyTheme(t.id, currentBlk)}
-                              style={{
-                                width: 44, height: 44,
-                                borderRadius: 12,
-                                background: t.bg,
-                                border: currentTpl === t.id ? `3px solid ${C.accent}` : "2px solid rgba(0,0,0,0.08)",
-                                cursor: "pointer",
-                                position: "relative",
-                                flexShrink: 0,
-                                boxShadow: currentTpl === t.id ? `0 0 0 2px ${C.accentLight}` : "none",
-                                transition: "transform 0.12s",
-                              }}
-                              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.1)")}
-                              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                            >
-                              {currentTpl === t.id && (
-                                <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✓</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-
-                    <p style={{ margin: "4px 0 0", fontSize: 11, color: C.muted }}>
-                      Promjene se odmah primjenjuju na tvoj portfolio.
-                    </p>
-                  </div>
-                );
-              })()}
-            </div>
-
             {/* CTA / Kontakt */}
             <div style={{ padding: "32px 24px 28px", background: C.dark, color: "#fff" }}>
               {editSection === "cta" && draft ? (
@@ -955,6 +889,112 @@ export default function MojProfil() {
           </div>{/* end pp-right */}
         </div>{/* end pp-grid */}
       </div>{/* end pp-card */}
+
+      {/* ── Theme customization bottom sheet ── */}
+      {showThemeSheet && p && (() => {
+        const app = (p as any).portfolioAppearance as PortfolioAppearance | undefined;
+        const currentTpl = app?.templateId ?? 33;
+        const currentBlk = app?.blockStyle  ?? "default";
+        const categories = [
+          { key: "soft",    label: "🌸 Soft" },
+          { key: "dark",    label: "🌑 Dark" },
+          { key: "bold",    label: "⚡ Bold" },
+          { key: "neutral", label: "🤍 Neutral" },
+          { key: "special", label: "✨ Special" },
+        ];
+        return (
+          <div
+            onClick={e => { if (e.target === e.currentTarget) setShowThemeSheet(false); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)",
+              display: "flex", alignItems: "flex-end", justifyContent: "center",
+            }}
+          >
+            <style>{`
+              @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+              @media (min-width: 769px) {
+                .theme-sheet { align-self: center !important; border-radius: 24px !important; max-height: 82vh !important; }
+              }
+            `}</style>
+            <div
+              className="theme-sheet"
+              style={{
+                width: "100%", maxWidth: 560,
+                background: "#fff",
+                borderTopLeftRadius: 24, borderTopRightRadius: 24,
+                maxHeight: "88vh", overflowY: "auto",
+                animation: "sheetUp 0.28s cubic-bezier(0.16,1,0.3,1)",
+                boxShadow: "0 -8px 40px rgba(0,0,0,0.25)",
+              }}
+            >
+              {/* Handle + header */}
+              <div style={{ position: "sticky", top: 0, background: "#fff", padding: "14px 20px 12px", borderBottom: `1px solid ${C.divider}`, zIndex: 2 }}>
+                <div style={{ width: 38, height: 4, borderRadius: 2, background: "#ddd", margin: "0 auto 14px" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.dark }}>🎨 Prilagodi izgled</p>
+                  <button onClick={() => setShowThemeSheet(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: C.divider, border: "none", cursor: "pointer", fontSize: 16, color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                </div>
+              </div>
+
+              <div style={{ padding: "20px" }}>
+                {/* Block shape picker */}
+                <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
+                  {BLOCK_STYLES.map(bs => (
+                    <button
+                      key={bs.id}
+                      onClick={() => applyTheme(currentTpl, bs.id)}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: bs.previewRadius,
+                        border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
+                        background: currentBlk === bs.id ? C.accentLight : "#fff",
+                        color: currentBlk === bs.id ? C.accent : C.dark,
+                        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                      }}
+                    >
+                      {bs.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Template picker by category */}
+                {categories.map(cat => (
+                  <div key={cat.key} style={{ marginBottom: 22 }}>
+                    <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>{cat.label}</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
+                      {THEMES.filter(th => th.category === cat.key).map(th => (
+                        <button
+                          key={th.id}
+                          title={th.name}
+                          onClick={() => applyTheme(th.id, currentBlk)}
+                          style={{
+                            aspectRatio: "1", width: "100%",
+                            borderRadius: 14,
+                            background: th.bg,
+                            border: currentTpl === th.id ? `3px solid ${C.accent}` : "2px solid rgba(0,0,0,0.08)",
+                            cursor: "pointer", position: "relative",
+                            boxShadow: currentTpl === th.id ? `0 0 0 3px ${C.accentLight}` : "none",
+                          }}
+                        >
+                          {currentTpl === th.id && (
+                            <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <p style={{ margin: "6px 0 8px", fontSize: 12, color: C.muted, textAlign: "center" }}>
+                  Promjene se odmah primjenjuju na tvoj portfolio.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
