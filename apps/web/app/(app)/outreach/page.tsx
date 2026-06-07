@@ -33,6 +33,14 @@ export default function Outreach() {
   // Inicijalizuj iz cache-a — emoji i tekst odmah vidljivi
   const [docs, setDocs] = useState<DocSection[]>(() => getCachedDocs() ?? DEFAULTS);
   const [openDoc, setOpenDoc] = useState<DocSection | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  useEffect(() => {
+    // iOS Safari renders PDFs in <iframe> as a single non-scrollable page,
+    // so on iOS we fall back to the Google Docs viewer (scrollable).
+    const ua = navigator.userAgent;
+    const iOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && "ontouchend" in document);
+    setIsIOS(iOS);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -264,8 +272,8 @@ export default function Outreach() {
             <div key={openDoc.url} style={{ flex: 1, overflow: "hidden", borderRadius: "0 0 20px 20px", position: "relative" }}>
               {getFileType(openDoc.url) === "pdf" ? (
                 <iframe
-                  key={`pdf-${openDoc.url}`}
-                  src={`${openDoc.url}#toolbar=0&navpanes=0&scrollbar=1`}
+                  key={`pdf-${openDoc.url}-${isIOS}`}
+                  src={isIOS ? getViewerUrl(openDoc.url) : `${openDoc.url}#toolbar=0&navpanes=0&scrollbar=1`}
                   style={{ width: "100%", height: "100%", minHeight: "70vh", border: "none", display: "block" }}
                   title={openDoc.title}
                   loading="eager"

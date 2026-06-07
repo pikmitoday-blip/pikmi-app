@@ -412,6 +412,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
   const [freelancerEmail, setFreelancerEmail] = useState<string>("");
   const [showContactModal, setShowContactModal] = useState(false);
   const [docPreview, setDocPreview] = useState<string | null>(null);
+  const [isIOSDevice, setIsIOSDevice] = useState(false);
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    setIsIOSDevice(/iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && "ontouchend" in document));
+  }, []);
   const [senderEmail, setSenderEmail] = useState("");
   useEffect(() => {
     async function loadProfile() {
@@ -1069,10 +1074,10 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>×</button>
           </div>
-          {/* Dokument viewer */}
+          {/* Dokument viewer — Word & (iOS) PDF preko Google viewera koji skroluje */}
           <div style={{ width: "100%", maxWidth: 860, flex: 1, maxHeight: "80vh", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
             <iframe
-              src={/\.(doc|docx)$/i.test(docPreview ?? "")
+              src={(/\.(doc|docx)$/i.test(docPreview ?? "") || (isIOSDevice && /\.pdf$/i.test(docPreview ?? "")))
                 ? `https://docs.google.com/viewer?url=${encodeURIComponent(docPreview!)}&embedded=true`
                 : `${docPreview}#toolbar=0`}
               style={{ width: "100%", height: "100%", border: "none", minHeight: "70vh" }}
