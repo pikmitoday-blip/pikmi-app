@@ -285,11 +285,11 @@ export default function PitchLink() {
                   <div key={l.id}
                     style={{
                       background: l.views >= 2
-                        ? "rgba(239,68,68,0.04)"
+                        ? "rgba(239,68,68,0.12)"
                         : l.views === 1
-                        ? "rgba(245,158,11,0.04)"
-                        : "rgba(139,92,246,0.03)",
-                      border: `1px solid ${l.views >= 2 ? "rgba(239,68,68,0.12)" : l.views === 1 ? "rgba(245,158,11,0.12)" : "rgba(139,92,246,0.08)"}`,
+                        ? "rgba(245,158,11,0.12)"
+                        : "rgba(255,255,255,0.055)",
+                      border: `1px solid ${l.views >= 2 ? "rgba(239,68,68,0.28)" : l.views === 1 ? "rgba(245,158,11,0.28)" : "rgba(255,255,255,0.12)"}`,
                       borderRadius: 16, padding: "16px",
                     }}>
                     {/* Top row */}
