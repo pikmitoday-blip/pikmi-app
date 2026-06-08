@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { THEMES, themeTokens, TORN_CSS, type BlockStyleId } from "../../lib/themes";
+import { THEMES, themeTokens, type BlockStyleId } from "../../lib/themes";
 
 // ── A single imaginary portfolio persona ──────────────────────────────────────
 interface Persona {
@@ -41,7 +41,7 @@ const PERSONAS: Persona[] = [
     works: ["FinTechRS", "ShopLab", "Medio", "Orbit"],
   },
   {
-    themeId: 23, blockStyle: "torn",            // bold orange · chevron
+    themeId: 23, blockStyle: "hard",            // bold orange · chevron · hard shadow
     first: "Stefan", last: "Nikolić", city: "Novi Sad", years: "7",
     title: "Fitnes i sportski video sadržaj",
     desc: "Montiram dinamičan video koji drži pažnju do kraja i pretvara gledaoce u članove.",
@@ -85,7 +85,6 @@ function TemplateMockup({ p }: { p: Persona }) {
   const g = TK.geom;
   const initials = p.first[0] + p.last[0];
 
-  const tornCls = TK.isTorn ? "pf-torn" : "";
   const block: React.CSSProperties = {
     background: TK.blockBg, border: `1px solid ${TK.blockBorder}`,
     borderRadius: Math.min(g.block, 16), boxShadow: TK.blockShadow,
@@ -108,7 +107,7 @@ function TemplateMockup({ p }: { p: Persona }) {
       <div aria-hidden style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: TK.pattern.image, backgroundSize: TK.pattern.size, backgroundRepeat: "repeat", zIndex: 0 }} />
       <div style={{ position: "relative", zIndex: 1 }}>
       {/* Profile */}
-      <div className={tornCls} style={block}>
+      <div style={block}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <div style={{ width: 42, height: 42, borderRadius: typeof g.avatar === "string" ? g.avatar : Math.min(g.avatar, 14), background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
           <div style={{ minWidth: 0 }}>
@@ -123,14 +122,14 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Šta radim */}
-      <div className={tornCls} style={block}>
+      <div style={block}>
         <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Šta radim</p>
         <p style={{ margin: "0 0 5px", fontSize: 12, fontWeight: 700, color: TK.textPrimary, lineHeight: 1.25 }}>{p.title}</p>
         <p style={{ margin: 0, fontSize: 9.5, color: TK.textSecond, lineHeight: 1.5 }}>{p.desc}</p>
       </div>
 
       {/* Paketi */}
-      <div className={tornCls} style={block}>
+      <div style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Paketi</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {p.packages.map((pk, i) => (
@@ -144,7 +143,7 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Prethodni radovi — placeholders */}
-      <div className={tornCls} style={block}>
+      <div style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Prethodni radovi</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {p.works.map((w, i) => (
@@ -161,7 +160,7 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Veštine */}
-      <div className={tornCls} style={block}>
+      <div style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Veštine</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {p.tags.map((tag, i) => (
@@ -222,7 +221,7 @@ export default function PortfolioCarousel() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <style>{TORN_CSS}</style>
+      
       {PERSONAS.map((p, i) => {
         let rel = ((i - active) % n + n) % n;
         if (rel > n / 2) rel -= n; // → range [-2 .. 2]

@@ -3,17 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
-import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, TORN_CSS, TORN_BOTTOM, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
-
-// Bottom-only torn edge for the "Pocepano" shape picker button
-const SHAPE_BTN_CSS = `
-  .shape-torn-btn {
-    -webkit-mask: linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 7px) no-repeat, url("${TORN_BOTTOM}") bottom / 18px 7px repeat-x;
-    -webkit-mask-composite: source-over;
-    mask: linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 7px) no-repeat, url("${TORN_BOTTOM}") bottom / 18px 7px repeat-x;
-    mask-composite: add;
-  }
-`;
+import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -468,7 +458,6 @@ export default function MojProfil() {
         @media (max-width: 768px) {
           .pp-card { max-width: 480px; margin: 0 auto; }
         }
-        ${TK.isTorn ? TORN_CSS.replace(/\.pf-torn/g, ".pp-left, .pp-right-section") : ""}
       `}</style>
 
       {/* ── Page header ── */}
@@ -989,14 +978,12 @@ export default function MojProfil() {
                 padding: "10px 0 calc(10px + env(safe-area-inset-bottom))",
               }}>
                 {/* Top row: shape chips + close */}
-                <style>{SHAPE_BTN_CSS}</style>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 8px", overflowX: "auto", scrollbarWidth: "none" }}>
                   {BLOCK_STYLES.map(bs => (
                     <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)}
-                      className={bs.id === "torn" ? "shape-torn-btn" : ""}
                       style={{
-                        flexShrink: 0, padding: bs.id === "torn" ? "6px 12px 11px" : "5px 12px",
-                        borderRadius: bs.id === "torn" ? 4 : bs.previewRadius,
+                        flexShrink: 0, padding: "5px 12px",
+                        borderRadius: bs.previewRadius,
                         border: currentBlk === bs.id ? "2px solid #A855F7" : "1px solid rgba(255,255,255,0.15)",
                         background: currentBlk === bs.id ? "rgba(168,85,247,0.18)" : "rgba(255,255,255,0.05)",
                         color: currentBlk === bs.id ? "#C4A0FF" : "rgba(255,255,255,0.7)",
@@ -1047,14 +1034,12 @@ export default function MojProfil() {
               </div>
               <div style={{ padding: "20px" }}>
                 <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
-                <style>{SHAPE_BTN_CSS}</style>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
                   {BLOCK_STYLES.map(bs => (
                     <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)}
-                      className={bs.id === "torn" ? "shape-torn-btn" : ""}
                       style={{
-                        padding: bs.id === "torn" ? "9px 16px 14px" : "8px 16px",
-                        borderRadius: bs.id === "torn" ? 4 : bs.previewRadius,
+                        padding: "8px 16px",
+                        borderRadius: bs.previewRadius,
                         border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
                         background: currentBlk === bs.id ? C.accentLight : "#fff",
                         color: currentBlk === bs.id ? C.accent : C.dark,
