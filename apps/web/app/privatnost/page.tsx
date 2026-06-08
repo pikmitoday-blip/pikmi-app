@@ -47,7 +47,7 @@ export default async function PrivatnostPage() {
 
       {/* ── Nav ── */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(8,8,15,0.85)", backdropFilter: "blur(20px)" }}>
-        <nav style={{
+        <nav className="policy-nav" style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto",
         }}>
