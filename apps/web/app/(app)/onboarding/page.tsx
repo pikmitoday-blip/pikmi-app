@@ -115,7 +115,7 @@ export default function Onboarding() {
 
   // ── Step 3+: rest ──────────────────────────────────────────────────────────
   const [pricing, setPricing] = useState<{ name: string; price: string; desc: string }[]>([{ name: "", price: "", desc: "" }]);
-  const [stack, setStack] = useState("");
+  const [skills, setSkills] = useState<string[]>([""]);
   const [clients, setClients] = useState<{ name: string; service: string; desc: string }[]>([{ name: "", service: "", desc: "" }]);
   const [testimonials, setTestimonials] = useState<{ name: string; quote: string; title: string }[]>([{ name: "", quote: "", title: "" }]);
   const [ctaTitle,     setCtaTitle]     = useState("");
@@ -177,7 +177,7 @@ export default function Onboarding() {
     1: !!firstName.trim() && !!lastName.trim() && !!serviceTitle.trim() && !!profileUrl && slugStatus === "ok",
     2: true,
     3: pricing.some(p => p.name.trim() && p.price.trim()),
-    4: !!stack.trim(),
+    4: skills.some(s => s.trim()),
     5: clients.some(c => c.name.trim()),
     6: true,
     7: !!ctaTitle.trim(),
@@ -204,7 +204,7 @@ export default function Onboarding() {
         serviceTitle, serviceDesc,
         city, yearsExperience,
         pricing: pricingList,
-        stack,
+        stack: skills.map(s => s.trim()).filter(Boolean).join(", "),
         caseStudies,
         testimonials: testiList,
         ctaTitle, ctaHighlight,
@@ -238,7 +238,7 @@ export default function Onboarding() {
     "Tvoj domen, ime, fotografija, grad i iskustvo.",
     "Izaberi temu i oblik — vidiš odmah kako izgleda.",
     "Dodaj 1–3 paketa sa cenama.",
-    "Nabroji veštine i alate koje koristiš, odvojeno zarezima.",
+    "Dodaj svoje lične veštine, programe i alate — svaki u poseban bedž.",
     "Navedi klijente sa kojima si radio.",
     "Dodaj recenzije zadovoljnih klijenata.",
     "Napiši poziv na akciju koji će biti na kraju tvog portfolia.",
@@ -413,12 +413,53 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 4: Skills ── */}
+          {/* ── STEP 4: Skills (badge builder) ── */}
           {step === 4 && (
             <div>
-              <label style={LBL}>Veštine i alati *</label>
-              <textarea value={stack} onChange={e => setStack(e.target.value)} rows={4} placeholder="npr. Meta Ads, TikTok Ads, Google Ads, Notion, Figma, Canva, Photoshop" style={{ ...INP, resize: "none" } as React.CSSProperties} />
-              <p style={HINT}>Odvoji svaku veštinu ili alat zarezom. Ovo se prikazuje na tvom portfoliu.</p>
+              <label style={LBL}>Tvoje veštine *</label>
+              <p style={{ ...HINT, marginTop: 0, marginBottom: 14 }}>
+                Dodaj svoje lične veštine, programe, alate i ekspertize. Svaki upisuješ u poseban bedž — ovako se prikazuju na tvom portfoliju.
+              </p>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                {skills.map((sk, i) => (
+                  <div key={i} style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
+                    borderRadius: 999, padding: "4px 6px 4px 12px",
+                  }}>
+                    <input
+                      autoFocus={i === skills.length - 1 && !sk}
+                      value={sk}
+                      onChange={e => setSkills(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") { e.preventDefault(); if (sk.trim()) setSkills(prev => [...prev, ""]); }
+                        if (e.key === "Backspace" && !sk && skills.length > 1) { e.preventDefault(); setSkills(prev => prev.filter((_, j) => j !== i)); }
+                      }}
+                      placeholder="npr. Figma"
+                      style={{
+                        background: "transparent", border: "none", outline: "none",
+                        color: "#fff", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
+                        width: `${Math.max(sk.length, 7) * 8}px`, maxWidth: 180,
+                      }}
+                    />
+                    <button onClick={() => setSkills(prev => prev.length > 1 ? prev.filter((_, j) => j !== i) : [""])}
+                      style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+                  </div>
+                ))}
+
+                {/* + add badge */}
+                <button onClick={() => setSkills(prev => [...prev, ""])} style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(139,92,246,0.4)",
+                  borderRadius: 999, padding: "7px 14px", color: "#A855F7",
+                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                }}>
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Dodaj bedž
+                </button>
+              </div>
+
+              <p style={HINT}>Klikni „+ Dodaj bedž" za novi, pa upiši veštinu. Enter dodaje sledeći.</p>
             </div>
           )}
 
