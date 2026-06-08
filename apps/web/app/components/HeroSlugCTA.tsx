@@ -36,7 +36,7 @@ export default function HeroSlugCTA({ ctaLabel }: { ctaLabel: string }) {
           value={slug}
           onChange={e => setSlug(slugify(e.target.value))}
           onKeyDown={e => { if (e.key === "Enter") go(); }}
-          placeholder="tvoje-ime"
+          placeholder="tvoj url"
           style={{
             flex: 1, minWidth: 0, padding: "15px 12px 15px 0",
             background: "transparent", border: "none", outline: "none",

@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { THEMES, themeTokens, type BlockStyleId } from "../../lib/themes";
+import React, { useState, useEffect, useRef } from "react";
+import { THEMES, themeTokens, TORN_CSS, type BlockStyleId } from "../../lib/themes";
 
 // ── A single imaginary portfolio persona ──────────────────────────────────────
 interface Persona {
@@ -13,9 +13,10 @@ interface Persona {
   works: string[]; // labels for portfolio placeholders
 }
 
+// 5 totally different colours + patterns + shapes (rounded / sharp / torn / hard)
 const PERSONAS: Persona[] = [
   {
-    themeId: 6, blockStyle: "rounded",
+    themeId: 6, blockStyle: "rounded",          // soft pink · confetti
     first: "Milica", last: "Đorđević", city: "Beograd", years: "3",
     title: "UGC sadržaj za Meta i TikTok",
     tags: ["UGC", "TikTok", "Reels", "Skripte"],
@@ -23,23 +24,7 @@ const PERSONAS: Persona[] = [
     works: ["Lumea", "BeautyLab", "SKINOVA", "Aure"],
   },
   {
-    themeId: 15, blockStyle: "sharp",
-    first: "Stefan", last: "Nikolić", city: "Novi Sad", years: "7",
-    title: "Video editing za brendove i kreatore",
-    tags: ["Premiere", "After Effects", "Color", "Motion"],
-    packages: [{ name: "Basic", price: "€200" }, { name: "Pro", price: "€450" }],
-    works: ["GymShark", "NovaTech", "Balkan", "RunWild"],
-  },
-  {
-    themeId: 7, blockStyle: "hard",
-    first: "Jovana", last: "Ilić", city: "Beograd", years: "4",
-    title: "Grafički dizajn za brendove koji žele da se izdvoje",
-    tags: ["Figma", "Illustrator", "Branding", "Print"],
-    packages: [{ name: "Logo", price: "€250" }, { name: "Brand", price: "€600" }],
-    works: ["Bloom", "CaféNoir", "VitaFit", "Eko"],
-  },
-  {
-    themeId: 11, blockStyle: "rounded",
+    themeId: 11, blockStyle: "sharp",           // dark navy · circuit grid
     first: "Marko", last: "Petrović", city: "Niš", years: "6",
     title: "Web development za startape i agencije",
     tags: ["Next.js", "React", "Node", "Figma"],
@@ -47,7 +32,23 @@ const PERSONAS: Persona[] = [
     works: ["FinTechRS", "ShopLab", "Medio", "Orbit"],
   },
   {
-    themeId: 43, blockStyle: "rounded",
+    themeId: 23, blockStyle: "torn",            // bold orange · chevron
+    first: "Stefan", last: "Nikolić", city: "Novi Sad", years: "7",
+    title: "Fitnes i sportski video sadržaj",
+    tags: ["Premiere", "Color", "Motion", "Reels"],
+    packages: [{ name: "Basic", price: "€200" }, { name: "Pro", price: "€450" }],
+    works: ["GymShark", "RunWild", "FitZone", "Pulse"],
+  },
+  {
+    themeId: 34, blockStyle: "hard",            // neutral linen · weave
+    first: "Jovana", last: "Ilić", city: "Beograd", years: "4",
+    title: "Grafički dizajn za brendove koji žele da se izdvoje",
+    tags: ["Figma", "Illustrator", "Branding", "Print"],
+    packages: [{ name: "Logo", price: "€250" }, { name: "Brand", price: "€600" }],
+    works: ["Bloom", "CaféNoir", "VitaFit", "Eko"],
+  },
+  {
+    themeId: 42, blockStyle: "rounded",         // special mesh gradient · scatter circles
     first: "Ana", last: "Jovanović", city: "Beograd", years: "5",
     title: "Fotografija proizvoda i brendova",
     tags: ["Product", "Lifestyle", "Retouch", "Studio"],
@@ -63,9 +64,10 @@ function TemplateMockup({ p }: { p: Persona }) {
   const g = TK.geom;
   const initials = p.first[0] + p.last[0];
 
+  const tornCls = TK.isTorn ? "pf-torn" : "";
   const block: React.CSSProperties = {
     background: TK.blockBg, border: `1px solid ${TK.blockBorder}`,
-    borderRadius: Math.min(g.block, 18), boxShadow: TK.blockShadow,
+    borderRadius: Math.min(g.block, 16), boxShadow: TK.blockShadow,
     padding: 12, marginBottom: 8,
   };
   const csGrad = [
@@ -79,10 +81,13 @@ function TemplateMockup({ p }: { p: Persona }) {
     <div style={{
       width: "100%", height: "100%", overflow: "hidden",
       background: TK.pageBg, backgroundSize: "cover",
-      borderRadius: 22, padding: 12,
+      borderRadius: 22, padding: 12, position: "relative",
     }}>
+      {/* Theme pattern overlay */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: TK.pattern.image, backgroundSize: TK.pattern.size, backgroundRepeat: "repeat", zIndex: 0 }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       {/* Profile */}
-      <div style={block}>
+      <div className={tornCls} style={block}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <div style={{ width: 42, height: 42, borderRadius: typeof g.avatar === "string" ? g.avatar : Math.min(g.avatar, 14), background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>{initials}</div>
           <div style={{ minWidth: 0 }}>
@@ -97,13 +102,13 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Šta radim */}
-      <div style={block}>
+      <div className={tornCls} style={block}>
         <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Šta radim</p>
         <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TK.textPrimary, lineHeight: 1.25 }}>{p.title}</p>
       </div>
 
       {/* Paketi */}
-      <div style={block}>
+      <div className={tornCls} style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Paketi</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {p.packages.map((pk, i) => (
@@ -116,7 +121,7 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Prethodni radovi — placeholders */}
-      <div style={block}>
+      <div className={tornCls} style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Prethodni radovi</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {p.works.map((w, i) => (
@@ -133,14 +138,15 @@ function TemplateMockup({ p }: { p: Persona }) {
       </div>
 
       {/* Veštine */}
-      <div style={block}>
+      <div className={tornCls} style={block}>
         <p style={{ margin: "0 0 6px", fontSize: 9, fontWeight: 700, color: TK.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>Veštine</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {p.tags.map((tag, i) => (
-            <span key={i} style={{ fontSize: 9, padding: "4px 9px", borderRadius: g.pill, background: i < 2 ? TK.accentBg : TK.sectionBg, color: i < 2 ? TK.accent : TK.textSecond, fontWeight: 500 }}>{tag}</span>
+            <span key={i} style={{ fontSize: 9, padding: "4px 9px", borderRadius: g.pill, border: `1px solid ${TK.tagBorder}`, background: TK.tagBg, color: i < 2 ? TK.tagText : TK.textSecond, fontWeight: 600 }}>{tag}</span>
           ))}
         </div>
       </div>
+      </div>{/* end content layer */}
     </div>
   );
 }
@@ -148,15 +154,36 @@ function TemplateMockup({ p }: { p: Persona }) {
 // ── Circular auto-rotating carousel ───────────────────────────────────────────
 export default function PortfolioCarousel() {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const n = PERSONAS.length;
+  const touchX = useRef<number | null>(null);
 
   useEffect(() => {
+    if (paused) return;
     const id = setInterval(() => setActive(a => (a + 1) % n), 4000);
     return () => clearInterval(id);
-  }, [n]);
+  }, [n, paused]);
+
+  function go(dir: 1 | -1) { setActive(a => (a + dir + n) % n); }
+
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX; setPaused(true); }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+    touchX.current = null;
+    // resume auto-rotate a bit later
+    setTimeout(() => setPaused(false), 5000);
+  }
 
   return (
-    <div className="pc-stage" style={{ position: "relative", width: "100%", height: 560, perspective: 1400, overflow: "hidden" }}>
+    <div
+      className="pc-stage"
+      style={{ position: "relative", width: "100%", height: 560, perspective: 1400, overflow: "hidden", touchAction: "pan-y" }}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      <style>{TORN_CSS}</style>
       {PERSONAS.map((p, i) => {
         let rel = ((i - active) % n + n) % n;
         if (rel > n / 2) rel -= n; // → range [-2 .. 2]
