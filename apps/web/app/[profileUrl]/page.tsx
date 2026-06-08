@@ -189,7 +189,7 @@ function SectionLabel({ number: _number, text }: { number: string; text: string 
 }
 
 // ─── Contact copy block ──────────────────────────────────────────────────────
-function ContactCopyBlock({ label, value, icon }: { label: string; value: string; icon: string }) {
+function ContactCopyBlock({ label, value, icon, radius = 14 }: { label: string; value: string; icon: string; radius?: number }) {
   const [copied, setCopied] = React.useState(false);
   function handleCopy() {
     navigator.clipboard.writeText(value).then(() => {
@@ -203,7 +203,7 @@ function ContactCopyBlock({ label, value, icon }: { label: string; value: string
       style={{
         background: "rgba(255,255,255,0.06)",
         border: "1px solid rgba(255,255,255,0.12)",
-        borderRadius: 14, padding: "14px 16px",
+        borderRadius: radius, padding: "14px 16px",
         cursor: "pointer", textAlign: "left", width: "100%",
         transition: "background 0.15s",
       }}
@@ -757,7 +757,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               <div style={{ marginBottom: 16 }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "5px 12px", background: C.accentLight, color: C.accent,
+                  padding: "5px 12px", background: TK.tagBg, color: TK.tagText,
+                  border: `1px solid ${TK.tagBorder}`,
                   fontSize: 11, borderRadius: TK.geom.pill, fontWeight: 600,
                 }}>
                   Godine iskustva: {String((p as any).yearsExperience).replace(/\s*godin.*/i, "").trim()}
@@ -898,10 +899,11 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                         style={{
                           fontSize: 11,
                           padding: "7px 13px",
-                          background: isPrimary ? C.accentLight : C.tagGrayBg,
-                          color:      isPrimary ? C.accent      : C.tagGrayText,
+                          background: TK.tagBg,
+                          color:      isPrimary ? TK.tagText : C.text,
+                          border: `1px solid ${TK.tagBorder}`,
                           borderRadius: TK.geom.pill,
-                          fontWeight: isPrimary ? 500 : 400,
+                          fontWeight: isPrimary ? 600 : 500,
                         }}
                       >
                         {tag}
@@ -981,7 +983,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   <SectionLabel number="06" text="Reči klijenata" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {list.map((t, i) => (
-                      <div key={i} style={{ background: C.accentLight, borderRadius: TK.geom.inner, padding: 18 }}>
+                      <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.blockBorder}`, borderRadius: TK.geom.inner, padding: 18 }}>
                         <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>
                           "{t.quote}"
                         </p>
@@ -1032,10 +1034,10 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
               {(p.contactEmail || p.contactPhone) ? (
                 <div style={{ display: "grid", gridTemplateColumns: p.contactEmail && p.contactPhone ? "1fr 1fr" : "1fr", gap: 12 }}>
                   {p.contactEmail && (
-                    <ContactCopyBlock label="Email" value={p.contactEmail} icon="✉️" />
+                    <ContactCopyBlock label="Email" value={p.contactEmail} icon="✉️" radius={TK.geom.inner} />
                   )}
                   {p.contactPhone && (
-                    <ContactCopyBlock label="Telefon" value={p.contactPhone} icon="📞" />
+                    <ContactCopyBlock label="Telefon" value={p.contactPhone} icon="📞" radius={TK.geom.inner} />
                   )}
                 </div>
               ) : null}

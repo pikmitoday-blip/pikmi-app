@@ -31,7 +31,7 @@ const PERSONAS: Persona[] = [
     works: ["GymShark", "NovaTech", "Balkan", "RunWild"],
   },
   {
-    themeId: 7, blockStyle: "pill",
+    themeId: 7, blockStyle: "hard",
     first: "Jovana", last: "Ilić", city: "Beograd", years: "4",
     title: "Grafički dizajn za brendove koji žele da se izdvoje",
     tags: ["Figma", "Illustrator", "Branding", "Print"],

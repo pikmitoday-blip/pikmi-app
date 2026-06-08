@@ -17,11 +17,22 @@ export interface PortfolioTheme {
 // dark. Only the page background changes colour per theme. (Matches the pikmi
 // HTML references where every block is white on a coloured bg.)
 export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
+  // Geometry for the whole portfolio (cards, avatar, tags, thumbnails…)
+  const geom = BLOCK_GEOM[blockStyle] ?? BLOCK_GEOM.rounded;
+
+  // Readable accent for text/elements that sit on WHITE blocks. Some themes
+  // (especially BOLD) use a very light accent for contrast on their saturated
+  // background — that becomes invisible on a white block, so we darken it.
+  const accent = readableAccent(t.accent);
+
   // Blocks are SOLID white (never transparent) with just a faint wash of the
   // theme accent (~5%). White always dominates the card.
-  const blockBg      = `linear-gradient(0deg, ${t.accent}0d, ${t.accent}0d), #ffffff`;
+  const blockBg      = `linear-gradient(0deg, ${accent}0d, ${accent}0d), #ffffff`;
   const blockBorder  = t.dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.05)";
-  const blockShadow  = t.dark
+  // Hard offset shadow (no blur) for the "Tvrda senka" style; otherwise soft.
+  const blockShadow  = geom.hardShadow
+    ? `4px 4px 0px ${accent}4d`
+    : t.dark
     ? "0 4px 18px rgba(0,0,0,0.32)"
     : "0 2px 12px rgba(0,0,0,0.07)";
 
@@ -37,30 +48,48 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
   const textSecond   = "#555566";
   const textMuted    = "#9898a6";
 
-  const accentBg     = t.accent + "18";
-  const tagBg        = t.accent + "12";
-  const tagText      = t.accent;
-  const tagBorder    = t.accent + "30";
+  const accentBg     = accent + "18";
+  // Badges/tags stay mostly WHITE with only a faint accent tint; border keeps
+  // the theme colour for definition.
+  const tagBg        = `linear-gradient(0deg, ${accent}0a, ${accent}0a), #ffffff`;
+  const tagText      = accent;
+  const tagBorder    = accent + "30";
+  // Testimonial card — slightly whiter than other inner cards (text-heavy).
+  const quoteBg      = `linear-gradient(0deg, ${accent}0a, ${accent}0a), #ffffff`;
 
   const divider      = "rgba(0,0,0,0.05)";
   const sectionBg    = "rgba(0,0,0,0.02)";
 
-  // Geometry for the whole portfolio (cards, avatar, tags, thumbnails…)
-  const geom = BLOCK_GEOM[blockStyle] ?? BLOCK_GEOM.rounded;
-
   return {
     pageBg,
     textPrimary, textSecond, textMuted,
-    accent: t.accent, accentBg, accentLight: accentBg,
-    tagBg, tagText, tagBorder,
+    accent, accentBg, accentLight: accentBg,
+    tagBg, tagText, tagBorder, quoteBg,
     divider, sectionBg,
     blockBg, blockBorder, blockShadow,
     blockRadius: geom.block,
     geom,
     isTorn: geom.torn,
+    hardShadow: !!geom.hardShadow,
     pattern: getThemePattern(t.id, t.dark, t.accent),
     glassExtra: {} as Record<string, never>,
   };
+}
+
+// Darken an accent only if it's too light to read on white.
+function readableAccent(hex: string): string {
+  let h = hex.replace("#", "");
+  if (h.length === 3) h = h.split("").map(c => c + c).join("");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  // Relative luminance (0-1)
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (lum <= 0.55) return hex; // already readable
+  // Mix toward a deep ink until readable
+  const mix = (c: number) => Math.round(c * 0.32 + 26 * 0.68); // blend 68% toward #1a (26)
+  const toHex = (c: number) => c.toString(16).padStart(2, "0");
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
 }
 
 // ─── 50 Themes ───────────────────────────────────────────────────────────────
@@ -138,7 +167,7 @@ export const THEMES: PortfolioTheme[] = [
 // badges, thumbnails…); "pill" makes everything super-round; "torn" gives the
 // ripped-paper edge look from the Linktree references.
 
-export type BlockStyleId = "rounded" | "sharp" | "pill" | "torn";
+export type BlockStyleId = "rounded" | "sharp" | "hard" | "torn";
 
 export interface BlockGeometry {
   block:  number;          // main section/card radius
@@ -146,6 +175,7 @@ export interface BlockGeometry {
   pill:   number;          // tags, badges, buttons
   avatar: number | string; // avatar radius (string allows "50%")
   torn:   boolean;         // ripped-paper edges on blocks
+  hardShadow?: boolean;    // hard offset shadow (no blur)
 }
 
 export interface BlockStyleDef {
@@ -156,42 +186,47 @@ export interface BlockStyleDef {
 }
 
 export const BLOCK_STYLES: BlockStyleDef[] = [
-  { id: "rounded", name: "Zaobljeni", previewRadius: 20, geom: { block: 20, inner: 14, pill: 999, avatar: 20,    torn: false } },
-  { id: "sharp",   name: "Oštri",     previewRadius: 3,  geom: { block: 3,  inner: 3,  pill: 4,   avatar: 4,     torn: false } },
-  { id: "pill",    name: "Pilula",    previewRadius: 22, geom: { block: 30, inner: 22, pill: 999, avatar: "50%", torn: false } },
-  { id: "torn",    name: "Pocepano",  previewRadius: 14, geom: { block: 16, inner: 12, pill: 999, avatar: 18,    torn: true  } },
+  { id: "rounded", name: "Zaobljeni",   previewRadius: 20, geom: { block: 20, inner: 14, pill: 999, avatar: 20, torn: false } },
+  { id: "sharp",   name: "Oštri",       previewRadius: 3,  geom: { block: 3,  inner: 3,  pill: 4,   avatar: 4,  torn: false } },
+  { id: "hard",    name: "Tvrda senka", previewRadius: 8,  geom: { block: 12, inner: 10, pill: 8,   avatar: 12, torn: false, hardShadow: true } },
+  { id: "torn",    name: "Pocepano",    previewRadius: 12, geom: { block: 0,  inner: 10, pill: 999, avatar: 16, torn: true  } },
 ];
 
 export const BLOCK_GEOM: Record<BlockStyleId, BlockGeometry> = {
   rounded: BLOCK_STYLES[0].geom,
   sharp:   BLOCK_STYLES[1].geom,
-  pill:    BLOCK_STYLES[2].geom,
+  hard:    BLOCK_STYLES[2].geom,
   torn:    BLOCK_STYLES[3].geom,
 };
 
 export const BLOCK_RADIUS: Record<BlockStyleId, number> = {
   rounded: 20,
   sharp:   3,
-  pill:    30,
-  torn:    16,
+  hard:    12,
+  torn:    0,
 };
 
 // Torn-paper mask — fixed-height teeth that tile horizontally, so the rip stays
-// crisp regardless of block height. Applied via the `.pf-torn` class.
+// crisp regardless of block height. Teeth are tall (12px) and jagged so the
+// effect reads clearly even on pale (soft/neutral) backgrounds. A stronger
+// drop-shadow gives the torn silhouette definition. Applied via `.pf-torn`.
+export const TORN_TOP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12' preserveAspectRatio='none'%3E%3Cpath d='M0 12 L0 6 L2 9 L4 3 L7 8 L10 2 L13 7 L16 1 L19 7 L22 3 L25 8 L28 5 L28 12 Z' fill='%23000'/%3E%3C/svg%3E";
+export const TORN_BOTTOM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 6 L2 3 L4 9 L7 4 L10 10 L13 5 L16 11 L19 5 L22 9 L25 4 L28 7 L28 0 Z' fill='%23000'/%3E%3C/svg%3E";
 export const TORN_CSS = `
   .pf-torn {
     border: none !important;
     box-shadow: none !important;
-    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.14));
+    border-radius: 0 !important;
+    filter: drop-shadow(0 5px 12px rgba(0,0,0,0.20));
     -webkit-mask:
-      linear-gradient(#000 0 0) 0 7px / 100% calc(100% - 14px) no-repeat,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 8 L0 4 L3 6 L6 2 L9 5 L12 1 L15 5 L18 2 L21 6 L24 3 L24 8 Z' fill='%23000'/%3E%3C/svg%3E") top / 24px 8px repeat-x,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 4 L3 2 L6 6 L9 3 L12 7 L15 3 L18 6 L21 2 L24 5 L24 0 Z' fill='%23000'/%3E%3C/svg%3E") bottom / 24px 8px repeat-x;
+      linear-gradient(#000 0 0) 0 11px / 100% calc(100% - 22px) no-repeat,
+      url("${TORN_TOP}") top / 28px 12px repeat-x,
+      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x;
     -webkit-mask-composite: source-over;
     mask:
-      linear-gradient(#000 0 0) 0 7px / 100% calc(100% - 14px) no-repeat,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 8 L0 4 L3 6 L6 2 L9 5 L12 1 L15 5 L18 2 L21 6 L24 3 L24 8 Z' fill='%23000'/%3E%3C/svg%3E") top / 24px 8px repeat-x,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 4 L3 2 L6 6 L9 3 L12 7 L15 3 L18 6 L21 2 L24 5 L24 0 Z' fill='%23000'/%3E%3C/svg%3E") bottom / 24px 8px repeat-x;
+      linear-gradient(#000 0 0) 0 11px / 100% calc(100% - 22px) no-repeat,
+      url("${TORN_TOP}") top / 28px 12px repeat-x,
+      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x;
     mask-composite: add;
   }
 `;

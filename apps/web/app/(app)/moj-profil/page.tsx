@@ -3,7 +3,17 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
-import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, TORN_CSS, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
+import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, TORN_CSS, TORN_BOTTOM, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
+
+// Bottom-only torn edge for the "Pocepano" shape picker button
+const SHAPE_BTN_CSS = `
+  .shape-torn-btn {
+    -webkit-mask: linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 7px) no-repeat, url("${TORN_BOTTOM}") bottom / 18px 7px repeat-x;
+    -webkit-mask-composite: source-over;
+    mask: linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 7px) no-repeat, url("${TORN_BOTTOM}") bottom / 18px 7px repeat-x;
+    mask-composite: add;
+  }
+`;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -702,7 +712,7 @@ export default function MojProfil() {
                   {stackTags.length > 0
                     ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {stackTags.map((tag, i) => (
-                          <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: i < 2 ? C.accentLight : C.tagGrayBg, color: i < 2 ? C.accent : C.tagGrayText, borderRadius: TK.geom.pill, fontWeight: i < 2 ? 500 : 400 }}>{tag}</span>
+                          <span key={i} style={{ fontSize: 11, padding: "7px 13px", background: TK.tagBg, color: i < 2 ? TK.tagText : C.text, border: `1px solid ${TK.tagBorder}`, borderRadius: TK.geom.pill, fontWeight: i < 2 ? 600 : 500 }}>{tag}</span>
                         ))}
                       </div>
                     : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema veština — klikni Uredi</p>
@@ -862,7 +872,7 @@ export default function MojProfil() {
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {list.map((t, i) => (
-                          <div key={i} style={{ background: C.accentLight, borderRadius: TK.geom.inner, padding: 16 }}>
+                          <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.blockBorder}`, borderRadius: TK.geom.inner, padding: 16 }}>
                             <p style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{t.quote}"</p>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />
@@ -963,15 +973,20 @@ export default function MojProfil() {
                 padding: "10px 0 calc(10px + env(safe-area-inset-bottom))",
               }}>
                 {/* Top row: shape chips + close */}
+                <style>{SHAPE_BTN_CSS}</style>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 8px", overflowX: "auto", scrollbarWidth: "none" }}>
                   {BLOCK_STYLES.map(bs => (
-                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)} style={{
-                      flexShrink: 0, padding: "5px 12px", borderRadius: bs.previewRadius,
-                      border: currentBlk === bs.id ? "2px solid #A855F7" : "1px solid rgba(255,255,255,0.15)",
-                      background: currentBlk === bs.id ? "rgba(168,85,247,0.18)" : "rgba(255,255,255,0.05)",
-                      color: currentBlk === bs.id ? "#C4A0FF" : "rgba(255,255,255,0.7)",
-                      fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-                    }}>{bs.name}</button>
+                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)}
+                      className={bs.id === "torn" ? "shape-torn-btn" : ""}
+                      style={{
+                        flexShrink: 0, padding: bs.id === "torn" ? "6px 12px 11px" : "5px 12px",
+                        borderRadius: bs.id === "torn" ? 4 : bs.previewRadius,
+                        border: currentBlk === bs.id ? "2px solid #A855F7" : "1px solid rgba(255,255,255,0.15)",
+                        background: currentBlk === bs.id ? "rgba(168,85,247,0.18)" : "rgba(255,255,255,0.05)",
+                        color: currentBlk === bs.id ? "#C4A0FF" : "rgba(255,255,255,0.7)",
+                        fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                        boxShadow: bs.id === "hard" ? "3px 3px 0 rgba(168,85,247,0.5)" : "none",
+                      }}>{bs.name}</button>
                   ))}
                   <div style={{ flex: 1 }} />
                   <button onClick={() => setShowThemeSheet(false)} style={{ flexShrink: 0, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer" }}>×</button>
@@ -1016,15 +1031,20 @@ export default function MojProfil() {
               </div>
               <div style={{ padding: "20px" }}>
                 <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
+                <style>{SHAPE_BTN_CSS}</style>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
                   {BLOCK_STYLES.map(bs => (
-                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)} style={{
-                      padding: "8px 16px", borderRadius: bs.previewRadius,
-                      border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
-                      background: currentBlk === bs.id ? C.accentLight : "#fff",
-                      color: currentBlk === bs.id ? C.accent : C.dark,
-                      fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                    }}>{bs.name}</button>
+                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)}
+                      className={bs.id === "torn" ? "shape-torn-btn" : ""}
+                      style={{
+                        padding: bs.id === "torn" ? "9px 16px 14px" : "8px 16px",
+                        borderRadius: bs.id === "torn" ? 4 : bs.previewRadius,
+                        border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
+                        background: currentBlk === bs.id ? C.accentLight : "#fff",
+                        color: currentBlk === bs.id ? C.accent : C.dark,
+                        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                        boxShadow: bs.id === "hard" ? `3px 3px 0 ${C.accent}` : "none",
+                      }}>{bs.name}</button>
                   ))}
                 </div>
                 {categories.map(cat => (
