@@ -151,6 +151,14 @@ export default function MojProfil() {
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showThemeSheet, setShowThemeSheet] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
     if (!p) return;
@@ -929,7 +937,7 @@ export default function MojProfil() {
         </div>{/* end pp-grid */}
       </div>{/* end pp-card */}
 
-      {/* ── Theme customization bottom sheet ── */}
+      {/* ── Theme customization ── */}
       {showThemeSheet && p && (() => {
         const app = (p as any).portfolioAppearance as PortfolioAppearance | undefined;
         const currentTpl = app?.templateId ?? 33;
@@ -941,91 +949,101 @@ export default function MojProfil() {
           { key: "neutral", label: "🤍 Neutral" },
           { key: "special", label: "✨ Special" },
         ];
+
+        // ── MOBILE: non-blocking bottom scroll bar (background stays scrollable) ──
+        if (isMobile) {
+          return (
+            <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 9999, pointerEvents: "none" }}>
+              <style>{`@keyframes barUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+              <div style={{
+                pointerEvents: "auto",
+                background: "#15151c", borderTop: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: "0 -8px 30px rgba(0,0,0,0.4)",
+                animation: "barUp 0.25s cubic-bezier(0.16,1,0.3,1)",
+                padding: "10px 0 calc(10px + env(safe-area-inset-bottom))",
+              }}>
+                {/* Top row: shape chips + close */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 8px", overflowX: "auto", scrollbarWidth: "none" }}>
+                  {BLOCK_STYLES.map(bs => (
+                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)} style={{
+                      flexShrink: 0, padding: "5px 12px", borderRadius: bs.previewRadius,
+                      border: currentBlk === bs.id ? "2px solid #A855F7" : "1px solid rgba(255,255,255,0.15)",
+                      background: currentBlk === bs.id ? "rgba(168,85,247,0.18)" : "rgba(255,255,255,0.05)",
+                      color: currentBlk === bs.id ? "#C4A0FF" : "rgba(255,255,255,0.7)",
+                      fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                    }}>{bs.name}</button>
+                  ))}
+                  <div style={{ flex: 1 }} />
+                  <button onClick={() => setShowThemeSheet(false)} style={{ flexShrink: 0, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer" }}>×</button>
+                </div>
+                {/* Theme thumbnails — horizontal scroll */}
+                <div style={{ display: "flex", gap: 10, padding: "2px 12px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+                  {THEMES.map(th => (
+                    <button key={th.id} title={th.name} onClick={() => applyTheme(th.id, currentBlk)} style={{
+                      flexShrink: 0, width: 56, height: 56, borderRadius: 12,
+                      background: th.bg, backgroundSize: "cover",
+                      border: currentTpl === th.id ? "3px solid #A855F7" : "2px solid rgba(255,255,255,0.12)",
+                      cursor: "pointer", position: "relative", padding: 0,
+                      boxShadow: currentTpl === th.id ? "0 0 0 2px rgba(168,85,247,0.4)" : "none",
+                    }}>
+                      {currentTpl === th.id && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // ── DESKTOP: centered modal grid (click outside / X to close) ──
         return (
           <div
             onClick={e => { if (e.target === e.currentTarget) setShowThemeSheet(false); }}
             style={{
               position: "fixed", inset: 0, zIndex: 9999,
-              background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)",
-              display: "flex", alignItems: "flex-end", justifyContent: "center",
+              background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)",
+              display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
             }}
           >
-            <style>{`
-              @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-              @media (min-width: 769px) {
-                .theme-sheet { align-self: center !important; border-radius: 24px !important; max-height: 82vh !important; }
-              }
-            `}</style>
-            <div
-              className="theme-sheet"
-              style={{
-                width: "100%", maxWidth: 560,
-                background: "#fff",
-                borderTopLeftRadius: 24, borderTopRightRadius: 24,
-                maxHeight: "88vh", overflowY: "auto",
-                animation: "sheetUp 0.28s cubic-bezier(0.16,1,0.3,1)",
-                boxShadow: "0 -8px 40px rgba(0,0,0,0.25)",
-              }}
-            >
-              {/* Handle + header */}
-              <div style={{ position: "sticky", top: 0, background: "#fff", padding: "14px 20px 12px", borderBottom: `1px solid ${C.divider}`, zIndex: 2 }}>
-                <div style={{ width: 38, height: 4, borderRadius: 2, background: "#ddd", margin: "0 auto 14px" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.dark }}>🎨 Prilagodi izgled</p>
-                  <button onClick={() => setShowThemeSheet(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: C.divider, border: "none", cursor: "pointer", fontSize: 16, color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-                </div>
+            <div style={{
+              width: "100%", maxWidth: 560, background: "#fff",
+              borderRadius: 24, maxHeight: "82vh", overflowY: "auto",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+            }}>
+              <div style={{ position: "sticky", top: 0, background: "#fff", padding: "16px 22px 14px", borderBottom: `1px solid ${C.divider}`, zIndex: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.dark }}>🎨 Prilagodi izgled</p>
+                <button onClick={() => setShowThemeSheet(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: C.divider, border: "none", cursor: "pointer", fontSize: 16, color: C.muted }}>×</button>
               </div>
-
               <div style={{ padding: "20px" }}>
-                {/* Block shape picker */}
                 <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>Oblik blokova</p>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>
                   {BLOCK_STYLES.map(bs => (
-                    <button
-                      key={bs.id}
-                      onClick={() => applyTheme(currentTpl, bs.id)}
-                      style={{
-                        padding: "8px 16px",
-                        borderRadius: bs.previewRadius,
-                        border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
-                        background: currentBlk === bs.id ? C.accentLight : "#fff",
-                        color: currentBlk === bs.id ? C.accent : C.dark,
-                        fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                      }}
-                    >
-                      {bs.name}
-                    </button>
+                    <button key={bs.id} onClick={() => applyTheme(currentTpl, bs.id)} style={{
+                      padding: "8px 16px", borderRadius: bs.previewRadius,
+                      border: currentBlk === bs.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`,
+                      background: currentBlk === bs.id ? C.accentLight : "#fff",
+                      color: currentBlk === bs.id ? C.accent : C.dark,
+                      fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    }}>{bs.name}</button>
                   ))}
                 </div>
-
-                {/* Template picker by category */}
                 {categories.map(cat => (
                   <div key={cat.key} style={{ marginBottom: 22 }}>
                     <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "0.5px", textTransform: "uppercase" }}>{cat.label}</p>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
                       {THEMES.filter(th => th.category === cat.key).map(th => (
-                        <button
-                          key={th.id}
-                          title={th.name}
-                          onClick={() => applyTheme(th.id, currentBlk)}
-                          style={{
-                            aspectRatio: "1", width: "100%",
-                            borderRadius: 14,
-                            background: th.bg,
-                            border: currentTpl === th.id ? `3px solid ${C.accent}` : "2px solid rgba(0,0,0,0.08)",
-                            cursor: "pointer", position: "relative",
-                            boxShadow: currentTpl === th.id ? `0 0 0 3px ${C.accentLight}` : "none",
-                          }}
-                        >
-                          {currentTpl === th.id && (
-                            <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>✓</span>
-                          )}
+                        <button key={th.id} title={th.name} onClick={() => applyTheme(th.id, currentBlk)} style={{
+                          aspectRatio: "1", width: "100%", borderRadius: 14, background: th.bg,
+                          border: currentTpl === th.id ? `3px solid ${C.accent}` : "2px solid rgba(0,0,0,0.08)",
+                          cursor: "pointer", position: "relative",
+                          boxShadow: currentTpl === th.id ? `0 0 0 3px ${C.accentLight}` : "none",
+                        }}>
+                          {currentTpl === th.id && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>✓</span>}
                         </button>
                       ))}
                     </div>
                   </div>
                 ))}
-
                 <p style={{ margin: "6px 0 8px", fontSize: 12, color: C.muted, textAlign: "center" }}>
                   Promjene se odmah primjenjuju na tvoj portfolio.
                 </p>
