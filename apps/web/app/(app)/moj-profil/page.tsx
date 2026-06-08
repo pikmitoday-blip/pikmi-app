@@ -386,9 +386,7 @@ export default function MojProfil() {
       <div style={{ padding: 24 }}>
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
           <button onClick={() => startEdit("info")}
-            style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.accentLight, color: C.accent, border: "none", cursor: "pointer" }}>
-            Uredi
-          </button>
+            style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
         </div>
 
         {/* Avatar + Name */}
@@ -625,6 +623,15 @@ export default function MojProfil() {
               {editSection === "portfolio" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
+                  {/* Upload notice — shown until first file is uploaded */}
+                  {!hasWork && (
+                    <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 10, background: C.accentLight, border: `1px solid ${C.accent}30`, marginBottom: 14 }}>
+                      <span style={{ fontSize: 18 }}>📸</span>
+                      <p style={{ margin: 0, fontSize: 12, color: C.text, lineHeight: 1.5 }}>
+                        <strong style={{ color: C.accent }}>Dodaj svoje prethodne radove!</strong> Klikni „Dodaj fajl" da uploaduješ slike, videe ili dokumente. Klijentima je ovo najvažnija sekcija.
+                      </p>
+                    </div>
+                  )}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
                       <div key={i} style={{ background: C.sectionBg, borderRadius: 10, padding: 12 }}>
@@ -632,12 +639,12 @@ export default function MojProfil() {
                         <div style={{ borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i], marginBottom: 8, minHeight: 80, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {draft.csImages?.[i]
                             ? (/\.(mp4|mov|webm|avi)$/i.test(draft.csImages[i])
-                                ? <video src={draft.csImages[i]} muted controls style={{ width: "100%", objectFit: "contain", display: "block", background: "#000" }} />
+                                ? <video src={`${draft.csImages[i]}#t=0.1`} muted controls preload="metadata" playsInline style={{ width: "100%", objectFit: "contain", display: "block", background: "#000" }} />
                                 : /\.(pdf|doc|docx)$/i.test(draft.csImages[i])
-                                ? <div style={{ padding: "18px 10px", textAlign: "center" }}>
-                                    <div style={{ fontSize: 32, marginBottom: 4 }}>{/\.pdf$/i.test(draft.csImages[i]) ? "📄" : "📝"}</div>
-                                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{/\.pdf$/i.test(draft.csImages[i]) ? "PDF" : "Word"}</div>
-                                  </div>
+                                ? <iframe
+                                    src={/\.(doc|docx)$/i.test(draft.csImages[i]) ? `https://docs.google.com/viewer?url=${encodeURIComponent(draft.csImages[i])}&embedded=true` : `${draft.csImages[i]}#toolbar=0&navpanes=0&view=FitH`}
+                                    style={{ width: "100%", height: 150, border: "none", display: "block", background: "#fff" }}
+                                    title="dokument" />
                                 : <img src={draft.csImages[i]} alt="" style={{ width: "100%", height: "auto", display: "block" }} />)
                             : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", padding: "28px 0" }}>Bez fajla</span>
                           }
@@ -668,29 +675,38 @@ export default function MojProfil() {
                 <>
                   <SectionHead number="02" text="Prethodni radovi" section="portfolio" onEdit={startEdit} />
                   {hasWork ? (
-                    <>
-                      <div className="pp-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                        {csSlots.map(i => {
-                          const img = p.csImages?.[i];
-                          const cs  = p.caseStudies?.[i];
-                          return (
-                            <div key={i}>
-                              {img && /\.(mp4|mov|webm|avi)$/i.test(img) ? (
-                                <video src={img} muted preload="metadata" style={{ width: "100%", borderRadius: TK.geom.inner, display: "block", background: "#000", objectFit: "contain" }} />
-                              ) : (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: TK.geom.inner }} />
-                              )}
-                              {cs?.client && <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 600, color: C.text }}>{cs.client}</p>}
-                              {cs?.platform && <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>{cs.platform}</p>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div style={{ display: "none" }}>
-                      </div>
-                    </>
-                  ) : <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema projekata — klikni Uredi</p>}
+                    <div className="pp-cs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                      {csSlots.map(i => {
+                        const img = p.csImages?.[i];
+                        const cs  = p.caseStudies?.[i];
+                        const isVideo = img && /\.(mp4|mov|webm|avi)$/i.test(img);
+                        const isDoc   = img && /\.(pdf|doc|docx)$/i.test(img);
+                        return (
+                          <div key={i}>
+                            {isVideo ? (
+                              <video src={`${img}#t=0.1`} muted preload="metadata" playsInline style={{ width: "100%", borderRadius: TK.geom.inner, display: "block", background: "#000", objectFit: "contain" }} />
+                            ) : isDoc ? (
+                              <div style={{ borderRadius: TK.geom.inner, overflow: "hidden", border: `1px solid ${C.border}`, background: "#fff" }}>
+                                <iframe src={/\.(doc|docx)$/i.test(img) ? `https://docs.google.com/viewer?url=${encodeURIComponent(img)}&embedded=true` : `${img}#toolbar=0&navpanes=0&view=FitH`} style={{ width: "100%", height: 150, border: "none", display: "block", pointerEvents: "none" }} title="dokument" />
+                              </div>
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={img} alt="" style={{ width: "100%", height: "auto", display: "block", borderRadius: TK.geom.inner }} />
+                            )}
+                            {cs?.client && <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 600, color: C.text }}>{cs.client}</p>}
+                            {cs?.platform && <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>{cs.platform}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div onClick={() => startEdit("portfolio")} style={{ display: "flex", gap: 10, padding: "14px 16px", borderRadius: 12, background: C.accentLight, border: `1px dashed ${C.accent}50`, cursor: "pointer" }}>
+                      <span style={{ fontSize: 20 }}>📸</span>
+                      <p style={{ margin: 0, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>
+                        <strong style={{ color: C.accent }}>Dodaj svoje prethodne radove!</strong> Klikni ovde da uploaduješ slike, videe ili dokumente svojih radova — ovo je sekcija koju klijenti najviše gledaju.
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>

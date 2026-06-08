@@ -857,13 +857,20 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                           <VideoPlayer src={img} />
                         ) : isDoc ? (
                           <button onClick={() => setDocPreview(img)} style={{
-                            width: "100%", background: C.accentLight, border: `1px solid ${C.border}`,
-                            borderRadius: TK.geom.inner, padding: "24px 16px", cursor: "pointer",
-                            display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                            width: "100%", background: "#fff", border: `1px solid ${C.border}`,
+                            borderRadius: TK.geom.inner, padding: 0, cursor: "pointer", overflow: "hidden",
+                            display: "block", position: "relative",
                           }}>
-                            <span style={{ fontSize: 40 }}>{isPdf ? "📄" : "📝"}</span>
-                            <span style={{ fontSize: 12, color: C.accent, fontWeight: 700 }}>{isPdf ? "PDF dokument" : "Word dokument"}</span>
-                            <span style={{ fontSize: 11, color: C.muted }}>Klikni za pregled</span>
+                            {/* Document content thumbnail — non-interactive; click opens popup */}
+                            <iframe
+                              src={(/\.(doc|docx)$/i.test(img) || (isIOSDevice && isPdf))
+                                ? `https://docs.google.com/viewer?url=${encodeURIComponent(img)}&embedded=true`
+                                : `${img}#toolbar=0&navpanes=0&view=FitH`}
+                              style={{ width: "100%", height: 150, border: "none", display: "block", pointerEvents: "none" }}
+                              title="dokument" />
+                            <span style={{ display: "block", padding: "6px 10px", fontSize: 11, color: C.accent, fontWeight: 700, borderTop: `1px solid ${C.border}`, background: C.accentLight }}>
+                              {isPdf ? "📄 Klikni za pregled" : "📝 Klikni za pregled"}
+                            </span>
                           </button>
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
