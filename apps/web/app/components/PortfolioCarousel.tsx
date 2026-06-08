@@ -76,6 +76,42 @@ const PERSONAS: Persona[] = [
     ],
     works: ["Aura", "Mliva", "Senka", "Polje"],
   },
+  {
+    themeId: 13, blockStyle: "sharp",           // dark forest green · topographic
+    first: "Nikola", last: "Marić", city: "Niš", years: "8",
+    title: "Filmska produkcija i video reklame",
+    desc: "Snimam i produciram reklame i brand filmove — od scenarija do finalne montaže.",
+    tags: ["DaVinci", "Premiere", "Snimanje", "Drone"],
+    packages: [
+      { name: "Spot", price: "€600",  desc: "30s reklama, scenario + snimanje + montaža." },
+      { name: "Film", price: "€1500", desc: "Kompletna produkcija + post-produkcija." },
+    ],
+    works: ["RedBull", "NLB", "Telekom", "Maxi"],
+  },
+  {
+    themeId: 5, blockStyle: "rounded",          // soft golden · horizontal lines
+    first: "Teodora", last: "Kostić", city: "Beograd", years: "4",
+    title: "Copywriting i email marketing",
+    desc: "Pišem tekstove koji prodaju — landing strane, email sekvence i brand poruke.",
+    tags: ["Copywriting", "Email", "SEO", "Brand voice"],
+    packages: [
+      { name: "Sales", price: "€200", desc: "Prodajni tekst za landing stranu." },
+      { name: "Email", price: "€450", desc: "Email sekvenca od 5 mejlova." },
+    ],
+    works: ["Notion", "Glovo", "eKupi", "Wolt"],
+  },
+  {
+    themeId: 25, blockStyle: "hard",            // royal purple · confetti · hard shadow
+    first: "Luka", last: "Janković", city: "Novi Sad", years: "6",
+    title: "Muzička produkcija, mix i master",
+    desc: "Produciram bitove i radim profesionalni mix i master za izvođače i brendove.",
+    tags: ["Ableton", "Mixing", "Mastering", "Sound"],
+    packages: [
+      { name: "Beat", price: "€150", desc: "1 instrumental, 2 revizije uključene." },
+      { name: "Mix",  price: "€400", desc: "Mix + master jedne pesme." },
+    ],
+    works: ["Surreal", "NoLimit", "Bassiq", "Echo"],
+  },
 ];
 
 // ── Full portfolio preview card (filled, like the HTML references) ────────────
@@ -184,7 +220,7 @@ export default function PortfolioCarousel() {
 
   // Responsive card width so side cards fit fully (no harsh slicing on mobile)
   useEffect(() => {
-    const update = () => setCardW(window.innerWidth <= 768 ? 232 : 300);
+    const update = () => setCardW(window.innerWidth <= 768 ? 246 : 320);
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
@@ -192,7 +228,7 @@ export default function PortfolioCarousel() {
 
   useEffect(() => {
     if (paused) return;
-    const id = setInterval(() => setActive(a => (a + 1) % n), 4500);
+    const id = setInterval(() => setActive(a => (a + 1) % n), 4000);
     return () => clearInterval(id);
   }, [n, paused]);
 
@@ -224,38 +260,39 @@ export default function PortfolioCarousel() {
       
       {PERSONAS.map((p, i) => {
         let rel = ((i - active) % n + n) % n;
-        if (rel > n / 2) rel -= n; // → range [-2 .. 2]
+        if (rel > n / 2) rel -= n; // normalize → centred range
         const abs = Math.abs(rel);
         const isCenter = rel === 0;
+        const dir = rel < 0 ? -1 : 1;
 
-        // Side cards tuck BEHIND the centre card (smaller + faded) so their
-        // rounded edge peeks out — never sliced flat by the viewport.
-        const tx = rel === 0 ? 0 : (rel < 0 ? -1 : 1) * (abs === 1 ? 30 : 52);
-        const scale = abs === 0 ? 1 : abs === 1 ? 0.84 : 0.66;
-        const opacity = abs === 0 ? 1 : abs === 1 ? 0.78 : 0.34;
-        const blur = abs === 0 ? 0 : abs === 1 ? 1.2 : 3;
-        const rotY = rel === 0 ? 0 : rel < 0 ? 14 : -14;
-        const z = 10 - abs;
+        // Clear hierarchy: big centre card, distinctly smaller + pushed-back
+        // sides; cards beyond ±2 fully hidden (we have 8 templates total).
+        const tx     = abs === 0 ? 0 : dir * (abs === 1 ? 42 : 70);
+        const scale  = abs === 0 ? 1 : abs === 1 ? 0.68 : 0.5;
+        const opacity= abs === 0 ? 1 : abs === 1 ? 0.5  : abs === 2 ? 0.2 : 0;
+        const blur   = abs === 0 ? 0 : abs === 1 ? 2.5  : 4.5;
+        const rotY   = abs === 0 ? 0 : -dir * 22;
+        const z      = 20 - abs;
 
         return (
           <div
             key={i}
-            onClick={() => { if (!isCenter) { setActive(i); pauseThenResume(); } }}
+            onClick={() => { if (!isCenter && abs <= 2) { setActive(i); pauseThenResume(); } }}
             style={{
               position: "absolute", top: 22, left: "50%",
               width: cardW, height: cardH,
               transformOrigin: "center center",
               transform: `translateX(-50%) translateX(${tx}%) scale(${scale}) rotateY(${rotY}deg)`,
               opacity, zIndex: z, filter: blur ? `blur(${blur}px)` : "none",
-              transition: "transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.7s ease, filter 0.7s ease",
+              transition: "transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.8s ease, filter 0.8s ease",
               willChange: "transform, opacity",
-              cursor: isCenter ? "default" : "pointer",
+              cursor: isCenter ? "default" : abs <= 2 ? "pointer" : "default",
               pointerEvents: abs > 1 ? "none" : "auto",
             }}
           >
             <div style={{
               width: "100%", height: "100%", borderRadius: 26, overflow: "hidden",
-              boxShadow: isCenter ? "0 30px 80px rgba(0,0,0,0.5)" : "0 16px 44px rgba(0,0,0,0.32)",
+              boxShadow: isCenter ? "0 36px 90px rgba(0,0,0,0.55)" : "0 16px 44px rgba(0,0,0,0.3)",
               border: "1px solid rgba(255,255,255,0.08)",
             }}>
               <TemplateMockup p={p} />
