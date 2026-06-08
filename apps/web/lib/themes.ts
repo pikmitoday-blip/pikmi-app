@@ -54,8 +54,10 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
   const tagBg        = `linear-gradient(0deg, ${accent}0a, ${accent}0a), #ffffff`;
   const tagText      = accent;
   const tagBorder    = accent + "30";
-  // Testimonial card — slightly whiter than other inner cards (text-heavy).
-  const quoteBg      = `linear-gradient(0deg, ${accent}0a, ${accent}0a), #ffffff`;
+  // Testimonial card — a touch MORE tinted than the section block (which is ~5%)
+  // so it reads as a slightly deeper card with a visible accent border.
+  const quoteBg      = `linear-gradient(0deg, ${accent}1c, ${accent}1c), #ffffff`;
+  const quoteBorder  = accent + "33";
 
   const divider      = "rgba(0,0,0,0.05)";
   const sectionBg    = "rgba(0,0,0,0.02)";
@@ -64,7 +66,7 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
     pageBg,
     textPrimary, textSecond, textMuted,
     accent, accentBg, accentLight: accentBg,
-    tagBg, tagText, tagBorder, quoteBg,
+    tagBg, tagText, tagBorder, quoteBg, quoteBorder,
     divider, sectionBg,
     blockBg, blockBorder, blockShadow,
     blockRadius: geom.block,
@@ -212,21 +214,29 @@ export const BLOCK_RADIUS: Record<BlockStyleId, number> = {
 // drop-shadow gives the torn silhouette definition. Applied via `.pf-torn`.
 export const TORN_TOP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12' preserveAspectRatio='none'%3E%3Cpath d='M0 12 L0 6 L2 9 L4 3 L7 8 L10 2 L13 7 L16 1 L19 7 L22 3 L25 8 L28 5 L28 12 Z' fill='%23000'/%3E%3C/svg%3E";
 export const TORN_BOTTOM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='12' viewBox='0 0 28 12' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 6 L2 3 L4 9 L7 4 L10 10 L13 5 L16 11 L19 5 L22 9 L25 4 L28 7 L28 0 Z' fill='%23000'/%3E%3C/svg%3E";
+export const TORN_LEFT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='28' viewBox='0 0 12 28' preserveAspectRatio='none'%3E%3Cpath d='M12 0 L12 28 L6 28 L9 24 L4 20 L8 16 L5 12 L9 8 L4 4 L7 0 Z' fill='%23000'/%3E%3C/svg%3E";
+export const TORN_RIGHT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='28' viewBox='0 0 12 28' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L0 28 L6 28 L3 24 L8 20 L4 16 L7 12 L3 8 L8 4 L5 0 Z' fill='%23000'/%3E%3C/svg%3E";
+// Torn on ALL FOUR sides → the whole block reads as a torn-paper shape (no boxy
+// rectangle). A crisp + soft drop-shadow defines the silhouette even on pale bg.
 export const TORN_CSS = `
   .pf-torn {
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    filter: drop-shadow(0 5px 12px rgba(0,0,0,0.20));
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.30)) drop-shadow(0 6px 14px rgba(0,0,0,0.16));
     -webkit-mask:
-      linear-gradient(#000 0 0) 0 11px / 100% calc(100% - 22px) no-repeat,
+      linear-gradient(#000 0 0) center / calc(100% - 22px) calc(100% - 22px) no-repeat,
       url("${TORN_TOP}") top / 28px 12px repeat-x,
-      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x;
+      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x,
+      url("${TORN_LEFT}") left / 12px 28px repeat-y,
+      url("${TORN_RIGHT}") right / 12px 28px repeat-y;
     -webkit-mask-composite: source-over;
     mask:
-      linear-gradient(#000 0 0) 0 11px / 100% calc(100% - 22px) no-repeat,
+      linear-gradient(#000 0 0) center / calc(100% - 22px) calc(100% - 22px) no-repeat,
       url("${TORN_TOP}") top / 28px 12px repeat-x,
-      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x;
+      url("${TORN_BOTTOM}") bottom / 28px 12px repeat-x,
+      url("${TORN_LEFT}") left / 12px 28px repeat-y,
+      url("${TORN_RIGHT}") right / 12px 28px repeat-y;
     mask-composite: add;
   }
 `;

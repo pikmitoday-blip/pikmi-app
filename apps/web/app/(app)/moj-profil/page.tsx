@@ -783,14 +783,14 @@ export default function MojProfil() {
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                         {csItems.map((cs, i) => (
-                          <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${C.accent}` }}>
+                          <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `3px solid ${C.accent}` }}>
                             <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 600 }}>{cs.client}</p>
                             {cs.platform && <p style={{ margin: "0 0 4px", fontSize: 11, color: C.accent }}>{cs.platform}</p>}
                             {cs.industry && <p style={{ margin: 0, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{cs.industry}</p>}
                           </div>
                         ))}
                         {expItems.map((exp, i) => (
-                          <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${C.border}` }}>
+                          <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `3px solid ${TK.accent}80` }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                               <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
                               {(exp.dateFrom || exp.dateTo) && <p style={{ margin: 0, fontSize: 10, color: C.muted, flexShrink: 0, marginLeft: 10 }}>{exp.dateFrom}{exp.dateTo ? ` — ${exp.dateTo}` : ""}</p>}
@@ -888,7 +888,7 @@ export default function MojProfil() {
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {list.map((t, i) => (
-                          <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.blockBorder}`, borderRadius: TK.geom.inner, padding: 16 }}>
+                          <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.quoteBorder}`, borderRadius: TK.geom.inner, padding: 16 }}>
                             <p style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>"{t.quote}"</p>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.accent},#EC4899)` }} />

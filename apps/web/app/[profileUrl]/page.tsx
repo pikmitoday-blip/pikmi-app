@@ -938,7 +938,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
 
                     {/* Klijenti iz kviza */}
                     {csItems.map((cs, i) => (
-                      <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${i === 0 && expItems.length === 0 ? C.accent : C.border}` }}>
+                      <div key={`cs-${i}`} style={{ paddingLeft: 12, borderLeft: `3px solid ${TK.accent}` }}>
                         <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 600 }}>{cs.client}</p>
                         {cs.platform && (
                           <p style={{ margin: "0 0 4px", fontSize: 11, color: C.accent }}>{cs.platform}</p>
@@ -953,7 +953,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                     {expItems.map((exp, i) => {
                       const isActive = i === 0 && csItems.length === 0;
                       return (
-                        <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `2px solid ${isActive ? C.accent : C.border}` }}>
+                        <div key={`exp-${i}`} style={{ paddingLeft: 12, borderLeft: `3px solid ${isActive ? TK.accent : TK.accent + "80"}` }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                             <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{exp.company}</p>
                             {(exp.dateFrom || exp.dateTo) && (
@@ -990,7 +990,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
                   <SectionLabel number="06" text="Reči klijenata" />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {list.map((t, i) => (
-                      <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.blockBorder}`, borderRadius: TK.geom.inner, padding: 18 }}>
+                      <div key={i} style={{ background: TK.quoteBg, border: `1px solid ${TK.quoteBorder}`, borderRadius: TK.geom.inner, padding: 18 }}>
                         <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 500, lineHeight: 1.4, color: C.dark }}>
                           "{t.quote}"
                         </p>
