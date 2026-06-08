@@ -151,7 +151,7 @@ export default function RegisterPage() {
         background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)",
         fontSize: 13, color: "#A78BFA",
       }}>
-        🎁 7 dana besplatnog triala — sve funkcije uključene
+        🎁 7 dana besplatnog triala, bez kreditne kartice.
       </div>
 
       {/* ── OAuth ── */}
