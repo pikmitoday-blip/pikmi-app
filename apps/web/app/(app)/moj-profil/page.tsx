@@ -401,13 +401,21 @@ export default function MojProfil() {
         .pp-card {
           width: 100%;
           background: ${TK.pageBg};
-          background-attachment: fixed;
           border-radius: 24px;
           overflow: hidden;
           font-family: 'Inter', -apple-system, sans-serif;
           color: ${TK.textPrimary};
           padding: 12px;
+          position: relative;
         }
+        .pp-card::before {
+          content: "";
+          position: absolute; inset: 0; pointer-events: none; z-index: 0;
+          background-image: ${TK.pattern.image};
+          background-size: ${TK.pattern.size};
+          background-repeat: repeat;
+        }
+        .pp-grid { position: relative; z-index: 1; }
         .pp-grid { display: flex; flex-direction: column; gap: 10px; }
         .pp-left {
           background: ${TK.blockBg};

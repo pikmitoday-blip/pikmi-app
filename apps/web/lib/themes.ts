@@ -1,4 +1,5 @@
 // ─── Portfolio Themes ────────────────────────────────────────────────────────
+import { getThemePattern } from "./patterns";
 
 export interface PortfolioTheme {
   id: number;
@@ -57,6 +58,7 @@ export function themeTokens(t: PortfolioTheme, blockStyle: BlockStyleId) {
     blockRadius: geom.block,
     geom,
     isTorn: geom.torn,
+    pattern: getThemePattern(t.id, t.dark, t.accent),
     glassExtra: {} as Record<string, never>,
   };
 }

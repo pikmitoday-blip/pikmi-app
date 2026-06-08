@@ -637,7 +637,15 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       minHeight: "100vh",
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       color: TK.textPrimary,
+      position: "relative",
     }}>
+      {/* ── Theme background pattern overlay (shows in the gaps between blocks) ── */}
+      <div aria-hidden style={{
+        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
+        backgroundImage: TK.pattern.image,
+        backgroundSize: TK.pattern.size,
+        backgroundRepeat: "repeat",
+      }} />
       {/* ── Responsive CSS ── */}
       <style>{`
         .pf-card { width:100%; max-width:480px; min-height:100vh; overflow:hidden; }
@@ -694,7 +702,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
       `}</style>
 
       {/* ── Outer centering wrapper ── */}
-      <div style={{ display: "flex", justifyContent: "center", padding: "0", minHeight: "100vh", backgroundAttachment: "fixed" }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: "0", minHeight: "100vh", backgroundAttachment: "fixed", position: "relative", zIndex: 1 }}>
 
         {/* ── Card ── */}
         <div className="pf-card">
