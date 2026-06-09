@@ -142,7 +142,7 @@ export default async function Home() {
         @media (max-width: 768px) {
           * { box-sizing: border-box; }
           body { overflow-x: hidden; }
-          .hero-grid { flex-direction: column !important; align-items: stretch !important; width: 100% !important; }
+          .hero-grid { flex-direction: column !important; align-items: stretch !important; width: 100% !important; gap: 18px !important; }
           .hero-mockup {
             display: block !important;
             width: 100% !important;
