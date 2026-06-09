@@ -675,6 +675,7 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             border-radius: 24px;
             box-shadow: 0 8px 60px rgba(0,0,0,0.18);
             overflow: hidden;
+            background: ${TK.blockBg};
           }
           .pf-block { margin: 0; border-radius: 0; border: none; box-shadow: none; background: transparent; }
           .pf-grid {
