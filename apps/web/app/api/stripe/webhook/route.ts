@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
               Hvala ti što si izabrao pikmi!
             </h2>
             <p style="margin:0 0 16px;color:#444;font-size:16px;line-height:1.7;">
-              Tvoj <strong>Pro plan je aktivan</strong> i sve funkcije su ti otključane — neograničeni pitch linkovi, sve sekcije profila, real-time praćenje, outreach kit i sve teme.
+              Tvoj <strong>Pro plan je aktivan</strong> i sve funkcije su ti otključane.
             </p>
             <p style="margin:0 0 28px;color:#444;font-size:16px;line-height:1.7;">
               Tvoja podrška nam mnogo znači. Sada je na tebe red da zatvoriš svoj sledeći deal — želimo ti puno klijenata! 🙌
