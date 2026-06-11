@@ -361,6 +361,12 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   const currentLocale = LOCALES.find(l => l.value === locale)!;
 
+  // ── Onboarding: fullscreen quiz only — hide all platform chrome so the user
+  // can't navigate anywhere until the quiz is finished. ──
+  if (path.includes("/onboarding")) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="app-layout">
       <aside className="sidebar">
