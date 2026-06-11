@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
                 body: JSON.stringify({
                   from,
                   to: userEmail,
-                  subject: "Dobrodošao u pikmi Pro! ⚡",
+                  subject: "Hvala ti! Tvoj pikmi Pro je aktivan ⚡",
                   html: `
 <!DOCTYPE html>
 <html>
@@ -139,12 +139,15 @@ export async function POST(req: NextRequest) {
         <!-- Body -->
         <tr>
           <td style="padding:36px 32px;">
-            <div style="font-size:42px;margin-bottom:16px;">⚡</div>
+            <div style="font-size:42px;margin-bottom:16px;">💜</div>
             <h2 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#111;line-height:1.3;">
-              Hvala što si deo Pikmi ekipe.
+              Hvala ti što si izabrao pikmi!
             </h2>
+            <p style="margin:0 0 16px;color:#444;font-size:16px;line-height:1.7;">
+              Tvoj <strong>Pro plan je aktivan</strong> i sve funkcije su ti otključane — neograničeni pitch linkovi, sve sekcije profila, real-time praćenje, outreach kit i sve teme.
+            </p>
             <p style="margin:0 0 28px;color:#444;font-size:16px;line-height:1.7;">
-              Puno klijenata ti želimo 🙌
+              Tvoja podrška nam mnogo znači. Sada je na tebe red da zatvoriš svoj sledeći deal — želimo ti puno klijenata! 🙌
             </p>
 
             <!-- Detalji pretplate -->
@@ -183,7 +186,7 @@ export async function POST(req: NextRequest) {
         <tr>
           <td style="background:#F8F5FF;padding:16px 32px;text-align:center;border-top:1px solid #EDE9FE;">
             <p style="margin:0;font-size:11px;color:#AAA;">
-              pikmi.today · Hvala na poverenju
+              pikmi.today · Hvala na poverenju 💜
             </p>
           </td>
         </tr>
