@@ -130,8 +130,9 @@ export default function Onboarding() {
         setUserId(session.user.id);
         setContactEmail(session.user.email ?? "");
         const meta = session.user.user_metadata ?? {};
-        setFirstName(prev => prev || meta.first_name || meta.full_name?.split(" ")[0] || meta.name?.split(" ")[0] || "");
-        setLastName(prev => prev || meta.last_name || meta.full_name?.split(" ").slice(1).join(" ") || "");
+        const fullName: string = meta.full_name || meta.name || "";
+        setFirstName(prev => prev || meta.first_name || meta.given_name || fullName.split(" ")[0] || "");
+        setLastName(prev => prev || meta.last_name || meta.family_name || fullName.split(" ").slice(1).join(" ") || "");
         setAvatarUrl(prev => prev || meta.avatar_url || meta.picture || "");
       }
     });
@@ -174,14 +175,15 @@ export default function Onboarding() {
 
   // ── Validation ────────────────────────────────────────────────────────────
   const canNext: Record<number, boolean> = {
-    1: !!firstName.trim() && !!lastName.trim() && !!serviceTitle.trim() && !!profileUrl && slugStatus === "ok",
-    2: true,
-    3: pricing.some(p => p.name.trim() && p.price.trim()),
+    1: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim() && !!yearsExperience.trim()
+       && !!serviceTitle.trim() && !!serviceDesc.trim() && !!profileUrl && slugStatus === "ok",
+    2: true, // tema je uvek izabrana
+    3: pricing.some(p => p.name.trim() && p.price.trim() && p.desc.trim()),
     4: skills.some(s => s.trim()),
-    5: clients.some(c => c.name.trim()),
-    6: true,
-    7: !!ctaTitle.trim(),
-    8: !!contactEmail.trim(),
+    5: clients.some(c => c.name.trim() && c.service.trim()),
+    6: testimonials.some(t => t.name.trim() && t.quote.trim()),
+    7: !!ctaTitle.trim() && !!ctaHighlight.trim(),
+    8: !!contactEmail.trim() && !!contactPhone.trim(),
     9: true,
   };
 
@@ -491,7 +493,7 @@ export default function Onboarding() {
             <div>
               <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.15)", marginBottom: 14, display: "flex", gap: 10 }}>
                 <span>💡</span>
-                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>Opcionalno. Možeš dodati do 5 recenzija klijenata.</p>
+                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>Dodaj bar jednu recenziju klijenta (možeš do 5). Testimoniali grade poverenje kod novih klijenata.</p>
               </div>
               {testimonials.map((t, i) => (
                 <div key={i} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
@@ -576,9 +578,6 @@ export default function Onboarding() {
             ) : <div />}
 
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              {step === 6 && (
-                <button onClick={() => setStep(s => s + 1)} style={{ padding: "11px 18px", borderRadius: 12, background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Preskoči</button>
-              )}
 
               {step < 8 ? (
                 <button onClick={() => setStep(s => s + 1)} disabled={!canNext[step]} style={{

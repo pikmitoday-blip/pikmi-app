@@ -49,6 +49,12 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Unesi ime i prezime.");
+      setLoading(false);
+      return;
+    }
+
     if (password.length < 6) {
       setError("Lozinka mora imati najmanje 6 karaktera.");
       setLoading(false);
