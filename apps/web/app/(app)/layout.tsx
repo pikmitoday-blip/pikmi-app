@@ -808,13 +808,13 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             boxShadow: "0 32px 100px rgba(0,0,0,0.8)",
             textAlign: "center",
           }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
             <h2 style={{ margin: "0 0 10px", fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>
-              Tvoj besplatni trial je istekao
+              Tvoj nalog je zaključan
             </h2>
             <p style={{ margin: "0 0 28px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-              7 dana besplatnog korišćenja je završeno.<br/>
-              Odaberi plan da nastaviš sa korišćenjem pikmi.
+              Isteklo je 7 dana besplatnog korišćenja.<br/>
+              Da nastaviš da koristiš pikmi, pretplati se na Pro ili Pro 3 meseca.
             </p>
 
             {/* Plan cards */}
