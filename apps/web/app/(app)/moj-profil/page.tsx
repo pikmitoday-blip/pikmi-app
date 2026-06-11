@@ -706,9 +706,35 @@ export default function MojProfil() {
               {editSection === "stack" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
-                  <label style={LBL}>ALATI I VEŠTINE (odvojene zarezom)</label>
-                  <textarea style={{ ...INP, minHeight: 80, resize: "vertical" } as React.CSSProperties} value={draft.stack} onChange={e => setD("stack", e.target.value)} placeholder="Premiere Pro, After Effects, DaVinci Resolve..." />
-                  <p style={{ margin: "-4px 0 8px", fontSize: 11, color: C.muted }}>Prve 2 veštine prikazuju se istaknuto (ljubičasto).</p>
+                  <label style={LBL}>TVOJE VEŠTINE</label>
+                  <p style={{ margin: "0 0 12px", fontSize: 11, color: C.muted, lineHeight: 1.5 }}>Dodaj svoje lične veštine, programe i alate — svaki u poseban bedž. Prve 2 prikazuju se istaknuto.</p>
+                  {(() => {
+                    const items = (draft.stack ?? "") === "" ? [""] : draft.stack.split(",");
+                    const setItems = (arr: string[]) => setD("stack", arr.join(","));
+                    return (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                        {items.map((sk, i) => (
+                          <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: C.accentLight, border: `1px solid ${C.accent}40`, borderRadius: 999, padding: "4px 6px 4px 12px" }}>
+                            <input
+                              value={sk}
+                              onChange={e => setItems(items.map((x, j) => j === i ? e.target.value.replace(/,/g, "") : x))}
+                              onKeyDown={e => {
+                                if (e.key === "Enter") { e.preventDefault(); if (sk.trim()) setItems([...items, ""]); }
+                                if (e.key === "Backspace" && !sk && items.length > 1) { e.preventDefault(); setItems(items.filter((_, j) => j !== i)); }
+                              }}
+                              placeholder="npr. Figma"
+                              style={{ background: "transparent", border: "none", outline: "none", color: C.dark, fontSize: 13, fontWeight: 600, fontFamily: "inherit", width: `${Math.max(sk.length, 7) * 8}px`, maxWidth: 180 }}
+                            />
+                            <button onClick={() => setItems(items.length > 1 ? items.filter((_, j) => j !== i) : [""])}
+                              style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+                          </div>
+                        ))}
+                        <button onClick={() => setItems([...items, ""])} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: `1px dashed ${C.accent}66`, borderRadius: 999, padding: "7px 14px", color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Dodaj bedž
+                        </button>
+                      </div>
+                    );
+                  })()}
                   <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
                 </div>
               ) : (
