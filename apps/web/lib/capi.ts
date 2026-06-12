@@ -14,6 +14,8 @@ interface CAPIEventData {
   userPhone?: string;
   ipAddress?: string;
   userAgent?: string;
+  fbc?: string;       // Facebook click id (from fbclid / _fbc cookie)
+  fbp?: string;       // Facebook browser id (_fbp cookie)
   currency?: string;
   value?: number;
   customData?: Record<string, any>;
@@ -27,9 +29,11 @@ export async function sendCAPIEvent(data: CAPIEventData) {
   const userData: Record<string, any> = {};
   if (data.userEmail)  userData.em          = [sha256(data.userEmail)];
   if (data.userPhone)  userData.ph          = [sha256(data.userPhone.replace(/\D/g, ""))];
-  if (data.userId)     userData.external_id = [data.userId];
+  if (data.userId)     userData.external_id = [sha256(data.userId)];
   if (data.ipAddress)  userData.client_ip_address = data.ipAddress;
   if (data.userAgent)  userData.client_user_agent  = data.userAgent;
+  if (data.fbc)        userData.fbc = data.fbc;
+  if (data.fbp)        userData.fbp = data.fbp;
 
   const payload: Record<string, any> = {
     data: [{

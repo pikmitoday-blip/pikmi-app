@@ -14,11 +14,33 @@ export async function POST(req: NextRequest) {
   );
 
   try {
-    const { userId, userEmail, priceId } = await req.json();
+    const { userId, userEmail, priceId, fbp, fbc } = await req.json();
 
     if (!userId || !userEmail) {
       return NextResponse.json({ error: "Missing userId or userEmail" }, { status: 400 });
     }
+
+    // Capture client signals so the webhook can send a high-quality Subscribe event
+    const ipAddress =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") || "";
+    const userAgent = req.headers.get("user-agent") || "";
+    const cookieFbc = req.cookies.get("_fbc")?.value || "";
+    const cookieFbp = req.cookies.get("_fbp")?.value || "";
+
+    // Resolve plan value for ROAS: 2190 (3-month) or 990 (monthly)
+    const threeMPrice = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_3M;
+    const resolvedPrice = priceId ?? process.env.STRIPE_PRICE_ID!;
+    const planValue = threeMPrice && resolvedPrice === threeMPrice ? 2190 : 990;
+
+    const capiMeta = {
+      supabase_user_id: userId,
+      capi_value: String(planValue),
+      capi_fbp: (fbp || cookieFbp || "").slice(0, 200),
+      capi_fbc: (fbc || cookieFbc || "").slice(0, 200),
+      capi_ip:  ipAddress.slice(0, 64),
+      capi_ua:  userAgent.slice(0, 400),
+    };
 
     // Provjeri postoji li već Stripe customer
     const { data: profile } = await supabaseAdmin
@@ -55,7 +77,9 @@ export async function POST(req: NextRequest) {
       mode: "subscription",
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&success=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&cancelled=1`,
-      metadata: { supabase_user_id: userId },
+      metadata: capiMeta,
+      // Persist signals on the subscription so the webhook can read them
+      subscription_data: { metadata: capiMeta },
     });
 
     return NextResponse.json({ url: session.url });

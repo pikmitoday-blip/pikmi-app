@@ -5,12 +5,16 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const { eventName, params, eventId, userId, userEmail } = await req.json();
+    const { eventName, params, eventId, userId, userEmail, fbc, fbp } = await req.json();
 
     const ipAddress =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("x-real-ip") || undefined;
     const userAgent = req.headers.get("user-agent") || undefined;
+
+    // fbc/fbp — prefer values sent from the client; fall back to cookies on the request
+    const cookieFbc = req.cookies.get("_fbc")?.value;
+    const cookieFbp = req.cookies.get("_fbp")?.value;
 
     await sendCAPIEvent({
       eventName,
@@ -19,6 +23,8 @@ export async function POST(req: NextRequest) {
       userEmail,
       ipAddress,
       userAgent,
+      fbc: fbc || cookieFbc || undefined,
+      fbp: fbp || cookieFbp || undefined,
       currency: params?.currency,
       value: params?.value,
     });

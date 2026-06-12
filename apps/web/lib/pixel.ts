@@ -11,6 +11,24 @@ export function generateEventId(): string {
   return `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
+function readCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return m ? decodeURIComponent(m[1]) : undefined;
+}
+
+/** Vrati fbp (_fbp cookie) i fbc (_fbc cookie ili izgrađen iz fbclid u URL-u). */
+export function getFbIds(): { fbp?: string; fbc?: string } {
+  if (typeof window === "undefined") return {};
+  const fbp = readCookie("_fbp");
+  let fbc = readCookie("_fbc");
+  if (!fbc) {
+    const fbclid = new URLSearchParams(window.location.search).get("fbclid");
+    if (fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+  }
+  return { fbp, fbc };
+}
+
 /** Šalje event na client pixel sa event_id za deduplicaciju */
 export function pixelTrack(event: string, params?: Record<string, any>, eventId?: string) {
   if (typeof window !== "undefined" && window.fbq) {
@@ -29,14 +47,15 @@ async function trackWithCapi(
   userEmail?: string
 ) {
   const eventId = generateEventId();
+  const { fbp, fbc } = getFbIds();
   // 1. Client-side pixel
   pixelTrack(eventName, params, eventId);
-  // 2. Server-side CAPI (fire-and-forget)
+  // 2. Server-side CAPI (fire-and-forget) — include fbp/fbc for better matching
   try {
     await fetch("/api/pixel/event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventName, params, eventId, userId, userEmail }),
+      body: JSON.stringify({ eventName, params, eventId, userId, userEmail, fbp, fbc }),
     });
   } catch {}
 }
@@ -46,9 +65,10 @@ export const pixel = {
   completeRegistration: (userId?: string, userEmail?: string) =>
     trackWithCapi("CompleteRegistration", {}, userId, userEmail),
 
-  /** Korisnik počne koristiti platformu — šalje i client i server */
+  /** Korisnik počne koristiti platformu — šalje i client i server.
+   *  Vrednost 99 RSD radi optimizacije oglasa (iako je trial besplatan). */
   startTrial: (userId?: string) =>
-    trackWithCapi("StartTrial", { currency: "RSD", value: 0 }, userId),
+    trackWithCapi("StartTrial", { currency: "RSD", value: 99.00 }, userId),
 
   /** Klik na "Pretplati se" — samo client */
   initiateCheckout: (value = 990) =>

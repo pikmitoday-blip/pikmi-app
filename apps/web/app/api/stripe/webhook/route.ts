@@ -58,11 +58,23 @@ export async function POST(req: NextRequest) {
           const { data: authData } = await supabaseAdmin.auth.admin.getUserById(userId);
           const userEmail = authData?.user?.email ?? "";
 
+          // Dynamic value per plan (set at checkout): 990 monthly / 2190 3-month.
+          // Fallback to the session amount if metadata is missing.
+          const meta = session.metadata ?? {};
+          const value: number =
+            meta.capi_value ? parseFloat(meta.capi_value)
+            : session.amount_total != null ? session.amount_total / 100
+            : 990;
+
           const commonData = {
             userId,
             userEmail,
             currency: "RSD",
-            value: 990,
+            value,                              // number, not string
+            fbp: meta.capi_fbp || undefined,
+            fbc: meta.capi_fbc || undefined,
+            ipAddress: meta.capi_ip || undefined,
+            userAgent: meta.capi_ua || undefined,
           };
 
           // Subscribe event
