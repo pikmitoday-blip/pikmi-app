@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import PikmiLogo from "../components/PikmiLogo";
 import { supabase } from "../../lib/supabase";
+import { pixel } from "../../lib/pixel";
 import { LanguageProvider, LOCALES, useLanguage, initLocale, type Locale } from "../../lib/i18n";
 import { UserProvider } from "../../lib/UserContext";
 
@@ -69,6 +70,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       const priceId = plan === "3m" ? process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_3M : undefined;
+      pixel.initiateCheckout(plan === "3m" ? 2190 : 990, session.user.id, session.user.email);
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

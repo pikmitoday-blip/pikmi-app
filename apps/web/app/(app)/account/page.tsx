@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { supabase } from "../../../lib/supabase";
+import { pixel } from "../../../lib/pixel";
 import { useLanguage } from "../../../lib/i18n";
 import Checkout3MButton from "../../components/Checkout3MButton";
 import { uploadFile } from "../../../lib/upload";
@@ -171,6 +172,7 @@ function AccountSettingsInner() {
 
   async function handleCheckout() {
     setCheckoutLoading(true);
+    pixel.initiateCheckout(990, userId, email);
     try {
       const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, userEmail: email }) });
       const { url } = await res.json();

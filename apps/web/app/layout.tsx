@@ -1,5 +1,6 @@
 import "./globals.css";
 import AuthHashHandler from "./components/AuthHashHandler";
+import PixelPageView from "./components/PixelPageView";
 
 export const metadata = {
   title: "pikmi",
@@ -33,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
           (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
           fbq('init','980912031509026');
-          fbq('track','PageView');
         `}} />
         <noscript dangerouslySetInnerHTML={{ __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=980912031509026&ev=PageView&noscript=1"/>` }} />
       </head>
@@ -46,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })();
         `}} />
         <AuthHashHandler />
+        <PixelPageView />
         {children}
       </body>
     </html>

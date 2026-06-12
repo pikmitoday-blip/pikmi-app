@@ -116,8 +116,8 @@ export default function RegisterPage() {
       // Sačuvaj trial info lokalno
       localStorage.setItem("pikmi-trial-ends", trialEndsAt);
 
-      // Meta Pixel: korisnik završio registraciju
-      pixel.completeRegistration();
+      // Meta Pixel: korisnik završio registraciju (kada je red upisan u profiles)
+      pixel.completeRegistration(data.user.id, email);
     }
 
     setSuccess(true);

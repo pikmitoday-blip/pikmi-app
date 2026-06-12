@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { pixel } from "../../lib/pixel";
 
 interface Props {
   style?: React.CSSProperties;
@@ -26,6 +27,7 @@ export default function Checkout3MButton({ style, label = "Pretplati se na 3 mes
       return;
     }
 
+    pixel.initiateCheckout(2190, user.id, user.email);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",

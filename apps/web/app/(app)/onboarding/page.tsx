@@ -222,6 +222,11 @@ export default function Onboarding() {
       sessionStorage.removeItem("pikmi-moj-profil");
       localStorage.removeItem("pikmi-pending-slug");
     } catch {}
+
+    // CompleteRegistration — osigurava okidanje i za Google (OAuth) korisnike
+    // koji ne prolaze kroz manuelnu registraciju. Guard-ovi (local + DB flag)
+    // spreče dupliranje za korisnike koji su ga već poslali pri registraciji.
+    pixel.completeRegistration(userId, contactEmail);
   }
 
   // ── Step metadata ─────────────────────────────────────────────────────────
@@ -594,7 +599,7 @@ export default function Onboarding() {
                   setSaving(true);
                   try {
                     await saveProfile();
-                    pixel.startTrial();
+                    pixel.startTrial(userId, contactEmail);
                     setSaving(false);
                     setStep(9);
                   } catch (e) { console.error(e); setSaving(false); }

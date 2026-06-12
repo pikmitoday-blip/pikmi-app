@@ -15,7 +15,6 @@ export default function CheckoutButton() {
 
   async function handleClick() {
     setLoading(true);
-    pixel.initiateCheckout(990);
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,12 +36,13 @@ export default function CheckoutButton() {
       }
     } catch {}
 
-    // Nije Pro — pozovi Stripe checkout
+    // Nije Pro — InitiateCheckout (client + CAPI, isti event_id) pa Stripe checkout
+    pixel.initiateCheckout(990, user.id, user.email);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, email: user.email }),
+        body: JSON.stringify({ userId: user.id, userEmail: user.email }),
       });
       const data = await res.json();
       if (data.url) {
