@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
@@ -103,14 +104,28 @@ function SectionSep() {
   return null;
 }
 
-function SectionHead({ number: _number, text, section, onEdit }: {
-  number: string; text: string; section: string; onEdit: (s: string) => void;
+// Mali "Primer" bedž — signalizira pred-popunjeni placeholder sadržaj.
+function PHBadge() {
+  return (
+    <span style={{
+      fontSize: 9, fontWeight: 700, color: "#A855F7",
+      background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.3)",
+      borderRadius: 999, padding: "2px 8px", letterSpacing: "0.04em", textTransform: "uppercase",
+    }}>Primer</span>
+  );
+}
+
+function SectionHead({ number: _number, text, section, onEdit, placeholder }: {
+  number: string; text: string; section: string; onEdit: (s: string) => void; placeholder?: boolean;
 }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>
-        {text}
-      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>
+          {text}
+        </p>
+        {placeholder && <PHBadge />}
+      </div>
       <button onClick={() => onEdit(section)}
         style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>
         ✏️
@@ -138,8 +153,14 @@ function EditBar({ onSave, onCancel, saving }: { onSave: () => void; onCancel: (
 
 export default function MojProfil() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [p, setP] = useState<Profile | null>(() => getCached());
   const [userId, setUserId] = useState<string>("");
+  // ── Live-setup (onboarding fill) ──
+  const [setupMode, setSetupMode] = useState(false);
+  const [placeholderSections, setPlaceholderSections] = useState<string[]>([]);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [profileUrl, setProfileUrl] = useState<string>(() => {
     try { return sessionStorage.getItem("pikmi-profile-url") ?? ""; } catch { return ""; }
   });
@@ -170,6 +191,21 @@ export default function MojProfil() {
       user_id: userId,
       profile_data: updated,
     }, { onConflict: "user_id" });
+  }
+
+  async function finishSetup() {
+    if (!userId || !p || finishing) return;
+    setFinishing(true);
+    try {
+      const updated: any = { ...p, needsSetup: false };
+      await supabase.from("profiles").upsert({ user_id: userId, profile_data: updated }, { onConflict: "user_id" });
+      try {
+        sessionStorage.removeItem("pikmi-moj-profil");
+        sessionStorage.removeItem("pikmi-sidebar");
+        sessionStorage.removeItem("pikmi-dashboard");
+      } catch {}
+      router.push("/dashboard");
+    } catch (e) { console.error(e); setFinishing(false); }
   }
 
   // ── Live theme tokens for the editor preview (updates in real time) ─────────
@@ -217,6 +253,8 @@ export default function MojProfil() {
               testimonials: pd.testimonials ?? [],
             };
             setP(merged);
+            setSetupMode(!!pd.needsSetup);
+            setPlaceholderSections(Array.isArray(pd.placeholderSections) ? pd.placeholderSections : []);
             try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
             if (data.profile_url) {
               setProfileUrl(data.profile_url);
@@ -230,7 +268,7 @@ export default function MojProfil() {
     load();
   }, []);
 
-  function startEdit(s: string) { setEditSection(s); setDraft(p ? { ...p } : null); }
+  function startEdit(s: string) { setEditSection(s); setDraft(p ? { ...p } : null); if (setupMode) setBannerDismissed(true); }
   function cancelEdit() { setEditSection(null); setDraft(null); }
   function setD<K extends keyof Profile>(key: K, v: Profile[K]) {
     setDraft(prev => prev ? { ...prev, [key]: v } : null);
@@ -262,7 +300,14 @@ export default function MojProfil() {
     if (!draft || !userId) return;
     setSaving(true);
     try {
-      const toSave = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
+      const toSave: any = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
+      // Čim korisnik sačuva sekciju, ona više nije placeholder (primer).
+      if (editSection) {
+        const base: string[] = Array.isArray(toSave.placeholderSections) ? toSave.placeholderSections : placeholderSections;
+        const remaining = base.filter((k: string) => k !== editSection);
+        toSave.placeholderSections = remaining;
+        setPlaceholderSections(remaining);
+      }
       await supabase.from("profiles").upsert({
         user_id: userId, first_name: draft.firstName, last_name: draft.lastName,
         service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
@@ -329,6 +374,14 @@ export default function MojProfil() {
   ].filter(m => m.value);
   const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !!p.csImages?.[i]);
   const hasWork = csSlots.length > 0;
+
+  // ── Setup-mode helpers (placeholder greying + progress) ─────────────────────
+  const REQUIRED_SECTIONS = ["service", "pricing", "stack", "experience", "testimonial"];
+  const isPH = (k: string) => setupMode && placeholderSections.includes(k) && editSection !== k;
+  const phWrap = (k: string): React.CSSProperties => isPH(k) ? { opacity: 0.6 } : {};
+  const filledRequired = REQUIRED_SECTIONS.filter(k => !placeholderSections.includes(k)).length;
+  const progressPct = Math.round((filledRequired / REQUIRED_SECTIONS.length) * 100);
+  const allRequiredDone = filledRequired === REQUIRED_SECTIONS.length;
 
   // ─── Edit form helpers ─────────────────────────────────────────────────────
 
@@ -401,7 +454,62 @@ export default function MojProfil() {
   }
 
   return (
-    <div>
+    <div style={setupMode ? {
+      position: "fixed", inset: 0, zIndex: 9000, overflowY: "auto",
+      background: TK.pageBg, padding: isMobile ? "0 0 110px" : "0 0 96px",
+    } : undefined}>
+
+      {/* ── Setup mode: top bar (logo + progress + theme) ── */}
+      {setupMode && (
+        <div style={{
+          position: "sticky", top: 0, zIndex: 20,
+          background: "rgba(11,15,25,0.92)", backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          padding: isMobile ? "12px 16px" : "14px 24px",
+          display: "flex", alignItems: "center", gap: 16,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+            <img src="/pikmilogo.jpg" alt="pikmi" width={24} height={24} style={{ objectFit: "contain", display: "block" }} />
+            {!isMobile && <span style={{ fontWeight: 800, fontSize: 17, background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>pikmi</span>}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Tvoj portfolio je {progressPct}% kompletan</span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{filledRequired}/{REQUIRED_SECTIONS.length}</span>
+            </div>
+            <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#7C3AED,#A855F7)", width: `${progressPct}%`, transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)" }} />
+            </div>
+          </div>
+          <button onClick={() => setShowThemeSheet(true)} title="Prilagodi izgled" style={{
+            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+            border: "1px solid rgba(139,92,246,0.3)", background: "rgba(124,58,237,0.15)",
+            cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>🎨</button>
+        </div>
+      )}
+
+      {/* ── Setup mode: dismissable onboarding banner ── */}
+      {setupMode && !bannerDismissed && (
+        <div style={{ maxWidth: 1100, margin: "16px auto 0", padding: isMobile ? "0 12px" : "0 16px" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12,
+            background: "rgba(124,58,237,0.14)", border: "1px solid rgba(139,92,246,0.35)",
+            borderRadius: 14, padding: "12px 16px",
+          }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>👋</span>
+            <p style={{ margin: 0, flex: 1, fontSize: 13, color: "#E9D5FF", lineHeight: 1.5 }}>
+              Klikni na <strong>✏️</strong> u bilo kojoj sekciji da je izmeniš. Sekcije označene sa <strong>„Primer"</strong> su pred-popunjene — zameni ih svojim sadržajem. Promene se čuvaju automatski.
+            </p>
+            <button onClick={() => setBannerDismissed(true)} style={{
+              width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+              background: "rgba(255,255,255,0.1)", border: "none", color: "#fff",
+              fontSize: 16, cursor: "pointer", lineHeight: 1,
+            }}>×</button>
+          </div>
+        </div>
+      )}
+
       {/* ── Responsive CSS — live themed preview ── */}
       <style>{`
         .pp-card {
@@ -461,7 +569,7 @@ export default function MojProfil() {
       `}</style>
 
       {/* ── Page header ── */}
-      <div className="flex items-center justify-between page-header">
+      <div className="flex items-center justify-between page-header" style={setupMode ? { display: "none" } : undefined}>
         <div>
           <h1 className="page-title">{t("profile_page_title")}</h1>
           <p className="page-subtitle">{t("profile_page_sub")}</p>
@@ -491,7 +599,9 @@ export default function MojProfil() {
       </div>
 
       {/* ── Card ── */}
-      <div className="pp-card" style={{ marginBottom: 60 }}>
+      <div className="pp-card" style={setupMode
+        ? { marginBottom: 24, maxWidth: 1100, margin: "16px auto 0" }
+        : { marginBottom: 60 }}>
 
         {/* Grid: left + right */}
         <div className="pp-grid">
@@ -505,7 +615,7 @@ export default function MojProfil() {
           <div className="pp-right">
 
             {/* 01 — Šta radim */}
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("service") }}>
               {editSection === "service" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
@@ -517,7 +627,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="01" text="Šta radim" section="service" onEdit={startEdit} />
+                  <SectionHead number="01" text="Šta radim" section="service" onEdit={startEdit} placeholder={isPH("service")} />
                   {p.serviceTitle
                     ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
                     : <p style={{ margin: "0 0 12px", fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
@@ -529,7 +639,7 @@ export default function MojProfil() {
 
             {/* Paketi / cene */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("pricing") }}>
               {editSection === "pricing" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
@@ -580,7 +690,10 @@ export default function MojProfil() {
               ) : (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
+                      {isPH("pricing") && <PHBadge />}
+                    </div>
                     <button onClick={() => startEdit("pricing")}
                       style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
                   </div>
@@ -702,7 +815,7 @@ export default function MojProfil() {
 
             {/* 03 — Veštine */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("stack") }}>
               {editSection === "stack" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
@@ -739,7 +852,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="03" text="Veštine" section="stack" onEdit={startEdit} />
+                  <SectionHead number="03" text="Veštine" section="stack" onEdit={startEdit} placeholder={isPH("stack")} />
                   {stackTags.length > 0
                     ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {stackTags.map((tag, i) => (
@@ -755,7 +868,7 @@ export default function MojProfil() {
 
             {/* 05 — Iskustvo */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("experience") }}>
               {editSection === "experience" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>05 — ISKUSTVO</p>
@@ -788,7 +901,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} />
+                  <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} placeholder={isPH("experience")} />
                   {(() => {
                     const csItems = (p.caseStudies ?? []).filter((cs, i) => cs.client && !p.csImages?.[i]);
                     const expItems = p.experience ?? [];
@@ -823,7 +936,7 @@ export default function MojProfil() {
 
             {/* 06 — Reči klijenata */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("testimonial") }}>
               {editSection === "testimonial" && draft ? (
                 <div>
                   <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Reči klijenata</p>
@@ -892,7 +1005,7 @@ export default function MojProfil() {
                 </div>
               ) : (
                 <>
-                  <SectionHead number="06" text="Reči klijenata" section="testimonial" onEdit={startEdit} />
+                  <SectionHead number="06" text="Reči klijenata" section="testimonial" onEdit={startEdit} placeholder={isPH("testimonial")} />
                   {(() => {
                     const list = (p.testimonials && p.testimonials.length > 0)
                       ? p.testimonials
@@ -977,6 +1090,40 @@ export default function MojProfil() {
           </div>{/* end pp-right */}
         </div>{/* end pp-grid */}
       </div>{/* end pp-card */}
+
+      {/* ── Setup mode: fixed finish bar ── */}
+      {setupMode && (
+        <div style={{
+          position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30,
+          background: "rgba(11,15,25,0.95)", backdropFilter: "blur(12px)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          padding: isMobile ? "12px 16px calc(12px + env(safe-area-inset-bottom))" : "14px 24px",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 16,
+        }}>
+          <div style={{ width: "100%", maxWidth: 1100, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <span style={{ fontSize: 12.5, color: allRequiredDone ? "#4ADE80" : "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>
+              {allRequiredDone
+                ? "✓ Sve obavezne sekcije su popunjene!"
+                : "Popuni sve sekcije da nastaviš (Prethodni radovi su opcioni)."}
+            </span>
+            <button
+              onClick={finishSetup}
+              disabled={!allRequiredDone || finishing}
+              style={{
+                padding: "12px 26px", borderRadius: 12, border: "none", flexShrink: 0,
+                background: (allRequiredDone && !finishing) ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.07)",
+                color: (allRequiredDone && !finishing) ? "#fff" : "rgba(255,255,255,0.25)",
+                fontSize: 14, fontWeight: 700, fontFamily: "inherit",
+                cursor: (allRequiredDone && !finishing) ? "pointer" : "not-allowed",
+                boxShadow: (allRequiredDone && !finishing) ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
+                transition: "all 0.2s", whiteSpace: "nowrap",
+              }}
+            >
+              {finishing ? "Čuvanje..." : "Sačuvaj i nastavi →"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Theme customization ── */}
       {showThemeSheet && p && (() => {

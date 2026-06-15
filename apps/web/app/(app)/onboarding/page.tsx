@@ -5,6 +5,7 @@ import { supabase } from "../../../lib/supabase";
 import { pixel } from "../../../lib/pixel";
 import { uploadFile } from "../../../lib/upload";
 import { THEMES, BLOCK_STYLES, themeTokens, type BlockStyleId } from "../../../lib/themes";
+import { PROFESSIONS, getPlaceholders } from "../../../lib/professions";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function generateSlug(s: string): string {
@@ -12,7 +13,7 @@ function generateSlug(s: string): string {
     .replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 }
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 2;
 const STORAGE_KEY = "pikmi-onboarding-step";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -96,16 +97,17 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
-  // ── Step 1: identity + domain + photo ──────────────────────────────────────
+  // ── Step 1: identity + domain + photo + profession ─────────────────────────
   const [firstName, setFirstName] = useState("");
   const [lastName,  setLastName]  = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [city,         setCity]         = useState("");
   const [yearsExperience, setYearsExperience] = useState("");
-  const [serviceTitle, setServiceTitle] = useState("");
-  const [serviceDesc,  setServiceDesc]  = useState("");
+  const [profession,   setProfession]   = useState("");
+  const [customProfession, setCustomProfession] = useState("");
   const [profileUrl,   setProfileUrl]   = useState("");
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "ok" | "taken">("idle");
 
@@ -113,22 +115,12 @@ export default function Onboarding() {
   const [templateId, setTemplateId] = useState(33);
   const [blockStyle, setBlockStyle] = useState<BlockStyleId>("rounded");
 
-  // ── Step 3+: rest ──────────────────────────────────────────────────────────
-  const [pricing, setPricing] = useState<{ name: string; price: string; desc: string }[]>([{ name: "", price: "", desc: "" }]);
-  const [skills, setSkills] = useState<string[]>([""]);
-  const [clients, setClients] = useState<{ name: string; service: string; desc: string }[]>([{ name: "", service: "", desc: "" }]);
-  const [testimonials, setTestimonials] = useState<{ name: string; quote: string; title: string }[]>([{ name: "", quote: "", title: "" }]);
-  const [ctaTitle,     setCtaTitle]     = useState("");
-  const [ctaHighlight, setCtaHighlight] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-
   // Load user info + restore saved step on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUserId(session.user.id);
-        setContactEmail(session.user.email ?? "");
+        setUserEmail(session.user.email ?? "");
         const meta = session.user.user_metadata ?? {};
         const fullName: string = meta.full_name || meta.name || "";
         setFirstName(prev => prev || meta.first_name || meta.given_name || fullName.split(" ")[0] || "");
@@ -173,28 +165,27 @@ export default function Onboarding() {
     setUploadingAvatar(false);
   }
 
+  // Resolved profession label ("Ostalo" → custom text)
+  const resolvedProfession = profession === "Ostalo" ? (customProfession.trim() || "Ostalo") : profession;
+
   // ── Validation ────────────────────────────────────────────────────────────
   const canNext: Record<number, boolean> = {
-    1: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim() && !!yearsExperience.trim()
-       && !!serviceTitle.trim() && !!serviceDesc.trim() && !!profileUrl && slugStatus === "ok",
+    1: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim()
+       && !!yearsExperience.trim() && !!profession
+       && (profession !== "Ostalo" || !!customProfession.trim())
+       && !!profileUrl && slugStatus === "ok",
     2: true, // tema je uvek izabrana
-    3: pricing.some(p => p.name.trim() && p.price.trim() && p.desc.trim()),
-    4: skills.some(s => s.trim()),
-    5: clients.some(c => c.name.trim() && c.service.trim()),
-    6: testimonials.some(t => t.name.trim() && t.quote.trim()),
-    7: !!ctaTitle.trim() && !!ctaHighlight.trim(),
-    8: !!contactEmail.trim() && !!contactPhone.trim(),
-    9: true,
   };
 
-  // ── Build + save profile ────────────────────────────────────────────────────
+  // ── Build + save profile (with per-profession placeholders) ─────────────────
   async function saveProfile() {
-    const caseStudies = clients.filter(c => c.name.trim()).map(c => ({
-      client: c.name, platform: c.service, industry: c.desc,
-      metric: "", metricLabel: "", bg: "", lightText: true,
+    // Placeholder content matched to the chosen profession
+    const ph = getPlaceholders(profession === "Ostalo" ? "Ostalo" : profession);
+
+    const caseStudies = [{}, {}, {}, {}]; // "Prethodni radovi" — ostaju prazni (upload kasnije)
+    const experience = ph.experience.map(e => ({
+      company: e.company, role: e.role, dateFrom: "", dateTo: "", desc: e.desc,
     }));
-    const testiList   = testimonials.filter(t => t.name.trim() && t.quote.trim());
-    const pricingList = pricing.filter(p => p.name.trim() && p.price.trim());
 
     await supabase.from("profiles").upsert({
       user_id: userId,
@@ -203,16 +194,22 @@ export default function Onboarding() {
       profile_url: profileUrl,
       profile_data: {
         firstName, lastName, avatarUrl,
-        serviceTitle, serviceDesc,
+        profession: resolvedProfession,
+        serviceTitle: ph.serviceTitle,
+        serviceDesc: ph.serviceDesc,
         city, yearsExperience,
-        pricing: pricingList,
-        stack: skills.map(s => s.trim()).filter(Boolean).join(", "),
+        pricing: ph.pricing,
+        stack: ph.skills.join(", "),
         caseStudies,
-        testimonials: testiList,
-        ctaTitle, ctaHighlight,
-        contactEmail, contactPhone,
+        experience,
+        testimonials: [ph.testimonial],
+        ctaTitle: "Da napravimo nešto", ctaHighlight: "zajedno?",
+        contactEmail: userEmail, contactPhone: "",
         openStatus: "OTVOREN ZA SARADNJU",
         portfolioAppearance: { templateId, blockStyle },
+        // ── Live-setup flags ──
+        needsSetup: true,
+        placeholderSections: ["service", "pricing", "stack", "experience", "testimonial"],
       },
     }, { onConflict: "user_id" });
 
@@ -223,34 +220,15 @@ export default function Onboarding() {
       localStorage.removeItem("pikmi-pending-slug");
     } catch {}
 
-    // CompleteRegistration — osigurava okidanje i za Google (OAuth) korisnike
-    // koji ne prolaze kroz manuelnu registraciju. Guard-ovi (local + DB flag)
-    // spreče dupliranje za korisnike koji su ga već poslali pri registraciji.
-    pixel.completeRegistration(userId, contactEmail);
+    // CompleteRegistration — osigurava okidanje i za Google (OAuth) korisnike.
+    pixel.completeRegistration(userId, userEmail);
   }
 
   // ── Step metadata ─────────────────────────────────────────────────────────
-  const stepTitles = [
-    "Tvoj profil",
-    "Izaberi izgled",
-    "Tvoji cenovni paketi",
-    "Veštine i alati",
-    "Prethodni klijenti",
-    "Testimoniali klijenata",
-    "Poziv na akciju",
-    "Kontakt",
-    "Sve je spremno!",
-  ];
+  const stepTitles = ["Tvoj profil", "Izaberi izgled"];
   const stepSubtitles = [
-    "Tvoj domen, ime, fotografija, grad i iskustvo.",
+    "Ime, fotografija, grad, iskustvo i čime se baviš.",
     "Izaberi temu i oblik — vidiš odmah kako izgleda.",
-    "Dodaj 1–3 paketa sa cenama.",
-    "Dodaj svoje lične veštine, programe i alate — svaki u poseban bedž.",
-    "Navedi klijente sa kojima si radio.",
-    "Dodaj recenzije zadovoljnih klijenata.",
-    "Napiši poziv na akciju koji će biti na kraju tvog portfolia.",
-    "Kako te klijenti mogu kontaktirati.",
-    "Tvoj profil je kreiran i spreman za radove.",
   ];
 
   return (
@@ -292,7 +270,7 @@ export default function Onboarding() {
             <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{stepSubtitles[step - 1]}</p>
           </div>
 
-          {/* ── STEP 1: Identity + domain + photo ── */}
+          {/* ── STEP 1: Identity + domain + photo + profession ── */}
           {step === 1 && (
             <div>
               {/* Domain */}
@@ -340,23 +318,38 @@ export default function Onboarding() {
               {/* City + years */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
                 <div>
-                  <label style={LBL}>Grad</label>
+                  <label style={LBL}>Grad *</label>
                   <input style={INP} value={city} onChange={e => setCity(e.target.value)} placeholder="npr. Beograd" />
                 </div>
                 <div>
-                  <label style={LBL}>Godine iskustva</label>
+                  <label style={LBL}>Godine iskustva *</label>
                   <input style={INP} value={yearsExperience} onChange={e => setYearsExperience(e.target.value)} placeholder="npr. 5" />
                 </div>
               </div>
 
-              {/* Service title + desc */}
-              <div style={{ marginBottom: 14 }}>
-                <label style={LBL}>Naslov portfolia *</label>
-                <input style={INP} value={serviceTitle} onChange={e => setServiceTitle(e.target.value)} placeholder="npr. Meta & TikTok Ads za e-commerce brendove" />
-              </div>
+              {/* Profession */}
               <div>
-                <label style={LBL}>Opis usluge</label>
-                <textarea value={serviceDesc} onChange={e => setServiceDesc(e.target.value)} rows={3} placeholder="npr. Skaliram performance kampanje za D2C brendove." style={{ ...INP, resize: "none" } as React.CSSProperties} />
+                <label style={LBL}>Čime se baviš? *</label>
+                <select
+                  value={profession}
+                  onChange={e => setProfession(e.target.value)}
+                  style={{ ...INP, appearance: "none", cursor: "pointer", color: profession ? "#fff" : "rgba(255,255,255,0.4)" } as React.CSSProperties}
+                >
+                  <option value="" disabled style={{ color: "#000" }}>Izaberi profesiju…</option>
+                  {PROFESSIONS.map(pr => (
+                    <option key={pr} value={pr} style={{ color: "#000" }}>{pr}</option>
+                  ))}
+                </select>
+                {profession === "Ostalo" && (
+                  <input
+                    style={{ ...INP, marginTop: 10 }}
+                    value={customProfession}
+                    onChange={e => setCustomProfession(e.target.value)}
+                    placeholder="Upiši svoju profesiju"
+                    autoFocus
+                  />
+                )}
+                <p style={HINT}>Na osnovu profesije unapred popunjavamo tvoj portfolio primerima koje zatim lako izmeniš.</p>
               </div>
             </div>
           )}
@@ -395,196 +388,14 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 3: Pricing ── */}
-          {step === 3 && (
-            <div>
-              <p style={{ ...HINT, marginBottom: 16 }}>Ako imaš pakete usluga, dodaj ih. Možeš dodati 1–3 paketa.</p>
-              {pricing.map((p, i) => (
-                <div key={i} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>Paket {i + 1}</span>
-                    {pricing.length > 1 && (
-                      <button onClick={() => setPricing(prev => prev.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 11, cursor: "pointer" }}>Ukloni</button>
-                    )}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>
-                    <div><label style={LBL}>Naziv paketa</label><input style={INP} value={p.name} onChange={e => setPricing(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Starter" /></div>
-                    <div><label style={LBL}>Cena</label><input style={INP} value={p.price} onChange={e => setPricing(prev => prev.map((x, j) => j === i ? { ...x, price: e.target.value } : x))} placeholder="€500" /></div>
-                  </div>
-                  <div><label style={LBL}>Šta je uključeno</label><input style={INP} value={p.desc} onChange={e => setPricing(prev => prev.map((x, j) => j === i ? { ...x, desc: e.target.value } : x))} placeholder="Audit + strategija + 30-dnevni plan" /></div>
-                </div>
-              ))}
-              {pricing.length < 3 && (
-                <button onClick={() => setPricing(prev => [...prev, { name: "", price: "", desc: "" }])} style={{ width: "100%", padding: "11px", borderRadius: 10, background: "rgba(139,92,246,0.08)", border: "1px dashed rgba(139,92,246,0.3)", color: "#A855F7", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Dodaj paket {pricing.length + 1}</button>
-              )}
-            </div>
-          )}
-
-          {/* ── STEP 4: Skills (badge builder) ── */}
-          {step === 4 && (
-            <div>
-              <label style={LBL}>Tvoje veštine *</label>
-              <p style={{ ...HINT, marginTop: 0, marginBottom: 14 }}>
-                Dodaj svoje lične veštine, programe, alate i ekspertize. Svaki upisuješ u poseban bedž — ovako se prikazuju na tvom portfoliju.
-              </p>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                {skills.map((sk, i) => (
-                  <div key={i} style={{
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                    background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
-                    borderRadius: 999, padding: "4px 6px 4px 12px",
-                  }}>
-                    <input
-                      autoFocus={i === skills.length - 1 && !sk}
-                      value={sk}
-                      onChange={e => setSkills(prev => prev.map((x, j) => j === i ? e.target.value : x))}
-                      onKeyDown={e => {
-                        if (e.key === "Enter") { e.preventDefault(); if (sk.trim()) setSkills(prev => [...prev, ""]); }
-                        if (e.key === "Backspace" && !sk && skills.length > 1) { e.preventDefault(); setSkills(prev => prev.filter((_, j) => j !== i)); }
-                      }}
-                      placeholder="npr. Figma"
-                      style={{
-                        background: "transparent", border: "none", outline: "none",
-                        color: "#fff", fontSize: 13, fontWeight: 600, fontFamily: "inherit",
-                        width: `${Math.max(sk.length, 7) * 8}px`, maxWidth: 180,
-                      }}
-                    />
-                    <button onClick={() => setSkills(prev => prev.length > 1 ? prev.filter((_, j) => j !== i) : [""])}
-                      style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
-                  </div>
-                ))}
-
-                {/* + add badge */}
-                <button onClick={() => setSkills(prev => [...prev, ""])} style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(139,92,246,0.4)",
-                  borderRadius: 999, padding: "7px 14px", color: "#A855F7",
-                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                }}>
-                  <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Dodaj bedž
-                </button>
-              </div>
-
-              <p style={HINT}>Klikni „+ Dodaj bedž" za novi, pa upiši veštinu. Enter dodaje sledeći.</p>
-            </div>
-          )}
-
-          {/* ── STEP 5: Previous clients ── */}
-          {step === 5 && (
-            <div>
-              <p style={{ ...HINT, marginBottom: 14 }}>Navedi klijente sa kojima si radio. Ovi podaci popunjavaju sekciju "Prethodno iskustvo".</p>
-              {clients.map((c, i) => (
-                <div key={i} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>Klijent {i + 1}</span>
-                    {clients.length > 1 && (
-                      <button onClick={() => setClients(prev => prev.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 11, cursor: "pointer" }}>Ukloni</button>
-                    )}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>
-                    <div><label style={LBL}>Naziv klijenta</label><input style={INP} value={c.name} onChange={e => setClients(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Coca-Cola" /></div>
-                    <div><label style={LBL}>Usluga</label><input style={INP} value={c.service} onChange={e => setClients(prev => prev.map((x, j) => j === i ? { ...x, service: e.target.value } : x))} placeholder="Meta Ads" /></div>
-                  </div>
-                  <div><label style={LBL}>Opis (opciono)</label><input style={INP} value={c.desc} onChange={e => setClients(prev => prev.map((x, j) => j === i ? { ...x, desc: e.target.value } : x))} placeholder="Povećanje ROAS-a za 4× za 3 meseca" /></div>
-                </div>
-              ))}
-              <button onClick={() => setClients(prev => [...prev, { name: "", service: "", desc: "" }])} style={{ width: "100%", padding: "11px", borderRadius: 10, background: "rgba(139,92,246,0.08)", border: "1px dashed rgba(139,92,246,0.3)", color: "#A855F7", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Dodaj klijenta</button>
-            </div>
-          )}
-
-          {/* ── STEP 6: Testimonials ── */}
-          {step === 6 && (
-            <div>
-              <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.15)", marginBottom: 14, display: "flex", gap: 10 }}>
-                <span>💡</span>
-                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>Dodaj bar jednu recenziju klijenta (možeš do 5). Testimoniali grade poverenje kod novih klijenata.</p>
-              </div>
-              {testimonials.map((t, i) => (
-                <div key={i} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>Recenzija {i + 1}</span>
-                    {testimonials.length > 1 && (
-                      <button onClick={() => setTestimonials(prev => prev.filter((_, j) => j !== i))} style={{ padding: "2px 8px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171", fontSize: 11, cursor: "pointer" }}>Ukloni</button>
-                    )}
-                  </div>
-                  <div><label style={LBL}>Citat klijenta</label><textarea value={t.quote} onChange={e => setTestimonials(prev => prev.map((x, j) => j === i ? { ...x, quote: e.target.value } : x))} rows={3} placeholder='"Odlična saradnja, povećao nam je ROAS za 4× za samo 3 meseca!"' style={{ ...INP, resize: "none", marginBottom: 8 } as React.CSSProperties} /></div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <div><label style={LBL}>Ime klijenta</label><input style={INP} value={t.name} onChange={e => setTestimonials(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Ana Lukić" /></div>
-                    <div><label style={LBL}>Pozicija / Kompanija</label><input style={INP} value={t.title} onChange={e => setTestimonials(prev => prev.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} placeholder="CEO, Lumea Beauty" /></div>
-                  </div>
-                </div>
-              ))}
-              {testimonials.length < 5 && (
-                <button onClick={() => setTestimonials(prev => [...prev, { name: "", quote: "", title: "" }])} style={{ width: "100%", padding: "11px", borderRadius: 10, background: "rgba(139,92,246,0.08)", border: "1px dashed rgba(139,92,246,0.3)", color: "#A855F7", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Dodaj recenziju</button>
-              )}
-            </div>
-          )}
-
-          {/* ── STEP 7: CTA ── */}
-          {step === 7 && (
-            <div>
-              <div style={{ marginBottom: 14 }}>
-                <label style={LBL}>Poziv na akciju *</label>
-                <input style={INP} value={ctaTitle} onChange={e => setCtaTitle(e.target.value)} placeholder="npr. Da napravimo" autoFocus />
-                <p style={HINT}>Prva rečenica poziva — prikazuje se velikim tekstom na kraju portfolia.</p>
-              </div>
-              <div>
-                <label style={LBL}>Istaknuta reč (ljubičasto)</label>
-                <input style={INP} value={ctaHighlight} onChange={e => setCtaHighlight(e.target.value)} placeholder="npr. tvoj sledeći projekat" />
-                <p style={HINT}>Ova reč/fraza će biti istaknuta bojom teme. Dodaj upitnik na kraju ako želiš.</p>
-              </div>
-              {(ctaTitle || ctaHighlight) && (
-                <div style={{ marginTop: 16, padding: "14px 16px", borderRadius: 12, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>Pregled:</p>
-                  <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#fff" }}>{ctaTitle}{ctaTitle && ctaHighlight ? " " : ""}<span style={{ color: "#A855F7" }}>{ctaHighlight}</span></p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── STEP 8: Contact ── */}
-          {step === 8 && (
-            <div>
-              <div style={{ marginBottom: 14 }}>
-                <label style={LBL}>Email adresa *</label>
-                <input style={INP} value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="tvoj@email.com" type="email" />
-                <p style={HINT}>Prikazuje se na portfoliu kao dugme za kopiranje.</p>
-              </div>
-              <div>
-                <label style={LBL}>Broj telefona</label>
-                <input style={INP} value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="+381 60 000 0000" />
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 9: Final ── */}
-          {step === 9 && (
-            <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
-              <div style={{ fontSize: 56, marginBottom: 20 }}>🎉</div>
-              <h3 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 800, color: "#fff" }}>Profil je kreiran!</h3>
-              <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>
-                Bićeš preusmjeren na portfolio gdje možeš da uploaduješ svoje prethodne radove.
-              </p>
-              <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", textAlign: "left" }}>
-                <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
-                  📸 Dodaj slike i videe svojih radova<br />
-                  🔗 Podijeli portfolio link sa klijentima<br />
-                  📊 Prati ko gleda tvoj profil
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* ── Navigation ── */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 26 }}>
-            {step > 1 && step < 9 ? (
+            {step > 1 ? (
               <button onClick={() => setStep(s => s - 1)} style={{ padding: "11px 20px", borderRadius: 12, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>← Nazad</button>
             ) : <div />}
 
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-
-              {step < 8 ? (
+              {step < 2 ? (
                 <button onClick={() => setStep(s => s + 1)} disabled={!canNext[step]} style={{
                   padding: "12px 28px", borderRadius: 12, border: "none",
                   background: canNext[step] ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
@@ -593,38 +404,31 @@ export default function Onboarding() {
                   fontFamily: "inherit", boxShadow: canNext[step] ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
                   transition: "all 0.2s",
                 }}>Dalje →</button>
-              ) : step === 8 ? (
+              ) : (
                 <button onClick={async () => {
-                  if (!canNext[8] || !userId) return;
+                  if (!userId || saving) return;
                   setSaving(true);
                   try {
                     await saveProfile();
-                    pixel.startTrial(userId, contactEmail);
-                    setSaving(false);
-                    setStep(9);
+                    pixel.startTrial(userId, userEmail);
+                    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+                    router.push("/moj-profil");
                   } catch (e) { console.error(e); setSaving(false); }
-                }} disabled={!canNext[8] || saving} style={{
+                }} disabled={saving} style={{
                   padding: "12px 28px", borderRadius: 12, border: "none",
-                  background: (canNext[8] && !saving) ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
-                  color: (canNext[8] && !saving) ? "#fff" : "rgba(255,255,255,0.2)",
-                  fontSize: 14, fontWeight: 700, cursor: (canNext[8] && !saving) ? "pointer" : "not-allowed",
-                  fontFamily: "inherit", boxShadow: (canNext[8] && !saving) ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
+                  background: !saving ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
+                  color: !saving ? "#fff" : "rgba(255,255,255,0.4)",
+                  fontSize: 14, fontWeight: 700, cursor: !saving ? "pointer" : "wait",
+                  fontFamily: "inherit", boxShadow: !saving ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
                   transition: "all 0.2s",
-                }}>{saving ? "Čuvanje..." : "Dalje →"}</button>
-              ) : (
-                <button onClick={() => { try { sessionStorage.removeItem(STORAGE_KEY); } catch {}; router.push("/moj-profil"); }} style={{
-                  padding: "12px 28px", borderRadius: 12, border: "none",
-                  background: "linear-gradient(135deg,#7C3AED,#6366F1)",
-                  color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                  boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
-                }}>Idi na portfolio →</button>
+                }}>{saving ? "Kreiranje portfolija..." : "Kreiraj portfolio →"}</button>
               )}
             </div>
           </div>
         </div>
 
         <p style={{ textAlign: "center", marginTop: 16, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-          Sve možeš promeniti kasnije iz sekcije "Moj profil".
+          Sve ćeš moći da izmeniš na svom živom portfoliju u sledećem koraku.
         </p>
 
       </div>
