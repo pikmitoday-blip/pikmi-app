@@ -73,13 +73,6 @@ export default async function Home() {
   const heroCta1     = g("hero_cta1",     "Kreiraj profil besplatno");
   const heroNote     = g("hero_note",     "Free · 7 dana · Bez kreditne kartice");
 
-  // ── How it works ──────────────────────────────────────────────────────────
-  const steps = [
-    { n: "01", color: "#8B5CF6", title: g("how_step1_title", "Kreiraj profil"),    desc: g("how_step1_desc", "Popuni za 5 minuta. Dodaj projekte, opis i boje.") },
-    { n: "02", color: "#A855F7", title: g("how_step2_title", "Podeli pitch link"),  desc: g("how_step2_desc", "Za svakog klijenta personalizovan link sa porukom.") },
-    { n: "03", color: "#D946EF", title: g("how_step3_title", "Prati i reaguj"),     desc: g("how_step3_desc", "Dobijaš notifikaciju. Vidiš šta gledaju. Pišeš im u pravom momentu.") },
-  ];
-
   // ── Pricing ───────────────────────────────────────────────────────────────
   const freeFeatures  = g("pricing_free_features",  "Osnovni profil\nOgraničen broj pitch linkova\nStatistika pregleda").split("\n").filter(Boolean);
   const proFeatures   = g("pricing_pro_features",   "Neograničeno pitch linkova\nSve sekcije profila\nReal-time tracking i notifikacije\nOutreach kit (DM + email + follow-up)\nCustom boje i fontovi\nPriorizetna podrška").split("\n").filter(Boolean);
@@ -185,7 +178,6 @@ export default async function Home() {
 
         <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <a href="/#features"  className="landing-nav-link">Features</a>
-          <a href="/#how"       className="landing-nav-link">Kako funkcioniše</a>
           <a href="/#pricing"   className="landing-nav-link">Cene</a>
           {/* Blog — privremeno sakriveno, vratiti kada bude spreman
           <Link href="/blog"    className="landing-nav-link">Blog</Link>
@@ -322,25 +314,6 @@ export default async function Home() {
           <Link href="/register" style={{ display: "inline-block", padding: "16px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)" }}>
             {g("mid_cta_button", "Kreiraj profil besplatno →")}
           </Link>
-        </div>
-      </section>
-
-      {/* ══ HOW IT WORKS ══ */}
-      <section id="how" style={{ maxWidth: 1000, margin: "0 auto", padding: "48px 48px 56px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: "linear-gradient(135deg,#A855F7,#D946EF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 14 }}>Kako funkcioniše</div>
-        <h2 style={{ fontSize: fsSection, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 56, fontFamily: fontHeading }}>
-          {g("how_title", "3 koraka do prvog klijenta")}
-        </h2>
-        <div className="how-grid" style={{ display: "flex", gap: 32, textAlign: "left" }}>
-          {steps.map((step, i) => (
-            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 16, background: `linear-gradient(135deg,${step.color},${step.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "#fff", boxShadow: `0 6px 20px ${step.color}40` }}>{step.n}</div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 8, color: "#fff" }}>{step.title}</div>
-                <div style={{ fontSize: fsBody, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>{step.desc}</div>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
