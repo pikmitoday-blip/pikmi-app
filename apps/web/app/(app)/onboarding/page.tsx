@@ -5,7 +5,7 @@ import { supabase } from "../../../lib/supabase";
 import { pixel } from "../../../lib/pixel";
 import { uploadFile } from "../../../lib/upload";
 import { THEMES, BLOCK_STYLES, themeTokens, type BlockStyleId } from "../../../lib/themes";
-import { PROFESSIONS, getPlaceholders } from "../../../lib/professions";
+import { PROFESSIONS } from "../../../lib/professions";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function generateSlug(s: string): string {
@@ -194,16 +194,11 @@ export default function Onboarding() {
     2: true, // tema je uvek izabrana
   };
 
-  // ── Build + save profile (with per-profession placeholders) ─────────────────
+  // ── Build + save profile ────────────────────────────────────────────────
+  // Bitno: primeri se NE upisuju kao vrednosti — oni žive kao placeholder
+  // (preview) tekst u editoru. Ovde čuvamo samo profesiju + lične podatke,
+  // a korisnik popunjava sekcije na živom portfoliju.
   async function saveProfile() {
-    // Placeholder content matched to the chosen profession
-    const ph = getPlaceholders(profession === "Ostalo" ? "Ostalo" : profession);
-
-    const caseStudies = [{}, {}, {}, {}]; // "Prethodni radovi" — ostaju prazni (upload kasnije)
-    const experience = ph.experience.map(e => ({
-      company: e.company, role: e.role, dateFrom: "", dateTo: "", desc: e.desc,
-    }));
-
     await supabase.from("profiles").upsert({
       user_id: userId,
       first_name: firstName,
@@ -212,21 +207,19 @@ export default function Onboarding() {
       profile_data: {
         firstName, lastName, avatarUrl,
         profession: resolvedProfession,
-        serviceTitle: ph.serviceTitle,
-        serviceDesc: ph.serviceDesc,
+        serviceTitle: "", serviceDesc: "",
         city, yearsExperience,
-        pricing: ph.pricing,
-        stack: ph.skills.join(", "),
-        caseStudies,
-        experience,
-        testimonials: [ph.testimonial],
-        ctaTitle: "Da napravimo nešto", ctaHighlight: "zajedno?",
+        pricing: [],
+        stack: "",
+        caseStudies: [{}, {}, {}, {}],
+        experience: [],
+        testimonials: [],
+        ctaTitle: "", ctaHighlight: "",
         contactEmail: userEmail, contactPhone: "",
         openStatus: "OTVOREN ZA SARADNJU",
         portfolioAppearance: { templateId, blockStyle },
-        // ── Live-setup flags ──
+        // ── Live-setup flag ──
         needsSetup: true,
-        placeholderSections: ["service", "pricing", "stack", "experience", "testimonial"],
       },
     }, { onConflict: "user_id" });
 

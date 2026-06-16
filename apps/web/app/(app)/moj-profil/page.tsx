@@ -5,6 +5,7 @@ import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
 import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
+import { getPlaceholders } from "../../../lib/professions";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ export default function MojProfil() {
   const [userId, setUserId] = useState<string>("");
   // ── Live-setup (onboarding fill) ──
   const [setupMode, setSetupMode] = useState(false);
-  const [placeholderSections, setPlaceholderSections] = useState<string[]>([]);
+  const [previewMode, setPreviewMode] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [profileUrl, setProfileUrl] = useState<string>(() => {
@@ -194,11 +195,17 @@ export default function MojProfil() {
   }
 
   async function finishSetup() {
-    if (!userId || !p || finishing) return;
+    if (!userId || finishing) return;
+    const src: any = draft ?? p;
+    if (!src) return;
     setFinishing(true);
     try {
-      const updated: any = { ...p, needsSetup: false };
-      await supabase.from("profiles").upsert({ user_id: userId, profile_data: updated }, { onConflict: "user_id" });
+      const updated: any = { ...src, csImages: (src.csImages ?? []).map((img: string) => img.startsWith("data:") ? "" : img), needsSetup: false };
+      await supabase.from("profiles").upsert({
+        user_id: userId, first_name: updated.firstName, last_name: updated.lastName,
+        service_title: (updated.serviceTitle || "").split("\n")[0].trim(),
+        profile_data: updated,
+      }, { onConflict: "user_id" });
       try {
         sessionStorage.removeItem("pikmi-moj-profil");
         sessionStorage.removeItem("pikmi-sidebar");
@@ -207,6 +214,24 @@ export default function MojProfil() {
       router.push("/dashboard");
     } catch (e) { console.error(e); setFinishing(false); }
   }
+
+  // ── Auto-save the draft while in setup mode (debounced) ─────────────────────
+  useEffect(() => {
+    if (!setupMode || !draft || !userId) return;
+    const t = setTimeout(async () => {
+      try {
+        const toSave: any = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
+        await supabase.from("profiles").upsert({
+          user_id: userId, first_name: draft.firstName, last_name: draft.lastName,
+          service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
+          profile_data: toSave,
+        }, { onConflict: "user_id" });
+        try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(toSave)); } catch {}
+      } catch {}
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, setupMode, userId]);
 
   // ── Live theme tokens for the editor preview (updates in real time) ─────────
   const appearance = (p as any)?.portfolioAppearance as { templateId?: number; blockStyle?: BlockStyleId } | undefined;
@@ -253,8 +278,18 @@ export default function MojProfil() {
               testimonials: pd.testimonials ?? [],
             };
             setP(merged);
-            setSetupMode(!!pd.needsSetup);
-            setPlaceholderSections(Array.isArray(pd.placeholderSections) ? pd.placeholderSections : []);
+            const isSetup = !!pd.needsSetup;
+            setSetupMode(isSetup);
+            if (isSetup) {
+              // U setup modu sve sekcije su odmah u edit modu vezane za draft.
+              // Osiguravamo po jedan prazan red da bi se primeri (placeholderi) videli.
+              setDraft({
+                ...merged,
+                pricing: (merged.pricing && merged.pricing.length > 0) ? merged.pricing : [{ name: "", price: "", desc: "" }],
+                experience: (merged.experience && merged.experience.length > 0) ? merged.experience : [{ company: "", role: "", dateFrom: "", dateTo: "", desc: "" }],
+                testimonials: (merged.testimonials && merged.testimonials.length > 0) ? merged.testimonials : [{ quote: "", name: "", title: "" }],
+              });
+            }
             try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
             if (data.profile_url) {
               setProfileUrl(data.profile_url);
@@ -301,13 +336,6 @@ export default function MojProfil() {
     setSaving(true);
     try {
       const toSave: any = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
-      // Čim korisnik sačuva sekciju, ona više nije placeholder (primer).
-      if (editSection) {
-        const base: string[] = Array.isArray(toSave.placeholderSections) ? toSave.placeholderSections : placeholderSections;
-        const remaining = base.filter((k: string) => k !== editSection);
-        toSave.placeholderSections = remaining;
-        setPlaceholderSections(remaining);
-      }
       await supabase.from("profiles").upsert({
         user_id: userId, first_name: draft.firstName, last_name: draft.lastName,
         service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
@@ -375,11 +403,23 @@ export default function MojProfil() {
   const csSlots = [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !!p.csImages?.[i]);
   const hasWork = csSlots.length > 0;
 
-  // ── Setup-mode helpers (placeholder greying + progress) ─────────────────────
-  const REQUIRED_SECTIONS = ["service", "pricing", "stack", "experience", "testimonial"];
-  const isPH = (k: string) => setupMode && placeholderSections.includes(k) && editSection !== k;
-  const phWrap = (k: string): React.CSSProperties => isPH(k) ? { opacity: 0.6 } : {};
-  const filledRequired = REQUIRED_SECTIONS.filter(k => !placeholderSections.includes(k)).length;
+  // ── Setup-mode helpers ──────────────────────────────────────────────────────
+  // U setup modu su sve sekcije odmah u edit modu (osim kad je uključen Pregled).
+  const setupAllEdit = setupMode && !previewMode;
+  // Primeri (preview tekst) za placeholdere — na osnovu izabrane profesije.
+  const PH = getPlaceholders(((p as any)?.profession as string) || "Ostalo");
+
+  // Kompletnost se računa iz STVARNOG sadržaja (korisnik mora da upiše svoje).
+  const src: any = draft ?? p;
+  const done = {
+    service:     !!(src.serviceTitle && src.serviceTitle.trim()),
+    pricing:     (src.pricing ?? []).some((t: PricingTier) => t.name?.trim() && t.price?.trim()),
+    stack:       !!(src.stack && src.stack.trim()),
+    experience:  (src.experience ?? []).some((e: ExperienceItem) => e.company?.trim() || e.role?.trim()),
+    testimonial: (src.testimonials ?? []).some((t: any) => t.quote?.trim() && t.name?.trim()),
+  };
+  const REQUIRED_SECTIONS = ["service", "pricing", "stack", "experience", "testimonial"] as const;
+  const filledRequired = REQUIRED_SECTIONS.filter(k => (done as any)[k]).length;
   const progressPct = Math.round((filledRequired / REQUIRED_SECTIONS.length) * 100);
   const allRequiredDone = filledRequired === REQUIRED_SECTIONS.length;
 
@@ -416,7 +456,7 @@ export default function MojProfil() {
         <label style={LBL}>GODINE ISKUSTVA</label>
         <input style={INP} value={(draft as any).yearsExperience ?? ""} onChange={e => setD("yearsExperience" as any, e.target.value)} placeholder="npr. 5" type="text" />
 
-        <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+        {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
       </div>
     );
   }
@@ -427,27 +467,31 @@ export default function MojProfil() {
     if (!p) return null;
     return (
       <div style={{ padding: 24 }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
-          <button onClick={() => startEdit("info")}
-            style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
-        </div>
+        {!setupMode && (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+            <button onClick={() => startEdit("info")}
+              style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
+          </div>
+        )}
 
-        {/* Avatar + Name */}
-        <div style={{ marginBottom: 16 }}>
+        {/* Avatar + Name (kompaktno, poravnato sa sekcijom „Šta radim") */}
+        <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16 }}>
           {p.avatarUrl
-            ? <img src={p.avatarUrl} alt="" style={{ width: "100%", maxWidth: 220, height: 200, borderRadius: TK.geom.avatar, objectFit: "cover", display: "block", marginBottom: 14, boxShadow: `0 8px 20px ${TK.accent}40` }} />
-            : <div style={{ width: 88, height: 88, borderRadius: TK.geom.avatar, background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 14, boxShadow: `0 8px 20px ${TK.accent}40` }}>
+            ? <img src={p.avatarUrl} alt="" style={{ width: 84, height: 84, borderRadius: TK.geom.avatar, objectFit: "cover", flexShrink: 0, boxShadow: `0 8px 22px ${TK.accent}55` }} />
+            : <div style={{ width: 84, height: 84, borderRadius: TK.geom.avatar, background: `linear-gradient(135deg,${TK.accent},${TK.accent}aa)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, fontWeight: 700, color: "#fff", flexShrink: 0, boxShadow: `0 8px 22px ${TK.accent}55` }}>
                 {p.initials || "?"}
               </div>
           }
-          <p style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
-          <p style={{ margin: "2px 0 0", fontSize: 26, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
-          {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
-          {(p as any).yearsExperience && (
-            <p style={{ margin: "6px 0 0", fontSize: 11, color: C.accent, fontWeight: 600 }}>
-              Godine iskustva: {String((p as any).yearsExperience).replace(/\s*godin.*/i, "").trim()}
-            </p>
-          )}
+          <div style={{ minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1, color: C.dark }}>{p.firstName || "Ime"}</p>
+            <p style={{ margin: "2px 0 0", fontSize: 22, fontWeight: 700, letterSpacing: "-0.6px", lineHeight: 1.1, color: C.accent }}>{p.lastName || "Prezime"}</p>
+            {p.city && <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted }}>→ {p.city}</p>}
+            {(p as any).yearsExperience && (
+              <p style={{ margin: "6px 0 0", fontSize: 11, color: C.accent, fontWeight: 600 }}>
+                Godine iskustva: {String((p as any).yearsExperience).replace(/\s*godin.*/i, "").trim()}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -481,6 +525,16 @@ export default function MojProfil() {
               <div style={{ height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#7C3AED,#A855F7)", width: `${progressPct}%`, transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)" }} />
             </div>
           </div>
+          <button
+            onClick={() => { if (!previewMode && draft) setP(draft); setPreviewMode(v => !v); }}
+            title={previewMode ? "Nazad na izmenu" : "Pregledaj portfolio"}
+            style={{
+              flexShrink: 0, padding: "0 14px", height: 38, borderRadius: 11,
+              border: "1px solid rgba(139,92,246,0.4)",
+              background: previewMode ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(124,58,237,0.15)",
+              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", gap: 6,
+            }}>{previewMode ? "✏️ Uredi" : "👁 Pregled"}</button>
           <button onClick={() => setShowThemeSheet(true)} title="Prilagodi izgled" style={{
             width: 38, height: 38, borderRadius: 11, flexShrink: 0,
             border: "1px solid rgba(139,92,246,0.3)", background: "rgba(124,58,237,0.15)",
@@ -489,28 +543,30 @@ export default function MojProfil() {
         </div>
       )}
 
-      {/* ── Setup mode: dismissable onboarding banner ── */}
+      {/* ── Setup mode: dismissable onboarding banner (dark panel — čitljiv na svakoj temi) ── */}
       {setupMode && !bannerDismissed && (
-        <div style={{ maxWidth: 1100, margin: "16px auto 0", padding: isMobile ? "0 12px" : "0 16px" }}>
+        <div style={{ maxWidth: 1060, margin: "16px auto 0", padding: isMobile ? "0 12px" : "0 16px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
-            background: "rgba(124,58,237,0.14)", border: "1px solid rgba(139,92,246,0.35)",
-            borderRadius: 14, padding: "12px 16px",
+            background: "rgba(17,17,28,0.95)", border: "1px solid rgba(139,92,246,0.4)",
+            borderRadius: 14, padding: "12px 16px", boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
           }}>
             <span style={{ fontSize: 20, flexShrink: 0 }}>👋</span>
             <p style={{ margin: 0, flex: 1, fontSize: 13, color: "#E9D5FF", lineHeight: 1.5 }}>
-              Klikni na <strong>✏️</strong> u bilo kojoj sekciji da je izmeniš. Sekcije označene sa <strong>„Primer"</strong> su pred-popunjene — zameni ih svojim sadržajem. Promene se čuvaju automatski.
+              Sve sekcije su odmah spremne za izmenu — <strong>upiši svoj sadržaj</strong> preko sivih primera (oni su samo inspiracija). Klikni <strong>„Pregled"</strong> gore da vidiš kako portfolio izgleda. Promene se čuvaju automatski.
             </p>
             <button onClick={() => setBannerDismissed(true)} style={{
               width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(255,255,255,0.1)", border: "none", color: "#fff",
+              background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
               fontSize: 16, cursor: "pointer", lineHeight: 1,
             }}>×</button>
           </div>
         </div>
       )}
 
-      {/* ── Responsive CSS — live themed preview ── */}
+      {/* ── Responsive CSS — live themed preview ──
+          Mobile: tema kao pozadina, svaka sekcija je zasebna kartica.
+          Desktop: tema je pozadina, a portfolio je JEDNA celina (kao javni portfolio). */}
       <style>{`
         .pp-card {
           width: 100%;
@@ -529,8 +585,7 @@ export default function MojProfil() {
           background-size: ${TK.pattern.size};
           background-repeat: repeat;
         }
-        .pp-grid { position: relative; z-index: 1; }
-        .pp-grid { display: flex; flex-direction: column; gap: 10px; }
+        .pp-grid { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
         .pp-left {
           background: ${TK.blockBg};
           border: 1px solid ${TK.blockBorder};
@@ -548,19 +603,35 @@ export default function MojProfil() {
         }
         .pp-sep-hidden { display: none; }
         @media (min-width: 769px) {
+          .pp-card { padding: 32px 24px; }
+          /* Jedna objedinjena kartica */
           .pp-grid {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 300px 1fr;
             align-items: start;
-            gap: 10px;
+            gap: 0;
+            max-width: 1060px;
+            margin: 0 auto;
+            background: ${TK.blockBg};
+            border-radius: 24px;
+            box-shadow: 0 8px 60px rgba(0,0,0,0.18);
+            overflow: hidden;
           }
           .pp-left {
-            position: sticky;
-            top: 12px;
-            max-height: calc(100vh - 90px);
-            overflow-y: auto;
+            border: none; box-shadow: none; border-radius: 0;
+            border-right: 1px solid ${TK.divider};
+            background: transparent;
+            position: sticky; top: 0; align-self: start;
+            max-height: 100vh; overflow-y: auto;
           }
-          .pp-right-section { padding: 28px 36px !important; }
+          .pp-right { gap: 0; background: transparent; }
+          .pp-right-section {
+            border: none; box-shadow: none; border-radius: 0;
+            background: transparent;
+            border-top: 1px solid ${TK.divider};
+            padding: 28px 36px !important;
+          }
+          .pp-right-section:first-child { border-top: none; }
           .pp-cs-grid { grid-template-columns: repeat(4, 1fr) !important; }
         }
         @media (max-width: 768px) {
@@ -600,7 +671,7 @@ export default function MojProfil() {
 
       {/* ── Card ── */}
       <div className="pp-card" style={setupMode
-        ? { marginBottom: 24, maxWidth: 1100, margin: "16px auto 0" }
+        ? { marginBottom: 24 }
         : { marginBottom: 60 }}>
 
         {/* Grid: left + right */}
@@ -608,26 +679,26 @@ export default function MojProfil() {
 
           {/* ── LEFT PANEL (info) ── */}
           <div className="pp-left">
-            {editSection === "info" ? InfoEditForm() : InfoDisplay()}
+            {(editSection === "info" || setupAllEdit) ? InfoEditForm() : InfoDisplay()}
           </div>
 
           {/* ── RIGHT PANEL (sections 01–07) ── */}
           <div className="pp-right">
 
             {/* 01 — Šta radim */}
-            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("service") }}>
-              {editSection === "service" && draft ? (
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {(editSection === "service" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>01 — ŠTA RADIM</p>
                   <label style={LBL}>NASLOV USLUGE</label>
-                  <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder="Video editor za e-commerce" />
+                  <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.serviceTitle} onChange={e => setD("serviceTitle", e.target.value)} placeholder={PH.serviceTitle} />
                   <label style={LBL}>OPIS</label>
-                  <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder="Kratki opis tvojih usluga..." />
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  <textarea style={{ ...INP, minHeight: 90, resize: "vertical" } as React.CSSProperties} value={draft.serviceDesc} onChange={e => setD("serviceDesc", e.target.value)} placeholder={PH.serviceDesc} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
-                  <SectionHead number="01" text="Šta radim" section="service" onEdit={startEdit} placeholder={isPH("service")} />
+                  <SectionHead number="01" text="Šta radim" section="service" onEdit={startEdit} />
                   {p.serviceTitle
                     ? <h2 style={{ margin: "0 0 12px", fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", lineHeight: 1.2 }}>{p.serviceTitle}</h2>
                     : <p style={{ margin: "0 0 12px", fontSize: 13, color: C.muted, fontStyle: "italic" }}>Nema naslova — klikni Uredi</p>
@@ -639,8 +710,8 @@ export default function MojProfil() {
 
             {/* Paketi / cene */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("pricing") }}>
-              {editSection === "pricing" && draft ? (
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {(editSection === "pricing" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
                   {(draft.pricing ?? []).map((tier, i) => (
@@ -660,14 +731,14 @@ export default function MojProfil() {
                           <input style={INP} value={tier.name} onChange={e => {
                             const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], name: e.target.value };
                             setDraft(prev => prev ? { ...prev, pricing: t } : null);
-                          }} placeholder="Starter" />
+                          }} placeholder={PH.pricing[i]?.name ?? "Starter"} />
                         </div>
                         <div>
                           <label style={LBL}>CENA</label>
                           <input style={INP} value={tier.price} onChange={e => {
                             const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], price: e.target.value };
                             setDraft(prev => prev ? { ...prev, pricing: t } : null);
-                          }} placeholder="€500" />
+                          }} placeholder={PH.pricing[i]?.price ?? "€500"} />
                         </div>
                       </div>
                       <div>
@@ -675,7 +746,7 @@ export default function MojProfil() {
                         <input style={INP} value={tier.desc} onChange={e => {
                           const t = [...(draft.pricing ?? [])]; t[i] = { ...t[i], desc: e.target.value };
                           setDraft(prev => prev ? { ...prev, pricing: t } : null);
-                        }} placeholder="Šta je uključeno u ovaj paket..." />
+                        }} placeholder={PH.pricing[i]?.desc ?? "Šta je uključeno u ovaj paket..."} />
                       </div>
                     </div>
                   ))}
@@ -685,15 +756,12 @@ export default function MojProfil() {
                       + Dodaj paket {(draft.pricing ?? []).length + 1}
                     </button>
                   )}
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
-                      {isPH("pricing") && <PHBadge />}
-                    </div>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text }}>Paketi</p>
                     <button onClick={() => startEdit("pricing")}
                       style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: C.accentLight, border: "none", cursor: "pointer", lineHeight: 1 }}>✏️</button>
                   </div>
@@ -722,7 +790,7 @@ export default function MojProfil() {
             {/* 02 — Rad */}
             <SectionSep />
             <div className="pp-right-section" style={{ padding: "24px 20px" }}>
-              {editSection === "portfolio" && draft ? (
+              {(editSection === "portfolio" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>02 — RAD</p>
                   {/* Upload notice — shown until first file is uploaded */}
@@ -771,7 +839,7 @@ export default function MojProfil() {
                       </div>
                     ))}
                   </div>
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
@@ -815,8 +883,8 @@ export default function MojProfil() {
 
             {/* 03 — Veštine */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("stack") }}>
-              {editSection === "stack" && draft ? (
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {(editSection === "stack" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>03 — VEŠTINE</p>
                   <label style={LBL}>TVOJE VEŠTINE</label>
@@ -835,8 +903,8 @@ export default function MojProfil() {
                                 if (e.key === "Enter") { e.preventDefault(); if (sk.trim()) setItems([...items, ""]); }
                                 if (e.key === "Backspace" && !sk && items.length > 1) { e.preventDefault(); setItems(items.filter((_, j) => j !== i)); }
                               }}
-                              placeholder="npr. Figma"
-                              style={{ background: "transparent", border: "none", outline: "none", color: C.dark, fontSize: 13, fontWeight: 600, fontFamily: "inherit", width: `${Math.max(sk.length, 7) * 8}px`, maxWidth: 180 }}
+                              placeholder={PH.skills[i] ?? "npr. Figma"}
+                              style={{ background: "transparent", border: "none", outline: "none", color: C.dark, fontSize: 13, fontWeight: 600, fontFamily: "inherit", width: `${Math.max(sk.length, (PH.skills[i] ?? "npr. Figma").length, 7) * 8}px`, maxWidth: 180 }}
                             />
                             <button onClick={() => setItems(items.length > 1 ? items.filter((_, j) => j !== i) : [""])}
                               style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(0,0,0,0.08)", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
@@ -848,11 +916,11 @@ export default function MojProfil() {
                       </div>
                     );
                   })()}
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
-                  <SectionHead number="03" text="Veštine" section="stack" onEdit={startEdit} placeholder={isPH("stack")} />
+                  <SectionHead number="03" text="Veštine" section="stack" onEdit={startEdit} />
                   {stackTags.length > 0
                     ? <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {stackTags.map((tag, i) => (
@@ -868,8 +936,8 @@ export default function MojProfil() {
 
             {/* 05 — Iskustvo */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("experience") }}>
-              {editSection === "experience" && draft ? (
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {(editSection === "experience" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 14px", fontSize: 9, fontWeight: 600, color: C.accent, letterSpacing: "1.5px", textTransform: "uppercase" }}>05 — ISKUSTVO</p>
                   {(draft.experience ?? []).map((exp, i) => (
@@ -881,15 +949,15 @@ export default function MojProfil() {
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <label style={LBL}>KOMPANIJA</label>
-                          <input style={INP} value={exp.company} onChange={e => setDraftExp(i, "company", e.target.value)} placeholder="Magična Azbuka" />
+                          <input style={INP} value={exp.company} onChange={e => setDraftExp(i, "company", e.target.value)} placeholder={PH.experience[i]?.company ?? "npr. Naziv firme / klijenta"} />
                         </div>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <label style={LBL}>ULOGA</label>
-                          <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder="Senior Video Editor" />
+                          <input style={INP} value={exp.role} onChange={e => setDraftExp(i, "role", e.target.value)} placeholder={PH.experience[i]?.role ?? "npr. Tvoja uloga"} />
                         </div>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <label style={LBL}>OPIS</label>
-                          <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder="Brand film + 8 ad creative-a · ROAS 3.2×" />
+                          <textarea style={{ ...INP, minHeight: 60, resize: "vertical" } as React.CSSProperties} value={exp.desc} onChange={e => setDraftExp(i, "desc", e.target.value)} placeholder={PH.experience[i]?.desc ?? "npr. Šta si konkretno uradio i rezultat"} />
                         </div>
                       </div>
                     </div>
@@ -897,11 +965,11 @@ export default function MojProfil() {
                   <button onClick={addExp} style={{ width: "100%", padding: "10px", borderRadius: 8, background: C.accentLight, color: C.accent, border: `1px dashed ${C.accent}50`, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
                     + Dodaj iskustvo
                   </button>
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
-                  <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} placeholder={isPH("experience")} />
+                  <SectionHead number="05" text="Prethodno iskustvo" section="experience" onEdit={startEdit} />
                   {(() => {
                     const csItems = (p.caseStudies ?? []).filter((cs, i) => cs.client && !p.csImages?.[i]);
                     const expItems = p.experience ?? [];
@@ -936,8 +1004,8 @@ export default function MojProfil() {
 
             {/* 06 — Reči klijenata */}
             <SectionSep />
-            <div className="pp-right-section" style={{ padding: "24px 20px", ...phWrap("testimonial") }}>
-              {editSection === "testimonial" && draft ? (
+            <div className="pp-right-section" style={{ padding: "24px 20px" }}>
+              {(editSection === "testimonial" || setupAllEdit) && draft ? (
                 <div>
                   <p style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 700, color: C.text }}>Reči klijenata</p>
                   {((draft.testimonials ?? []).length === 0 && !draft.testimonialQuote) && (
@@ -968,21 +1036,21 @@ export default function MojProfil() {
                       <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={t.quote} onChange={e => {
                         const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], quote: e.target.value };
                         setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
-                      }} placeholder='"Odlična saradnja..."' />
+                      }} placeholder={PH.testimonial.quote} />
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                         <div>
                           <label style={LBL}>IME</label>
                           <input style={INP} value={t.name} onChange={e => {
                             const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], name: e.target.value };
                             setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
-                          }} placeholder="Marko Petrović" />
+                          }} placeholder={PH.testimonial.name} />
                         </div>
                         <div>
                           <label style={LBL}>KOMPANIJA / POZICIJA</label>
                           <input style={{ ...INP, marginBottom: 0 }} value={t.title} onChange={e => {
                             const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], title: e.target.value };
                             setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
-                          }} placeholder="CEO, Kompanija" />
+                          }} placeholder={PH.testimonial.title} />
                         </div>
                       </div>
                     </div>
@@ -1001,11 +1069,11 @@ export default function MojProfil() {
                       + Dodaj recenziju ({(draft.testimonials ?? []).length + (draft.testimonialQuote ? 1 : 0)}/5)
                     </button>
                   )}
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
-                  <SectionHead number="06" text="Reči klijenata" section="testimonial" onEdit={startEdit} placeholder={isPH("testimonial")} />
+                  <SectionHead number="06" text="Reči klijenata" section="testimonial" onEdit={startEdit} />
                   {(() => {
                     const list = (p.testimonials && p.testimonials.length > 0)
                       ? p.testimonials
@@ -1036,17 +1104,17 @@ export default function MojProfil() {
 
             {/* CTA / Kontakt */}
             <div style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
-              {editSection === "cta" && draft ? (
+              {(editSection === "cta" || setupAllEdit) && draft ? (
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
                   <label style={LBL}>NASLOV</label>
-                  <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="Da napravimo" />
+                  <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="npr. Da napravimo" />
                   <label style={LBL}>ISTAKNUTA REČ (ljubičasto)</label>
-                  <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="sledeći hit" />
+                  <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="npr. nešto sjajno zajedno?" />
                   <label style={LBL}>EMAIL (za kopiranje)</label>
                   <input style={INP} value={(draft as any).contactEmail ?? ""} onChange={e => setD("contactEmail" as any, e.target.value)} placeholder="tvoj@email.com" />
                   <label style={LBL}>TELEFON (za kopiranje)</label>
                   <input style={INP} value={(draft as any).contactPhone ?? ""} onChange={e => setD("contactPhone" as any, e.target.value)} placeholder="+381 60 000 0000" />
-                  <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />
+                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
                 </div>
               ) : (
                 <>
