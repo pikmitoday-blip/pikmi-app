@@ -765,6 +765,8 @@ export default function MojProfil() {
             padding: 28px 36px !important;
           }
           .pp-right-section:first-child { border-top: none; }
+          /* CTA/Kontakt footer — od ivice do ivice (kao na javnom portfoliju) */
+          .pp-cta { border-radius: 0 !important; box-shadow: none !important; padding: 36px 36px 32px !important; }
           .pp-cs-grid { grid-template-columns: repeat(4, 1fr) !important; }
         }
         @media (max-width: 768px) {
@@ -1287,7 +1289,7 @@ export default function MojProfil() {
             </div>
 
             {/* CTA / Kontakt */}
-            <div style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
+            <div className="pp-cta" style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
               {(editSection === "cta" || setupAllEdit) && draft ? (
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
                   <label style={LBL}>NASLOV</label>
