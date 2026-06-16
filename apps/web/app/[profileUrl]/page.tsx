@@ -508,14 +508,27 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
         if (profileByUrl) userId = profileByUrl.user_id;
       }
 
+      // 2b. Dodatni portfolio (Pro) — zaseban slug u tabeli portfolios
+      let portfolioRow: { profile_data: any; first_name: string; last_name: string; user_id: string } | null = null;
+      if (!userId && !pitchLink?.is_active) {
+        const { data: pf } = await supabase
+          .from("portfolios")
+          .select("user_id, profile_data, first_name, last_name")
+          .eq("profile_url", slug)
+          .single();
+        if (pf) { userId = pf.user_id; portfolioRow = pf as any; }
+      }
+
       if (!userId) { setLoading(false); return; }
 
-      // 3. Učitaj profile_data
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("profile_data, first_name, last_name, email")
-        .eq("user_id", userId)
-        .single();
+      // 3. Učitaj profile_data — iz dodatnog portfolija ako je on u pitanju, inače iz profiles
+      const profileData: any = portfolioRow
+        ? portfolioRow
+        : (await supabase
+            .from("profiles")
+            .select("profile_data, first_name, last_name, email")
+            .eq("user_id", userId)
+            .single()).data;
 
       if (profileData?.email) setFreelancerEmail(profileData.email);
 

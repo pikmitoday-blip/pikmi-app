@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/i18n";
@@ -150,6 +150,61 @@ function EditBar({ onSave, onCancel, saving }: { onSave: () => void; onCancel: (
   );
 }
 
+// ─── Portfolio switcher (multi-portfolio, Pro feature) ───────────────────────
+
+interface PortfolioRow {
+  id: string; profile_url: string; label: string;
+  profile_data: any; first_name: string; last_name: string;
+}
+
+// Zaključan "Dodaj portfolio" slot (free plan): tooltip na hover (desktop)
+// ili na tap (mobile, nestaje posle 6s + X dugme).
+function LockedAddSlot({ isMobile }: { isMobile: boolean }) {
+  const [show, setShow] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function tap() {
+    if (!isMobile) return;
+    setShow(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setShow(false), 6000);
+  }
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  return (
+    <div
+      style={{ position: "relative", flexShrink: 0 }}
+      onMouseEnter={() => { if (!isMobile) setShow(true); }}
+      onMouseLeave={() => { if (!isMobile) setShow(false); }}
+      onClick={tap}
+    >
+      <div style={{
+        display: "flex", alignItems: "center", gap: 7, padding: "9px 14px",
+        borderRadius: 12, border: "1px dashed rgba(139,92,246,0.35)",
+        background: "rgba(139,92,246,0.06)", cursor: "pointer",
+        opacity: 0.55, userSelect: "none", whiteSpace: "nowrap",
+      }}>
+        <span style={{ fontSize: 13 }}>🔒</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)" }}>Dodaj portfolio</span>
+      </div>
+      {show && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 50,
+          width: 240, background: "#15151c", border: "1px solid rgba(139,92,246,0.4)",
+          borderRadius: 12, padding: "12px 14px", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+        }}>
+          <button onClick={(e) => { e.stopPropagation(); setShow(false); }} style={{
+            position: "absolute", top: 6, right: 6, width: 20, height: 20, borderRadius: "50%",
+            background: "rgba(255,255,255,0.1)", border: "none", color: "#fff",
+            fontSize: 13, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>×</button>
+          <p style={{ margin: 0, fontSize: 12.5, color: "#E9D5FF", lineHeight: 1.5, paddingRight: 14 }}>
+            🔓 Ova opcija se otključava na <strong>Pro planu</strong> — napravi portfolije za različite tipove klijenata.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export default function MojProfil() {
@@ -162,6 +217,13 @@ export default function MojProfil() {
   const [previewMode, setPreviewMode] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  // ── Multi-portfolio (Pro) ──
+  const [plan, setPlan] = useState<string>("free");
+  const [portfolios, setPortfolios] = useState<PortfolioRow[]>([]);
+  const [activePfId, setActivePfId] = useState<string | null>(null); // null = primarni (profiles)
+  const [primaryUrl, setPrimaryUrl] = useState<string>("");
+  const [creatingPf, setCreatingPf] = useState(false);
+  const primaryRef = useRef<Profile | null>(null);
   const [profileUrl, setProfileUrl] = useState<string>(() => {
     try { return sessionStorage.getItem("pikmi-profile-url") ?? ""; } catch { return ""; }
   });
@@ -182,16 +244,78 @@ export default function MojProfil() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
+  function buildMerged(pd: any, fn: string, ln: string): Profile {
+    return {
+      ...DEFAULT_PROFILE, ...pd,
+      firstName: fn || "", lastName: ln || "",
+      initials: (fn?.[0] ?? "") + (ln?.[0] ?? ""),
+      csImages: pd?.csImages ?? ["", "", "", ""],
+      caseStudies: pd?.caseStudies ?? [{}, {}, {}, {}],
+      experience: pd?.experience ?? [],
+      testimonials: pd?.testimonials ?? [],
+    };
+  }
+
+  // Snimi profile_data na pravo mesto: primarni → profiles, dodatni → portfolios.
+  async function persistData(pd: any, fn: string, ln: string) {
+    if (activePfId) {
+      await supabase.from("portfolios")
+        .update({ profile_data: pd, first_name: fn, last_name: ln })
+        .eq("id", activePfId);
+      setPortfolios(prev => prev.map(x => x.id === activePfId
+        ? { ...x, profile_data: pd, first_name: fn, last_name: ln } : x));
+    } else {
+      await supabase.from("profiles").upsert({
+        user_id: userId, first_name: fn, last_name: ln,
+        service_title: (pd?.serviceTitle || "").split("\n")[0].trim(),
+        profile_data: pd,
+      }, { onConflict: "user_id" });
+      primaryRef.current = pd;
+    }
+  }
+
+  function switchPortfolio(target: PortfolioRow | null) {
+    if ((target?.id ?? null) === activePfId) return;
+    setEditSection(null); setDraft(null); setPreviewMode(false);
+    if (!target) {
+      setActivePfId(null);
+      if (primaryRef.current) setP(primaryRef.current);
+      setProfileUrl(primaryUrl);
+    } else {
+      setActivePfId(target.id);
+      setP(buildMerged(target.profile_data || {}, target.first_name, target.last_name));
+      setProfileUrl(target.profile_url);
+    }
+  }
+
+  async function createPortfolio() {
+    if (creatingPf || plan !== "pro" || !userId) return;
+    setCreatingPf(true);
+    try {
+      const res = await fetch("/api/portfolio", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", userId }),
+      });
+      const j = await res.json();
+      if (j.portfolio) {
+        const pf = j.portfolio as PortfolioRow;
+        setPortfolios(prev => [...prev, pf]);
+        setEditSection(null); setDraft(null); setPreviewMode(false);
+        setActivePfId(pf.id);
+        setP(buildMerged(pf.profile_data || {}, pf.first_name, pf.last_name));
+        setProfileUrl(pf.profile_url);
+      }
+    } catch {}
+    setCreatingPf(false);
+  }
+
   async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
     if (!p) return;
     const newApp: PortfolioAppearance = { templateId, blockStyle };
     const updated = { ...p, portfolioAppearance: newApp } as any;
     setP(updated);
-    try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {}
-    await supabase.from("profiles").upsert({
-      user_id: userId,
-      profile_data: updated,
-    }, { onConflict: "user_id" });
+    if (!activePfId) { try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(updated)); } catch {} }
+    await persistData(updated, p.firstName, p.lastName);
   }
 
   async function finishSetup() {
@@ -263,7 +387,7 @@ export default function MojProfil() {
         if (user) {
           setUserId(user.id);
           const { data } = await supabase.from("profiles")
-            .select("first_name, last_name, profile_data, profile_url")
+            .select("first_name, last_name, profile_data, profile_url, plan")
             .eq("user_id", user.id).single();
           if (data) {
             const pd = (data.profile_data as Record<string, any>) || {};
@@ -278,6 +402,7 @@ export default function MojProfil() {
               testimonials: pd.testimonials ?? [],
             };
             setP(merged);
+            primaryRef.current = merged;
             const isSetup = !!pd.needsSetup;
             setSetupMode(isSetup);
             if (isSetup) {
@@ -293,9 +418,19 @@ export default function MojProfil() {
             try { sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(merged)); } catch {}
             if (data.profile_url) {
               setProfileUrl(data.profile_url);
+              setPrimaryUrl(data.profile_url);
               try { sessionStorage.setItem("pikmi-profile-url", data.profile_url); } catch {}
             }
+            setPlan((data as any).plan || "free");
           }
+          // Dodatni portfoliji (Pro)
+          try {
+            const { data: pfs } = await supabase.from("portfolios")
+              .select("id, profile_url, label, profile_data, first_name, last_name")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: true });
+            if (pfs) setPortfolios(pfs as PortfolioRow[]);
+          } catch {}
         }
       } catch {}
       setLoading(false);
@@ -336,26 +471,24 @@ export default function MojProfil() {
     setSaving(true);
     try {
       const toSave: any = { ...draft, csImages: (draft.csImages ?? []).map(img => img.startsWith("data:") ? "" : img) };
-      await supabase.from("profiles").upsert({
-        user_id: userId, first_name: draft.firstName, last_name: draft.lastName,
-        service_title: (draft.serviceTitle || "").split("\n")[0].trim(),
-        profile_data: toSave,
-      }, { onConflict: "user_id" });
+      await persistData(toSave, draft.firstName, draft.lastName);
       setP(toSave);
-      try {
-        sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(toSave));
-        sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(toSave));
-        // Instant update sidebara — bez refresha
-        window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
-          detail: {
-            firstName: toSave.firstName,
-            lastName: toSave.lastName,
-            initials: (toSave.firstName?.[0] ?? "").toUpperCase() + (toSave.lastName?.[0] ?? "").toUpperCase(),
-            avatarUrl: toSave.avatarUrl,
-            serviceTitle: (toSave.serviceTitle || "").split("\n")[0].trim(),
-          },
-        }));
-      } catch {}
+      // Sidebar/keš se odnose na nalog (primarni portfolio) — ne diramo ih za dodatne.
+      if (!activePfId) {
+        try {
+          sessionStorage.setItem("pikmi-moj-profil", JSON.stringify(toSave));
+          sessionStorage.setItem("pikmi-profile-edit", JSON.stringify(toSave));
+          window.dispatchEvent(new CustomEvent("pikmi-profile-changed", {
+            detail: {
+              firstName: toSave.firstName,
+              lastName: toSave.lastName,
+              initials: (toSave.firstName?.[0] ?? "").toUpperCase() + (toSave.lastName?.[0] ?? "").toUpperCase(),
+              avatarUrl: toSave.avatarUrl,
+              serviceTitle: (toSave.serviceTitle || "").split("\n")[0].trim(),
+            },
+          }));
+        } catch {}
+      }
     } catch (e) { console.error(e); }
     setSaving(false); setSavedMsg(true); setEditSection(null); setDraft(null);
     setTimeout(() => setSavedMsg(false), 2500);
@@ -668,6 +801,57 @@ export default function MojProfil() {
           )}
         </div>
       </div>
+
+      {/* ── Multi-portfolio switcher (Pro) ── */}
+      {!setupMode && (
+        <div style={{ marginBottom: 18 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 700, color: "var(--text2)", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            Tvoji portfoliji
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {/* Primarni */}
+            <button onClick={() => switchPortfolio(null)} style={{
+              padding: "9px 14px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+              fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0,
+              border: !activePfId ? "1px solid var(--purple)" : "1px solid var(--border)",
+              background: !activePfId ? "rgba(124,58,237,0.15)" : "var(--card)",
+              color: !activePfId ? "#C4A0FF" : "var(--text2)",
+            }}>🏠 Glavni portfolio</button>
+
+            {/* Dodatni */}
+            {portfolios.map(pf => (
+              <button key={pf.id} onClick={() => switchPortfolio(pf)} style={{
+                padding: "9px 14px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+                fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0,
+                border: activePfId === pf.id ? "1px solid var(--purple)" : "1px solid var(--border)",
+                background: activePfId === pf.id ? "rgba(124,58,237,0.15)" : "var(--card)",
+                color: activePfId === pf.id ? "#C4A0FF" : "var(--text2)",
+              }}>📁 {pf.label}</button>
+            ))}
+
+            {/* Dodaj (do 3 ukupno) */}
+            {(1 + portfolios.length) < 3 && (
+              plan === "pro" ? (
+                <button onClick={createPortfolio} disabled={creatingPf} style={{
+                  padding: "9px 14px", borderRadius: 12, flexShrink: 0,
+                  border: "1px dashed var(--purple)", background: "rgba(124,58,237,0.08)",
+                  color: "#C4A0FF", fontSize: 13, fontWeight: 700, cursor: creatingPf ? "wait" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap",
+                }}>{creatingPf ? "Kreiranje..." : "+ Dodaj portfolio"}</button>
+              ) : (
+                <LockedAddSlot isMobile={isMobile} />
+              )
+            )}
+          </div>
+          {(1 + portfolios.length) < 3 && (
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--text3)", lineHeight: 1.5 }}>
+              {plan === "pro"
+                ? `Možeš da napraviš još ${3 - (1 + portfolios.length)} ${3 - (1 + portfolios.length) === 1 ? "portfolio" : "portfolija"} za različite tipove klijenata.`
+                : `Napravi još ${3 - (1 + portfolios.length)} portfolija za različite tipove klijenata — otključava se na Pro planu.`}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ── Card ── */}
       <div className="pp-card" style={setupMode
