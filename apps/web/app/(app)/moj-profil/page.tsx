@@ -752,12 +752,12 @@ export default function MojProfil() {
           }
           .pp-left {
             border: none; box-shadow: none; border-radius: 0;
-            border-right: 1px solid ${TK.divider};
             background: transparent;
             position: sticky; top: 0; align-self: start;
             max-height: 100vh; overflow-y: auto;
           }
-          .pp-right { gap: 0; background: transparent; }
+          /* Razdelnik na desnoj (visokoj) koloni — proteže se do dna kartice */
+          .pp-right { gap: 0; background: transparent; border-left: 1px solid ${TK.divider}; }
           .pp-right-section {
             border: none; box-shadow: none; border-radius: 0;
             background: transparent;

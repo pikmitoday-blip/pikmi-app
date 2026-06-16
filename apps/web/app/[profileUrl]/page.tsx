@@ -698,7 +698,6 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             min-height: 100vh;
           }
           .pf-left {
-            border-right: 1px solid ${TK.divider};
             position: sticky;
             top: 0;
             max-height: 100vh;
@@ -707,7 +706,8 @@ export default function PublicProfile({ params }: { params: { profileUrl: string
             background: ${TK.blockBg};
           }
           .pf-left::-webkit-scrollbar { display: none; }
-          .pf-right { min-width: 0; background: ${TK.blockBg}; }
+          /* Razdelnik na desnoj (visokoj) koloni — proteže se do dna kartice */
+          .pf-right { min-width: 0; background: ${TK.blockBg}; border-left: 1px solid ${TK.divider}; }
           .pf-section-sep { border-top: 1px solid ${TK.divider}; }
         }
         @media (min-width: 769px) {
