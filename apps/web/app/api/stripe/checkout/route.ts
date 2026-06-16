@@ -75,6 +75,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "subscription",
+      // Prikaži "Add promotion code" polje na checkout-u (važi za oba Pro plana)
+      allow_promotion_codes: true,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&success=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?tab=subscription&cancelled=1`,
       metadata: capiMeta,
