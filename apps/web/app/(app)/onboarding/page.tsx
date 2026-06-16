@@ -98,6 +98,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [blockedByIp, setBlockedByIp] = useState(false);
 
   // ── Step 1: identity + domain + photo + profession ─────────────────────────
   const [firstName, setFirstName] = useState("");
@@ -117,7 +118,7 @@ export default function Onboarding() {
 
   // Load user info + restore saved step on mount
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email ?? "");
@@ -126,6 +127,22 @@ export default function Onboarding() {
         setFirstName(prev => prev || meta.first_name || meta.given_name || fullName.split(" ")[0] || "");
         setLastName(prev => prev || meta.last_name || meta.family_name || fullName.split(" ").slice(1).join(" ") || "");
         setAvatarUrl(prev => prev || meta.avatar_url || meta.picture || "");
+
+        // OAuth (Google) korisnici ne prolaze kroz register — IP zaštitu
+        // proveravamo ovde, ali samo za nove naloge (bez postojećeg profila).
+        try {
+          const { data: existing } = await supabase.from("profiles")
+            .select("profile_url").eq("user_id", session.user.id).maybeSingle();
+          if (!existing?.profile_url) {
+            const r = await fetch("/api/trial", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "status", userId: session.user.id }),
+            });
+            const j = await r.json();
+            if (j?.used) setBlockedByIp(true);
+          }
+        } catch {}
       }
     });
     // Prefill slug from landing page
@@ -220,6 +237,15 @@ export default function Onboarding() {
       localStorage.removeItem("pikmi-pending-slug");
     } catch {}
 
+    // Veži trial za IP adresu (server-side) — pokriva i Google (OAuth) korisnike.
+    try {
+      await fetch("/api/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "claim", userId }),
+      });
+    } catch {}
+
     // CompleteRegistration — osigurava okidanje i za Google (OAuth) korisnike.
     pixel.completeRegistration(userId, userEmail);
   }
@@ -230,6 +256,37 @@ export default function Onboarding() {
     "Ime, fotografija, grad, iskustvo i čime se baviš.",
     "Izaberi temu i oblik — vidiš odmah kako izgleda.",
   ];
+
+  if (blockedByIp) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #0B0F19 0%, #0F0B1F 50%, #0B0F19 100%)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "32px 16px", fontFamily: "'SF Pro Display', -apple-system, sans-serif",
+      }}>
+        <div style={{
+          width: "100%", maxWidth: 460, textAlign: "center",
+          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(139,92,246,0.2)",
+          borderRadius: 24, padding: "40px 28px", backdropFilter: "blur(20px)",
+        }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+          <h2 style={{ margin: "0 0 12px", fontSize: 22, fontWeight: 800, color: "#fff" }}>Trial je već iskorišćen</h2>
+          <p style={{ margin: "0 0 24px", fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
+            Sa ove mreže je već iskorišćen besplatni 7-dnevni trial. Prijavi se na svoj postojeći nalog ili pređi na Pro plan da nastaviš.
+          </p>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+            style={{
+              padding: "12px 28px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff",
+              fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >Idi na prijavu →</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

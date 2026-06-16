@@ -79,6 +79,21 @@ export default function RegisterPage() {
       return;
     }
 
+    // Server-side IP zaštita — ne može se zaobići incognito-m ili drugim brauzerom.
+    try {
+      const r = await fetch("/api/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "status" }),
+      });
+      const j = await r.json();
+      if (j?.used) {
+        setError("Na ovoj mreži je već iskorišćen besplatni trial. Prijavi se na postojeći nalog ili kupi Pro plan.");
+        setLoading(false);
+        return;
+      }
+    } catch {}
+
     // Registracija
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -112,6 +127,15 @@ export default function RegisterPage() {
       // Zabilježi device kao iskorišćen za trial
       localStorage.setItem("pikmi-device-id", deviceId);
       await supabase.from("device_trials").insert({ device_id: deviceId });
+
+      // Veži trial za IP adresu (server-side) — sprečava nove naloge sa iste mreže.
+      try {
+        await fetch("/api/trial", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "claim", userId: data.user.id }),
+        });
+      } catch {}
 
       // Sačuvaj trial info lokalno
       localStorage.setItem("pikmi-trial-ends", trialEndsAt);

@@ -143,15 +143,17 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           if (adminEmails.includes(user.email?.toLowerCase() ?? "")) setIsAdmin(true);
           const { data } = await supabase
             .from("profiles")
-            .select("first_name, last_name, profile_data, plan, profile_url")
+            .select("first_name, last_name, profile_data, plan, profile_url, trial_ends_at")
             .eq("user_id", user.id)
             .single();
 
-          // Provjeri da li je free trial istekao (7 dana od registracije)
+          // Provjeri da li je free trial istekao (7 dana od registracije,
+          // ili je trial odbijen zbog već iskorišćene IP adrese → trial_ends_at u prošlosti)
           if (data?.plan === "free" || !data?.plan) {
             const createdAt = new Date(user.created_at).getTime();
             const daysSince = (Date.now() - createdAt) / (1000 * 60 * 60 * 24);
-            if (daysSince >= 7) {
+            const trialEnded = data?.trial_ends_at ? new Date(data.trial_ends_at).getTime() < Date.now() : false;
+            if (daysSince >= 7 || trialEnded) {
               setTrialExpired(true);
               // Učitaj cijene iz platform_settings
               try {
