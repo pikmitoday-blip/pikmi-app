@@ -136,7 +136,7 @@ export default function Backgrounds() {
           border: "1px solid rgba(124,58,237,0.2)",
           borderRadius: 12, fontSize: 14, color: "#A78BFA",
         }}>
-          💬 Javi mi broj (1–5) i pozadina će biti odmah postavljena u cijelu aplikaciju.
+          💬 Javi mi broj (1–5) i pozadina će biti odmah postavljena u celu aplikaciju.
         </div>
       </div>
     </div>

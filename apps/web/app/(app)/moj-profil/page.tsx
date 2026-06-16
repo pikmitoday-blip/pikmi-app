@@ -1239,7 +1239,7 @@ export default function MojProfil() {
                   </div>
                 ))}
                 <p style={{ margin: "6px 0 8px", fontSize: 12, color: C.muted, textAlign: "center" }}>
-                  Promjene se odmah primjenjuju na tvoj portfolio.
+                  Promene se odmah primenjuju na tvoj portfolio.
                 </p>
               </div>
             </div>

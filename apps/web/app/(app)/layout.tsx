@@ -905,7 +905,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             ) : (
               <>
                 <p style={{ margin: "0 0 14px", fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
-                  Opiši šta se desilo — gdje, šta si radio i šta je pošlo po krivu.
+                  Opiši šta se desilo — gde, šta si radio i šta je pošlo po krivu.
                 </p>
                 <textarea
                   autoFocus

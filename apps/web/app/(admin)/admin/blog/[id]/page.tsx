@@ -284,7 +284,7 @@ export default function EditBlogPost() {
               ref={textareaRef}
               value={form.content}
               onChange={e => set("content", e.target.value)}
-              placeholder={"# Uvod\n\nUpiši sadržaj posta ovdje...\n\n## Podnaslov\n\nNastavak teksta..."}
+              placeholder={"# Uvod\n\nUpiši sadržaj posta ovde...\n\n## Podnaslov\n\nNastavak teksta..."}
               rows={20}
               style={{
                 width: "100%", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
@@ -365,7 +365,7 @@ export default function EditBlogPost() {
                 {form.seo_title || form.title || "Naslov posta"}
               </div>
               <div style={{ fontSize: 13, color: "#9CA3AF", lineHeight: 1.5 }}>
-                {form.seo_description || form.excerpt || "Meta opis će se prikazati ovdje u Google rezultatima pretrage..."}
+                {form.seo_description || form.excerpt || "Meta opis će se prikazati ovde u Google rezultatima pretrage..."}
               </div>
             </div>
           </div>

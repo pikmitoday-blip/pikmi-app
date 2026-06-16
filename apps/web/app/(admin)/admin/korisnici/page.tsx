@@ -83,7 +83,7 @@ export default function AdminKorisnici() {
       setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, plan: newPlan } : u));
       showToast(`Plan promenjen u ${newPlan.toUpperCase()}`, true);
     } catch (e: any) {
-      showToast(e.message || "Greška pri promjeni plana", false);
+      showToast(e.message || "Greška pri promeni plana", false);
     }
     setActionLoading(null);
   }
@@ -182,7 +182,7 @@ export default function AdminKorisnici() {
           background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
           color: "#6B7280", fontSize: 12,
         }}>
-          ↻ Osvježi
+          ↻ Osveži
         </button>
       </div>
 

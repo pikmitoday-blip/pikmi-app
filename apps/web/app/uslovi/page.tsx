@@ -77,7 +77,7 @@ export default async function UsloviPage() {
             Pravni dokument
           </div>
           <h1 style={{ fontSize: 36, fontWeight: 900, marginBottom: 10, letterSpacing: -1 }}>Uslovi korišćenja</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)" }}>Posljednje ažuriranje: maj 2026.</p>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)" }}>Poslednje ažuriranje: maj 2026.</p>
         </div>
 
         <div

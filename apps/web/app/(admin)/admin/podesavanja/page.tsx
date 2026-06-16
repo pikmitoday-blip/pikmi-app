@@ -27,7 +27,7 @@ export default function AdminPodesavanja() {
             Za više admina, odvoji emailove zarezom.
           </p>
           <div style={{ padding: "14px 16px", borderRadius: 8, background: "#0D0D12", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ fontSize: 11, color: "#4B5563", marginBottom: 6, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Trenutna vrijednost</div>
+            <div style={{ fontSize: 11, color: "#4B5563", marginBottom: 6, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Trenutna vrednost</div>
             <div style={{ fontSize: 13, color: adminEmail ? "#4ADE80" : "#F87171", fontWeight: 500 }}>
               {adminEmail || "⚠️ Nije postavljen — svi korisnici su blokirani"}
             </div>
