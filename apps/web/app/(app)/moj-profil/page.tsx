@@ -1200,9 +1200,9 @@ export default function MojProfil() {
                     <div style={{ background: C.sectionBg, borderRadius: 12, padding: 14, marginBottom: 12, borderLeft: `3px solid ${C.accent}` }}>
                       <label style={LBL}>CITAT</label>
                       <textarea style={{ ...INP, minHeight: 70, resize: "vertical" } as React.CSSProperties} value={draft.testimonialQuote} onChange={e => setD("testimonialQuote", e.target.value)} />
-                      <label style={LBL}>IME</label>
+                      <label style={LBL}>IME KLIJENTA</label>
                       <input style={INP} value={draft.testimonialName} onChange={e => setD("testimonialName", e.target.value)} />
-                      <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                      <label style={LBL}>NAZIV BRENDA</label>
                       <input style={{ ...INP, marginBottom: 0 }} value={draft.testimonialTitle} onChange={e => setD("testimonialTitle", e.target.value)} />
                     </div>
                   )}
@@ -1223,14 +1223,14 @@ export default function MojProfil() {
                       }} placeholder={PH.testimonial.quote} />
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                         <div>
-                          <label style={LBL}>IME</label>
+                          <label style={LBL}>IME KLIJENTA</label>
                           <input style={INP} value={t.name} onChange={e => {
                             const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], name: e.target.value };
                             setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
                           }} placeholder={PH.testimonial.name} />
                         </div>
                         <div>
-                          <label style={LBL}>KOMPANIJA / POZICIJA</label>
+                          <label style={LBL}>NAZIV BRENDA</label>
                           <input style={{ ...INP, marginBottom: 0 }} value={t.title} onChange={e => {
                             const ts = [...(draft.testimonials ?? [])]; ts[i] = { ...ts[i], title: e.target.value };
                             setDraft(prev => prev ? { ...prev, testimonials: ts } : null);
