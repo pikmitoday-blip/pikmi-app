@@ -1018,10 +1018,7 @@ export default function MojProfil() {
                           )}
                         </div>
                         <input style={{ ...INP, marginBottom: 4 }} value={draft.caseStudies?.[i]?.client ?? ""} onChange={e => setDraftCS(i, "client", e.target.value)} placeholder="Klijent" />
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 60px", gap: 4 }}>
-                          <input style={{ ...INP, marginBottom: 0 }} value={draft.caseStudies?.[i]?.platform ?? ""} onChange={e => setDraftCS(i, "platform", e.target.value)} placeholder="Tip" />
-                          <input style={{ ...INP, marginBottom: 0 }} value={draft.caseStudies?.[i]?.year ?? ""} onChange={e => setDraftCS(i, "year", e.target.value)} placeholder="2024" />
-                        </div>
+                        <input style={{ ...INP, marginBottom: 0 }} value={draft.caseStudies?.[i]?.platform ?? ""} onChange={e => setDraftCS(i, "platform", e.target.value)} placeholder="Tip usluge" />
                       </div>
                     ))}
                   </div>
