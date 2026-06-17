@@ -792,8 +792,8 @@ export default function MojProfil() {
             padding: 28px 36px !important;
           }
           .pp-right-section:first-child { border-top: none; }
-          /* CTA/Kontakt footer — od ivice do ivice (kao na javnom portfoliju) */
-          .pp-cta { border-radius: 0 !important; box-shadow: none !important; padding: 36px 36px 32px !important; }
+          /* CTA/Kontakt footer — puna širina kartice (obe kolone), od ivice do ivice */
+          .pp-cta { grid-column: 1 / -1; border-radius: 0 !important; box-shadow: none !important; padding: 36px 36px 32px !important; }
           .pp-cs-grid { grid-template-columns: repeat(4, 1fr) !important; }
         }
         @media (max-width: 768px) {
@@ -1348,60 +1348,60 @@ export default function MojProfil() {
               )}
             </div>
 
-            {/* CTA / Kontakt */}
-            <div className="pp-cta" style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
-              {(editSection === "cta" || setupAllEdit) && draft ? (
-                <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
-                  <label style={LBL}>NASLOV</label>
-                  <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="npr. Da napravimo" />
-                  <label style={LBL}>ISTAKNUTA REČ (ljubičasto)</label>
-                  <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="npr. nešto sjajno zajedno?" />
-                  <label style={LBL}>EMAIL (za kopiranje)</label>
-                  <input style={INP} value={(draft as any).contactEmail ?? ""} onChange={e => setD("contactEmail" as any, e.target.value)} placeholder="tvoj@email.com" />
-                  <label style={LBL}>TELEFON (za kopiranje)</label>
-                  <input style={INP} value={(draft as any).contactPhone ?? ""} onChange={e => setD("contactPhone" as any, e.target.value)} placeholder="+381 60 000 0000" />
-                  {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
-                </div>
-              ) : (
-                <>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                    <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px", flex: 1 }}>
-                      {(p.ctaTitle || p.ctaHighlight)
-                        ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}</>
-                        : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span></>
-                      }
-                    </h2>
-                    <button onClick={() => startEdit("cta")} style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer", lineHeight: 1, flexShrink: 0, marginLeft: 10 }}>✏️</button>
-                  </div>
-                  {/* Kontakt blokovi preview */}
-                  {((p as any).contactEmail || (p as any).contactPhone) ? (
-                    <div style={{ display: "grid", gridTemplateColumns: (p as any).contactEmail && (p as any).contactPhone ? "1fr 1fr" : "1fr", gap: 10, marginBottom: 0 }}>
-                      {(p as any).contactEmail && (
-                        <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
-                          <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>✉️ Email</p>
-                          <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600, wordBreak: "break-all" }}>{(p as any).contactEmail}</p>
-                          <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
-                        </div>
-                      )}
-                      {(p as any).contactPhone && (
-                        <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
-                          <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>📞 Telefon</p>
-                          <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600 }}>{(p as any).contactPhone}</p>
-                          <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontStyle: "italic" }}>Dodaj email ili telefon — klikni ✏️</p>
-                  )}
-                  <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
-                    PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
-                  </p>
-                </>
-              )}
-            </div>
-
           </div>{/* end pp-right */}
+
+          {/* CTA / Kontakt — puna širina kartice (van kolone), kao na javnom portfoliju */}
+          <div className="pp-cta" style={{ padding: "32px 24px 28px", background: "#13131a", color: "#fff", borderRadius: TK.blockRadius, boxShadow: TK.blockShadow }}>
+            {(editSection === "cta" || setupAllEdit) && draft ? (
+              <div style={{ background: "#fff", borderRadius: 14, padding: 16 }}>
+                <label style={LBL}>NASLOV</label>
+                <input style={INP} value={draft.ctaTitle} onChange={e => setD("ctaTitle", e.target.value)} placeholder="npr. Da napravimo" />
+                <label style={LBL}>ISTAKNUTA REČ (ljubičasto)</label>
+                <input style={INP} value={draft.ctaHighlight} onChange={e => setD("ctaHighlight", e.target.value)} placeholder="npr. nešto sjajno zajedno?" />
+                <label style={LBL}>EMAIL (za kopiranje)</label>
+                <input style={INP} value={(draft as any).contactEmail ?? ""} onChange={e => setD("contactEmail" as any, e.target.value)} placeholder="tvoj@email.com" />
+                <label style={LBL}>TELEFON (za kopiranje)</label>
+                <input style={INP} value={(draft as any).contactPhone ?? ""} onChange={e => setD("contactPhone" as any, e.target.value)} placeholder="+381 60 000 0000" />
+                {!setupAllEdit && <EditBar onSave={saveSection} onCancel={cancelEdit} saving={saving} />}
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.5px", flex: 1 }}>
+                    {(p.ctaTitle || p.ctaHighlight)
+                      ? <>{p.ctaTitle}{p.ctaHighlight && <> <span style={{ color: C.accentMuted }}>{p.ctaHighlight}</span></>}</>
+                      : <>Da napravimo<br />tvoj <span style={{ color: C.accentMuted }}>sledeći hit</span></>
+                    }
+                  </h2>
+                  <button onClick={() => startEdit("cta")} style={{ padding: "4px 8px", borderRadius: 6, fontSize: 16, background: "rgba(255,255,255,0.12)", border: "none", cursor: "pointer", lineHeight: 1, flexShrink: 0, marginLeft: 10 }}>✏️</button>
+                </div>
+                {/* Kontakt blokovi preview */}
+                {((p as any).contactEmail || (p as any).contactPhone) ? (
+                  <div style={{ display: "grid", gridTemplateColumns: (p as any).contactEmail && (p as any).contactPhone ? "1fr 1fr" : "1fr", gap: 10, marginBottom: 0 }}>
+                    {(p as any).contactEmail && (
+                      <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
+                        <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>✉️ Email</p>
+                        <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600, wordBreak: "break-all" }}>{(p as any).contactEmail}</p>
+                        <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
+                      </div>
+                    )}
+                    {(p as any).contactPhone && (
+                      <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px" }}>
+                        <p style={{ margin: "0 0 4px", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>📞 Telefon</p>
+                        <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600 }}>{(p as any).contactPhone}</p>
+                        <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>klikni da kopiraš</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontStyle: "italic" }}>Dodaj email ili telefon — klikni ✏️</p>
+                )}
+                <p style={{ margin: "20px 0 0", textAlign: "center", fontSize: 9, color: C.muted, letterSpacing: "1px" }}>
+                  PRAVLJENO SA PIKMI<span style={{ color: C.accentMuted }}>.</span>
+                </p>
+              </>
+            )}
+          </div>
         </div>{/* end pp-grid */}
       </div>{/* end pp-card */}
 
