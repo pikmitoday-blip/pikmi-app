@@ -305,18 +305,6 @@ export default async function Home() {
         />
       </div>
 
-      {/* ══ CENTRAL CTA (transition to pricing) ══ */}
-      <section style={{ width: "100%", padding: "72px 24px", textAlign: "center" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1, lineHeight: 1.18, color: "#fff", marginBottom: 28 }}>
-            {g("mid_cta_title", "Napravi svoj portfolio za 3 minuta i počni da šalješ ponude klijentima već danas.")}
-          </h2>
-          <Link href="/register" style={{ display: "inline-block", padding: "16px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#6366F1)", color: "#fff", fontSize: 16, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 32px rgba(124,58,237,0.35)" }}>
-            {g("mid_cta_button", "Kreiraj profil besplatno →")}
-          </Link>
-        </div>
-      </section>
-
       {/* ══ PRICING ══ */}
       <div style={{ background: "linear-gradient(180deg,rgba(139,92,246,0.04) 0%,transparent 100%)", width: "100%" }}>
       <section id="pricing" style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 48px 64px" }}>
