@@ -196,9 +196,9 @@ export default async function Home() {
         {/* Glow */}
         <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 800, height: 600, background: "radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 60%)", pointerEvents: "none" }} />
 
-        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: 64, position: "relative" }}>
+        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: 48, position: "relative" }}>
           {/* Left — text */}
-          <div className="hero-text" style={{ flex: 1, maxWidth: 560 }}>
+          <div className="hero-text" style={{ flex: 1, maxWidth: 480 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 16px", borderRadius: 100, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 28, letterSpacing: 0.3 }}>
               {heroBadge}
             </div>
@@ -220,7 +220,7 @@ export default async function Home() {
           </div>
 
           {/* Right — live portfolio cards (klik → živi portfolio u novom tabu) */}
-          <div className="hero-mockup" style={{ width: 520, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
+          <div className="hero-mockup" style={{ width: 640, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
             <PikmiHeroCards />
           </div>
         </div>
