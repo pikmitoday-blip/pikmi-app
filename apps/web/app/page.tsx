@@ -4,7 +4,7 @@ import CheckoutButton from "./components/CheckoutButton";
 import Checkout3MButton from "./components/Checkout3MButton";
 import LandingMockup, { MockupLink } from "./components/LandingMockup";
 import HeroSlugCTA from "./components/HeroSlugCTA";
-import PortfolioCarousel from "./components/PortfolioCarousel";
+import PikmiHeroCards from "./components/PikmiHeroCards";
 import FeatureSection from "./components/FeatureSection";
 import LandingFAQ, { type FaqItem } from "./components/LandingFAQ";
 import EmailNotifAnimation from "./components/EmailNotifAnimation";
@@ -219,9 +219,9 @@ export default async function Home() {
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>{heroNote}</p>
           </div>
 
-          {/* Right — portfolio template carousel */}
+          {/* Right — live portfolio cards (klik → živi portfolio u novom tabu) */}
           <div className="hero-mockup" style={{ width: 520, flexShrink: 0, minWidth: 0, boxSizing: "border-box" }}>
-            <PortfolioCarousel />
+            <PikmiHeroCards />
           </div>
         </div>
       </section>
