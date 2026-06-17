@@ -223,6 +223,8 @@ export default function MojProfil() {
   const [activePfId, setActivePfId] = useState<string | null>(null); // null = primarni (profiles)
   const [primaryUrl, setPrimaryUrl] = useState<string>("");
   const [creatingPf, setCreatingPf] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const primaryRef = useRef<Profile | null>(null);
   const [profileUrl, setProfileUrl] = useState<string>(() => {
     try { return sessionStorage.getItem("pikmi-profile-url") ?? ""; } catch { return ""; }
@@ -307,6 +309,31 @@ export default function MojProfil() {
       }
     } catch {}
     setCreatingPf(false);
+  }
+
+  async function renamePortfolio(id: string) {
+    const label = renameValue.trim();
+    setRenamingId(null);
+    if (!label) return;
+    setPortfolios(prev => prev.map(x => x.id === id ? { ...x, label } : x));
+    try {
+      await fetch("/api/portfolio", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rename", userId, id, label }),
+      });
+    } catch {}
+  }
+
+  async function deletePortfolio(pf: PortfolioRow) {
+    if (!window.confirm(`Obrisati portfolio „${pf.label}"? Ova akcija je trajna i link prestaje da radi.`)) return;
+    setPortfolios(prev => prev.filter(x => x.id !== pf.id));
+    if (activePfId === pf.id) switchPortfolio(null);
+    try {
+      await fetch("/api/portfolio", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", userId, id: pf.id }),
+      });
+    } catch {}
   }
 
   async function applyTheme(templateId: number, blockStyle: BlockStyleId) {
@@ -821,15 +848,51 @@ export default function MojProfil() {
             }}>🏠 Glavni portfolio</button>
 
             {/* Dodatni */}
-            {portfolios.map(pf => (
-              <button key={pf.id} onClick={() => switchPortfolio(pf)} style={{
-                padding: "9px 14px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
-                fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0,
-                border: activePfId === pf.id ? "1px solid var(--purple)" : "1px solid var(--border)",
-                background: activePfId === pf.id ? "rgba(124,58,237,0.15)" : "var(--card)",
-                color: activePfId === pf.id ? "#C4A0FF" : "var(--text2)",
-              }}>📁 {pf.label}</button>
-            ))}
+            {portfolios.map(pf => {
+              const isActive = activePfId === pf.id;
+              const isRenaming = renamingId === pf.id;
+              return (
+                <div key={pf.id} style={{
+                  display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+                  padding: "4px 6px 4px 4px", borderRadius: 12,
+                  border: isActive ? "1px solid var(--purple)" : "1px solid var(--border)",
+                  background: isActive ? "rgba(124,58,237,0.15)" : "var(--card)",
+                }}>
+                  {isRenaming ? (
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      maxLength={40}
+                      onChange={e => setRenameValue(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") renamePortfolio(pf.id);
+                        if (e.key === "Escape") setRenamingId(null);
+                      }}
+                      onBlur={() => renamePortfolio(pf.id)}
+                      style={{
+                        width: 130, padding: "5px 8px", borderRadius: 8, fontFamily: "inherit",
+                        fontSize: 13, fontWeight: 600, border: "1px solid var(--purple)",
+                        background: "var(--bg, #0E0E12)", color: "var(--text)", outline: "none",
+                      }}
+                    />
+                  ) : (
+                    <button onClick={() => switchPortfolio(pf)} style={{
+                      padding: "5px 8px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", border: "none",
+                      background: "transparent", color: isActive ? "#C4A0FF" : "var(--text2)",
+                    }}>📁 {pf.label}</button>
+                  )}
+                  {isActive && !isRenaming && (
+                    <>
+                      <button title="Preimenuj" onClick={() => { setRenamingId(pf.id); setRenameValue(pf.label); }}
+                        style={{ width: 26, height: 26, borderRadius: 7, border: "none", cursor: "pointer", background: "rgba(255,255,255,0.06)", fontSize: 12, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>✏️</button>
+                      <button title="Obriši portfolio" onClick={() => deletePortfolio(pf)}
+                        style={{ width: 26, height: 26, borderRadius: 7, border: "none", cursor: "pointer", background: "rgba(239,68,68,0.12)", color: "#F87171", fontSize: 12, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>🗑</button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Dodaj (do 3 ukupno) */}
             {(1 + portfolios.length) < 3 && (

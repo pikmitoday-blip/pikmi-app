@@ -30,21 +30,30 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "no-user" }, { status: 400 });
     const db = admin();
 
-    // ── Plan provera (samo Pro može dodatne portfolije) ──
     const { data: prof } = await db
       .from("profiles")
       .select("plan, profile_url, first_name, last_name, profile_data")
       .eq("user_id", userId)
       .single();
     if (!prof) return NextResponse.json({ error: "no-profile" }, { status: 404 });
-    if ((prof as any).plan !== "pro") {
-      return NextResponse.json({ error: "locked" }, { status: 403 });
-    }
 
+    // ── Brisanje / preimenovanje: dozvoljeno vlasniku (i ako je skinuo Pro) ──
     if (action === "delete") {
       if (!id) return NextResponse.json({ error: "no-id" }, { status: 400 });
       await db.from("portfolios").delete().eq("id", id).eq("user_id", userId);
       return NextResponse.json({ ok: true });
+    }
+
+    if (action === "rename") {
+      if (!id) return NextResponse.json({ error: "no-id" }, { status: 400 });
+      const clean = (label && String(label).trim()) || "Portfolio";
+      await db.from("portfolios").update({ label: clean.slice(0, 40) }).eq("id", id).eq("user_id", userId);
+      return NextResponse.json({ ok: true, label: clean.slice(0, 40) });
+    }
+
+    // ── Kreiranje: samo Pro ──
+    if ((prof as any).plan !== "pro") {
+      return NextResponse.json({ error: "locked" }, { status: 403 });
     }
 
     if (action === "create") {
