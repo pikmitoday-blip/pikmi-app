@@ -47,11 +47,13 @@ function MiniMockup({ themeId, blockStyle, firstName, lastName, city, years, ava
     border: `1px solid ${TK.blockBorder}`,
     borderRadius: Math.min(g.block, 16),
     boxShadow: TK.blockShadow,
+    position: "relative", zIndex: 1,
   };
 
   return (
     <div
       style={{
+        position: "relative",
         width: "100%", borderRadius: 16, overflow: "hidden",
         background: TK.pageBg, backgroundSize: "cover",
         padding: 8, display: "flex", flexDirection: "column", gap: 6,
@@ -60,6 +62,14 @@ function MiniMockup({ themeId, blockStyle, firstName, lastName, city, years, ava
         transition: "all 0.15s", cursor: "pointer", minHeight: 220,
       }}
     >
+      {/* Šare na pozadini — kao na samom portfoliju */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        backgroundImage: TK.pattern.image,
+        backgroundSize: TK.pattern.size,
+        backgroundRepeat: "repeat",
+      }} />
+
       {/* First block — filled with real info */}
       <div style={{ ...blockStyleCss, padding: 10 }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -187,11 +197,11 @@ export default function Onboarding() {
 
   // ── Validation ────────────────────────────────────────────────────────────
   const canNext: Record<number, boolean> = {
-    1: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim()
+    1: true, // korak 1 = izbor teme (uvek je nešto izabrano)
+    2: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim()
        && !!yearsExperience.trim() && !!profession
        && (profession !== "Ostalo" || !!customProfession.trim())
        && !!profileUrl && slugStatus === "ok",
-    2: true, // tema je uvek izabrana
   };
 
   // ── Build + save profile ────────────────────────────────────────────────
@@ -244,10 +254,10 @@ export default function Onboarding() {
   }
 
   // ── Step metadata ─────────────────────────────────────────────────────────
-  const stepTitles = ["Tvoj profil", "Izaberi izgled"];
+  const stepTitles = ["Izaberi izgled", "Tvoj profil"];
   const stepSubtitles = [
-    "Ime, fotografija, grad, iskustvo i čime se baviš.",
     "Izaberi temu i oblik — vidiš odmah kako izgleda.",
+    "Ime, fotografija, grad, iskustvo i čime se baviš.",
   ];
 
   if (blockedByIp) {
@@ -320,8 +330,8 @@ export default function Onboarding() {
             <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>{stepSubtitles[step - 1]}</p>
           </div>
 
-          {/* ── STEP 1: Identity + domain + photo + profession ── */}
-          {step === 1 && (
+          {/* ── STEP 2: Identity + domain + photo + profession ── */}
+          {step === 2 && (
             <div>
               {/* Domain */}
               <div style={{ marginBottom: 16 }}>
@@ -404,8 +414,8 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── STEP 2: Appearance — live mockups ── */}
-          {step === 2 && (
+          {/* ── STEP 1: Appearance — live mockups ── */}
+          {step === 1 && (
             <div>
               {/* Shape picker */}
               <p style={{ ...LBL, marginBottom: 8 }}>Oblik blokova</p>
@@ -456,7 +466,7 @@ export default function Onboarding() {
                 }}>Dalje →</button>
               ) : (
                 <button onClick={async () => {
-                  if (!userId || saving) return;
+                  if (!userId || saving || !canNext[2]) return;
                   setSaving(true);
                   try {
                     await saveProfile();
@@ -464,12 +474,12 @@ export default function Onboarding() {
                     try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
                     router.push("/moj-profil");
                   } catch (e) { console.error(e); setSaving(false); }
-                }} disabled={saving} style={{
+                }} disabled={saving || !canNext[2]} style={{
                   padding: "12px 28px", borderRadius: 12, border: "none",
-                  background: !saving ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
-                  color: !saving ? "#fff" : "rgba(255,255,255,0.4)",
-                  fontSize: 14, fontWeight: 700, cursor: !saving ? "pointer" : "wait",
-                  fontFamily: "inherit", boxShadow: !saving ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
+                  background: (!saving && canNext[2]) ? "linear-gradient(135deg,#7C3AED,#6366F1)" : "rgba(255,255,255,0.06)",
+                  color: (!saving && canNext[2]) ? "#fff" : "rgba(255,255,255,0.3)",
+                  fontSize: 14, fontWeight: 700, cursor: (saving ? "wait" : canNext[2] ? "pointer" : "not-allowed"),
+                  fontFamily: "inherit", boxShadow: (!saving && canNext[2]) ? "0 4px 20px rgba(124,58,237,0.4)" : "none",
                   transition: "all 0.2s",
                 }}>{saving ? "Kreiranje portfolija..." : "Kreiraj portfolio →"}</button>
               )}
