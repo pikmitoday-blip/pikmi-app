@@ -115,8 +115,10 @@ async function run() {
         if (await sendResend(r.email, m.subject, m.html)) {
           updates.trial_email_1d_sent = true; sentExpiryToday = true; stats.trialB++;
         } else stats.failed++;
-      } else if (diff <= 0 && !r.trial_email_expired_sent) {
-        // Na dan isteka (ili catch-up ako je cron pao) → popup sa paketima iskoči u app-u.
+      } else if (diff <= 0 && diff >= -1 && !r.trial_email_expired_sent) {
+        // Na dan isteka (diff 0) ili 1 dan catch-up ako je cron pao (diff -1).
+        // NE šaljemo za davno istekle naloge (diff < -1) da ne spamujemo stare korisnike.
+        // popup sa paketima iskoči u app-u kad se uloguju.
         const m = trialEmail("C", { name: r.first_name, ctaUrl: `${SITE}/dashboard` });
         if (await sendResend(r.email, m.subject, m.html)) {
           updates.trial_email_expired_sent = true; sentExpiryToday = true; stats.trialC++;
