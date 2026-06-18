@@ -64,7 +64,7 @@ export default function SetupEditor(props: Props) {
 
   // ── done po svakoj prikazanoj sekciji ──
   const doneMap: Record<string, boolean> = {
-    profil:      !!(String(d.firstName || "").trim() && String(d.city || "").trim() && String(d.yearsExperience || "").trim() && String(d.avatarUrl || "").trim()),
+    profil:      !!(String(d.firstName || "").trim() && String(d.city || "").trim() && String(d.yearsExperience || "").trim()),
     service:     !!done.service,
     pricing:     !!done.pricing,
     portfolio:   (d.csImages || []).some((x: string) => !!x),

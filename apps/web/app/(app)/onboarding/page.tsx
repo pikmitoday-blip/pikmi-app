@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { pixel } from "../../../lib/pixel";
-import { uploadFile } from "../../../lib/upload";
 import { THEMES, BLOCK_STYLES, themeTokens, type BlockStyleId } from "../../../lib/themes";
 import { PROFESSIONS } from "../../../lib/professions";
 
@@ -114,7 +113,6 @@ export default function Onboarding() {
   const [firstName, setFirstName] = useState("");
   const [lastName,  setLastName]  = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [city,         setCity]         = useState("");
   const [yearsExperience, setYearsExperience] = useState("");
   const [profession,   setProfession]   = useState("");
@@ -182,16 +180,6 @@ export default function Onboarding() {
     }, 500);
     return () => clearTimeout(t);
   }, [profileUrl]);
-
-  async function handleAvatar(file: File) {
-    if (!userId) return;
-    setUploadingAvatar(true);
-    try {
-      const url = await uploadFile(file, { folder: userId, filename: `avatar-${Date.now()}.${file.name.split(".").pop()?.toLowerCase() ?? "jpg"}` });
-      setAvatarUrl(url);
-    } catch {}
-    setUploadingAvatar(false);
-  }
 
   // Resolved profession label ("Ostalo" → custom text)
   const resolvedProfession = profession === "Ostalo" ? (customProfession.trim() || "Ostalo") : profession;
@@ -347,21 +335,6 @@ export default function Onboarding() {
                   {slugStatus === "checking" && "Proveravam dostupnost..."}
                   {slugStatus === "idle"     && "Ovako će izgledati tvoj live portfolio link."}
                 </p>
-              </div>
-
-              {/* Avatar */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={LBL}>Tvoja fotografija (nije obavezno sada)</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  {avatarUrl
-                    ? <img src={avatarUrl} alt="" style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover" }} />
-                    : <div style={{ width: 64, height: 64, borderRadius: 16, background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📷</div>
-                  }
-                  <label style={{ padding: "9px 16px", borderRadius: 10, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)", color: "#A855F7", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                    {uploadingAvatar ? "Otpremam..." : avatarUrl ? "Promeni" : "Dodaj fotografiju"}
-                    <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingAvatar} onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatar(f); e.target.value = ""; }} />
-                  </label>
-                </div>
               </div>
 
               {/* Name */}

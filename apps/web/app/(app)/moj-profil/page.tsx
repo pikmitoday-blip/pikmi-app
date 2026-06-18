@@ -658,6 +658,16 @@ export default function MojProfil() {
           </div>
         )}
 
+        {/* Obaveštenje: dodaj profilnu sliku — nestaje kad se slika doda (kao za „Prethodni radovi") */}
+        {!p.avatarUrl && (
+          <div onClick={() => startEdit("info")} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 12, background: C.accentLight, border: `1px dashed ${C.accent}50`, cursor: "pointer", marginBottom: 16 }}>
+            <span style={{ fontSize: 18 }}>📷</span>
+            <p style={{ margin: 0, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>
+              <strong style={{ color: C.accent }}>Dodaj svoju profilnu sliku!</strong> Portfolio sa slikom deluje profesionalnije i ličnije klijentima — klikni ovde da je dodaš.
+            </p>
+          </div>
+        )}
+
         {/* Avatar + Name (kompaktno, poravnato sa sekcijom „Šta radim") */}
         <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16 }}>
           {p.avatarUrl
