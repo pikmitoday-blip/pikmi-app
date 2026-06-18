@@ -12,9 +12,11 @@ function AccountSettingsInner() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"profile" | "subscription">(() =>
-    searchParams.get("tab") === "subscription" ? "subscription" : "profile"
-  );
+  const [activeTab, setActiveTab] = useState<"profile" | "subscription">(() => {
+    // Podrži i ?tab=subscription i ?tab=pretplata (link iz mejlova pred istek trial-a)
+    const tab = searchParams.get("tab");
+    return tab === "subscription" || tab === "pretplata" ? "subscription" : "profile";
+  });
 
   // Profile state
   const [firstName, setFirstName] = useState("");
