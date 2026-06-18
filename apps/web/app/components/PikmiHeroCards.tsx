@@ -60,13 +60,6 @@ const POSITIONS: Record<string, { rotate: number; x: number; y: number; z: numbe
   jelena: { rotate: 13,  x: 182,  y: 32, z: 1, scale: 0.9 },
 };
 
-// Na telefonu zbijemo karte (i clipujemo ivice) da bi mogle da budu ~2x veće.
-const POSITIONS_MOBILE: Record<string, { rotate: number; x: number; y: number; z: number; scale: number }> = {
-  petar:  { rotate: -11, x: -126, y: 26, z: 1, scale: 0.92 },
-  nevena: { rotate: 0,   x: 0,    y: 0,  z: 3, scale: 1 },
-  jelena: { rotate: 11,  x: 126,  y: 26, z: 1, scale: 0.92 },
-};
-
 const DESIGN_W = 680;
 const DESIGN_H = 600;
 
@@ -119,6 +112,9 @@ export default function PikmiHeroCards() {
   const [hovered, setHovered] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [cw, setCw] = useState(560);
+  const [active, setActive] = useState(1);          // mobilni coverflow: centar (Nevena)
+  const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
 
   // Prati širinu kontejnera da bismo skalirali dizajn da stane (desktop i mobilni).
   useEffect(() => {
@@ -131,10 +127,29 @@ export default function PikmiHeroCards() {
     return () => ro.disconnect();
   }, []);
 
-  // Mobilni: karte ~2x veće (klipujemo ivice da nema horizontalnog skrola).
   const isNarrow = cw < 600;
-  const scale = isNarrow ? Math.min(1.2, cw / 340) : Math.min(1, cw / DESIGN_W);
-  const positions = isNarrow ? POSITIONS_MOBILE : POSITIONS;
+  const scale = isNarrow ? Math.min(1.15, cw / 340) : Math.min(1, cw / DESIGN_W);
+  const n = PORTFOLIOS.length;
+
+  // Kružni auto-slajder na mobilnom (pauza nakon prve interakcije).
+  useEffect(() => {
+    if (!isNarrow || paused) return;
+    const t = setInterval(() => setActive(a => (a + 1) % n), 4000);
+    return () => clearInterval(t);
+  }, [isNarrow, paused, n]);
+
+  function focusCard(i: number) { setActive(i); setPaused(true); }
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX; }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 40) { setActive(a => (a + (dx < 0 ? 1 : -1) + n) % n); setPaused(true); }
+    touchX.current = null;
+  }
+
+  const labelEl = (text: string) => (
+    <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", zIndex: 5, background: "#1A1530", border: "1px solid rgba(139,92,246,0.3)", color: "#C4B5FD", fontSize: 10, fontWeight: 700, padding: "5px 14px", borderRadius: 100, whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>{text}</div>
+  );
 
   return (
     <div ref={wrapRef} style={{ width: "100%", position: "relative", height: DESIGN_H * scale, overflow: isNarrow ? "hidden" : "visible" }}>
@@ -145,12 +160,48 @@ export default function PikmiHeroCards() {
         display: "flex", flexDirection: "column", alignItems: "center",
       }}>
         {/* Cards stage */}
-        <div style={{ position: "relative", width: DESIGN_W, height: 500, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{ position: "relative", width: DESIGN_W, height: 500, display: "flex", alignItems: "center", justifyContent: "center" }}
+          onTouchStart={isNarrow ? onTouchStart : undefined}
+          onTouchEnd={isNarrow ? onTouchEnd : undefined}
+        >
           {/* glow */}
           <div style={{ position: "absolute", width: 460, height: 460, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.16) 0%, transparent 65%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)", pointerEvents: "none" }} />
 
-          {PORTFOLIOS.map((p) => {
-            const pos = positions[p.id];
+          {PORTFOLIOS.map((p, i) => {
+            // ── MOBILNI: coverflow — centar oštar i klikabilan, bočni blurovani iza ──
+            if (isNarrow) {
+              const off = (i - active + n) % n;           // 0 = centar, 1 = desno, 2 = levo
+              const isCenter = off === 0;
+              const x = isCenter ? 0 : off === 1 ? 138 : -138;
+              const cardScale = isCenter ? 1 : 0.72;
+              const common: React.CSSProperties = {
+                position: "absolute", width: 270, height: 440, borderRadius: 30, padding: 9,
+                background: "#0E0E18", textDecoration: "none", cursor: "pointer",
+                transform: `translateX(${x}px) scale(${cardScale})`,
+                filter: isCenter ? "none" : "blur(3px)",
+                opacity: isCenter ? 1 : 0.5,
+                zIndex: isCenter ? 3 : 1,
+                transition: "transform 0.45s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s ease, filter 0.4s ease",
+                boxShadow: isCenter
+                  ? "0 30px 68px rgba(139,92,246,0.4), 0 0 0 1px rgba(139,92,246,0.25)"
+                  : "0 16px 44px rgba(0,0,0,0.5)",
+              };
+              return isCenter ? (
+                <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer" style={common}>
+                  {labelEl(p.label)}
+                  <PortfolioCard p={p} />
+                </a>
+              ) : (
+                <div key={p.id} onClick={() => focusCard(i)} style={common}>
+                  {labelEl(p.label)}
+                  <PortfolioCard p={p} />
+                </div>
+              );
+            }
+
+            // ── DESKTOP: lepeza (klik → živi portfolio) ──
+            const pos = POSITIONS[p.id];
             const isHovered = hovered === p.id;
             return (
               <a
@@ -174,13 +225,8 @@ export default function PikmiHeroCards() {
                     : "0 16px 44px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
                 }}
               >
-                {/* label profesije */}
-                <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", zIndex: 5, background: "#1A1530", border: "1px solid rgba(139,92,246,0.3)", color: "#C4B5FD", fontSize: 10, fontWeight: 700, padding: "5px 14px", borderRadius: 100, whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
-                  {p.label}
-                </div>
-
+                {labelEl(p.label)}
                 <PortfolioCard p={p} />
-
                 {/* hover overlay "Pogledaj uživo" */}
                 <div style={{
                   position: "absolute", inset: 9, borderRadius: 22,
@@ -196,6 +242,16 @@ export default function PikmiHeroCards() {
             );
           })}
         </div>
+
+        {/* Mobilni: tačkice slajdera */}
+        {isNarrow && (
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            {PORTFOLIOS.map((_, i) => (
+              <button key={i} onClick={() => focusCard(i)} aria-label={`Portfolio ${i + 1}`}
+                style={{ width: i === active ? 22 : 8, height: 8, borderRadius: 99, border: "none", padding: 0, cursor: "pointer", background: i === active ? "#A855F7" : "rgba(255,255,255,0.25)", transition: "all 0.3s ease" }} />
+            ))}
+          </div>
+        )}
 
         {/* caption */}
         <div style={{ marginTop: 20, textAlign: "center" }}>
