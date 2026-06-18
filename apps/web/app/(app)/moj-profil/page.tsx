@@ -6,6 +6,7 @@ import { useLanguage } from "../../../lib/i18n";
 import { uploadFile } from "../../../lib/upload";
 import { THEMES, BLOCK_STYLES, getTheme, themeTokens, DEFAULT_THEME_ID, DEFAULT_BLOCK_STYLE, type BlockStyleId, type PortfolioAppearance } from "../../../lib/themes";
 import { getPlaceholders } from "../../../lib/professions";
+import SetupEditor from "./SetupEditor";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -582,6 +583,28 @@ export default function MojProfil() {
   const filledRequired = REQUIRED_SECTIONS.filter(k => (done as any)[k]).length;
   const progressPct = Math.round((filledRequired / REQUIRED_SECTIONS.length) * 100);
   const allRequiredDone = filledRequired === REQUIRED_SECTIONS.length;
+
+  // ── Setup mod (popunjavanje pri registraciji): accordion editor sa temom ──
+  // Prikazuje se samo dok je needsSetup=true; običan "Moj profil" editor ostaje ispod.
+  if (setupMode && draft) {
+    return (
+      <SetupEditor
+        draft={draft}
+        setDraft={setDraft}
+        tk={TK}
+        profession={(p as any).profession || "Ostalo"}
+        done={done as any}
+        uploadAvatar={uploadAvatar}
+        uploadImage={uploadImage}
+        uploadingAvatar={uploadingAvatar}
+        uploading={uploading}
+        onPreview={() => { if (profileUrl) window.open(`/${profileUrl}`, "_blank"); }}
+        onFinish={finishSetup}
+        finishing={finishing}
+        isMobile={isMobile}
+      />
+    );
+  }
 
   // ─── Edit form helpers ─────────────────────────────────────────────────────
 
