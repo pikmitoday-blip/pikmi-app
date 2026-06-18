@@ -60,6 +60,13 @@ const POSITIONS: Record<string, { rotate: number; x: number; y: number; z: numbe
   jelena: { rotate: 13,  x: 182,  y: 32, z: 1, scale: 0.9 },
 };
 
+// Na telefonu zbijemo karte (i clipujemo ivice) da bi mogle da budu ~2x veće.
+const POSITIONS_MOBILE: Record<string, { rotate: number; x: number; y: number; z: number; scale: number }> = {
+  petar:  { rotate: -11, x: -126, y: 26, z: 1, scale: 0.92 },
+  nevena: { rotate: 0,   x: 0,    y: 0,  z: 3, scale: 1 },
+  jelena: { rotate: 11,  x: 126,  y: 26, z: 1, scale: 0.92 },
+};
+
 const DESIGN_W = 680;
 const DESIGN_H = 600;
 
@@ -111,21 +118,26 @@ function PortfolioCard({ p }: { p: Portfolio }) {
 export default function PikmiHeroCards() {
   const [hovered, setHovered] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.75);
+  const [cw, setCw] = useState(560);
 
-  // Skaliraj dizajn (680px) da uvek stane u kolonu hero-a (i na mobilnom).
+  // Prati širinu kontejnera da bismo skalirali dizajn da stane (desktop i mobilni).
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const update = () => setScale(Math.min(1, el.clientWidth / DESIGN_W));
+    const update = () => setCw(el.clientWidth);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
+  // Mobilni: karte ~2x veće (klipujemo ivice da nema horizontalnog skrola).
+  const isNarrow = cw < 600;
+  const scale = isNarrow ? Math.min(1.2, cw / 340) : Math.min(1, cw / DESIGN_W);
+  const positions = isNarrow ? POSITIONS_MOBILE : POSITIONS;
+
   return (
-    <div ref={wrapRef} style={{ width: "100%", position: "relative", height: DESIGN_H * scale }}>
+    <div ref={wrapRef} style={{ width: "100%", position: "relative", height: DESIGN_H * scale, overflow: isNarrow ? "hidden" : "visible" }}>
       <div style={{
         position: "absolute", top: 0, left: "50%",
         width: DESIGN_W, height: DESIGN_H,
@@ -138,7 +150,7 @@ export default function PikmiHeroCards() {
           <div style={{ position: "absolute", width: 460, height: 460, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.16) 0%, transparent 65%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)", pointerEvents: "none" }} />
 
           {PORTFOLIOS.map((p) => {
-            const pos = POSITIONS[p.id];
+            const pos = positions[p.id];
             const isHovered = hovered === p.id;
             return (
               <a
@@ -187,8 +199,8 @@ export default function PikmiHeroCards() {
 
         {/* caption */}
         <div style={{ marginTop: 20, textAlign: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 9, color: "rgba(255,255,255,0.6)", fontSize: 15, fontWeight: 500 }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 10px #34D399" }} />
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, color: "rgba(255,255,255,0.65)", fontSize: isNarrow ? 19 : 16, fontWeight: 600 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 10px #34D399" }} />
             Klikni na portfolio da ga vidiš uživo
           </div>
         </div>
