@@ -7,11 +7,12 @@
 
 /** Obavezne sekcije portfolija — 1:1 sa moj-profil/page.tsx (REQUIRED_SECTIONS).
  *  "Prethodni radovi" (portfolio/caseStudies) NIJE obavezna pa se ne računa. */
-export const REQUIRED_SECTIONS = ["service", "pricing", "stack", "experience", "testimonial"] as const;
+export const REQUIRED_SECTIONS = ["avatar", "service", "pricing", "stack", "experience", "testimonial"] as const;
 export type SectionKey = (typeof REQUIRED_SECTIONS)[number];
 
 /** Lepa imena sekcija za prikaz u mejlu (kao u editoru). */
 export const SECTION_LABELS: Record<SectionKey, string> = {
+  avatar: "Profilna slika",
   service: "Šta radim",
   pricing: "Paketi",
   stack: "Veštine",
@@ -25,6 +26,8 @@ type AnyObj = Record<string, any>;
 export function sectionDone(pd: AnyObj | null | undefined, key: SectionKey): boolean {
   const src: AnyObj = pd ?? {};
   switch (key) {
+    case "avatar":
+      return !!(src.avatarUrl && String(src.avatarUrl).trim());
     case "service":
       return !!(src.serviceTitle && String(src.serviceTitle).trim());
     case "pricing":

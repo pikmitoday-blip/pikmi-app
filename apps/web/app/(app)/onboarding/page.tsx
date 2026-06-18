@@ -124,6 +124,7 @@ export default function Onboarding() {
 
   // ── Step 2: appearance ──────────────────────────────────────────────────────
   const [templateId, setTemplateId] = useState(33);
+  const [themeChosen, setThemeChosen] = useState(false); // mora aktivno da klikne temu
   const [blockStyle, setBlockStyle] = useState<BlockStyleId>("rounded");
 
   // Load user info + restore saved step on mount
@@ -197,8 +198,8 @@ export default function Onboarding() {
 
   // ── Validation ────────────────────────────────────────────────────────────
   const canNext: Record<number, boolean> = {
-    1: true, // korak 1 = izbor teme (uvek je nešto izabrano)
-    2: !!avatarUrl && !!firstName.trim() && !!lastName.trim() && !!city.trim()
+    1: themeChosen, // korak 1 = izbor teme — mora da klikne neku temu
+    2: !!firstName.trim() && !!lastName.trim() && !!city.trim()
        && !!yearsExperience.trim() && !!profession
        && (profession !== "Ostalo" || !!customProfession.trim())
        && !!profileUrl && slugStatus === "ok",
@@ -350,7 +351,7 @@ export default function Onboarding() {
 
               {/* Avatar */}
               <div style={{ marginBottom: 16 }}>
-                <label style={LBL}>Tvoja fotografija</label>
+                <label style={LBL}>Tvoja fotografija (nije obavezno sada)</label>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   {avatarUrl
                     ? <img src={avatarUrl} alt="" style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover" }} />
@@ -435,16 +436,19 @@ export default function Onboarding() {
               <p style={{ ...LBL, marginBottom: 10 }}>Tema — klikni da izabereš</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxHeight: 420, overflowY: "auto", padding: 2 }}>
                 {THEMES.map(th => (
-                  <div key={th.id} onClick={() => setTemplateId(th.id)}>
+                  <div key={th.id} onClick={() => { setTemplateId(th.id); setThemeChosen(true); }}>
                     <MiniMockup
                       themeId={th.id}
                       blockStyle={blockStyle}
                       firstName={firstName} lastName={lastName} city={city} years={yearsExperience} avatarUrl={avatarUrl}
-                      selected={templateId === th.id}
+                      selected={themeChosen && templateId === th.id}
                     />
                   </div>
                 ))}
               </div>
+              {!themeChosen && (
+                <p style={{ ...HINT, marginTop: 12, color: "#A855F7" }}>Klikni na temu da nastaviš →</p>
+              )}
             </div>
           )}
 
@@ -471,7 +475,11 @@ export default function Onboarding() {
                   try {
                     await saveProfile();
                     pixel.startTrial(userId, userEmail);
-                    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+                    try {
+                      sessionStorage.removeItem(STORAGE_KEY);
+                      // Signal layout-u da sakrije sav meni dok traje popunjavanje portfolija.
+                      sessionStorage.setItem("pikmi-setup-active", "1");
+                    } catch {}
                     router.push("/moj-profil");
                   } catch (e) { console.error(e); setSaving(false); }
                 }} disabled={saving || !canNext[2]} style={{

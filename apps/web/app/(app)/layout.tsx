@@ -58,6 +58,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [bugSending,    setBugSending]    = useState(false);
   const [bugSent,       setBugSent]       = useState(false);
 
+  // ── Setup fullscreen (popunjavanje portfolija pri registraciji → bez menija) ──
+  const [setupFullscreen, setSetupFullscreen] = useState<boolean>(() => {
+    try { return typeof window !== "undefined" && sessionStorage.getItem("pikmi-setup-active") === "1"; } catch { return false; }
+  });
+
   // ── Trial expired ─────────────────────────────────────────────────────────
   const [trialExpired,    setTrialExpired]    = useState(false);
   const [proPrice,        setProPrice]        = useState("990 din");
@@ -146,6 +151,12 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             .select("first_name, last_name, profile_data, plan, profile_url, trial_ends_at")
             .eq("user_id", user.id)
             .single();
+
+          // Setup mod (needsSetup) na /moj-profil → sakrij sav meni; inače očisti flag.
+          const pdSetup = (data?.profile_data as any) || {};
+          const inSetup = !!pdSetup.needsSetup;
+          if (path === "/moj-profil") setSetupFullscreen(inSetup);
+          if (!inSetup) { try { sessionStorage.removeItem("pikmi-setup-active"); } catch {} }
 
           // Provjeri da li je free trial istekao (7 dana od registracije,
           // ili je trial odbijen zbog već iskorišćene IP adrese → trial_ends_at u prošlosti)
@@ -367,7 +378,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   // ── Onboarding: fullscreen quiz only — hide all platform chrome so the user
   // can't navigate anywhere until the quiz is finished. ──
-  if (path.includes("/onboarding")) {
+  if (path.includes("/onboarding") || (setupFullscreen && path === "/moj-profil")) {
     return <>{children}</>;
   }
 

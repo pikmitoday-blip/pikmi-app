@@ -362,6 +362,7 @@ export default function MojProfil() {
         sessionStorage.removeItem("pikmi-moj-profil");
         sessionStorage.removeItem("pikmi-sidebar");
         sessionStorage.removeItem("pikmi-dashboard");
+        sessionStorage.removeItem("pikmi-setup-active");
       } catch {}
       router.push("/dashboard");
     } catch (e) { console.error(e); setFinishing(false); }

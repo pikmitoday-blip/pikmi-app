@@ -53,7 +53,7 @@ export default function SetupEditor(props: Props) {
 
   // ── done po svakoj prikazanoj sekciji ──
   const doneMap: Record<string, boolean> = {
-    profil:      !!(String(d.firstName || "").trim() && String(d.city || "").trim() && String(d.yearsExperience || "").trim()),
+    profil:      !!(String(d.firstName || "").trim() && String(d.city || "").trim() && String(d.yearsExperience || "").trim() && String(d.avatarUrl || "").trim()),
     service:     !!done.service,
     pricing:     !!done.pricing,
     portfolio:   (d.csImages || []).some((x: string) => !!x),
@@ -65,6 +65,8 @@ export default function SetupEditor(props: Props) {
   const reqSections = SECTIONS.filter(s => s.required);
   const filled = reqSections.filter(s => doneMap[s.key]).length;
   const percent = Math.round((filled / reqSections.length) * 100);
+  // Sve obavezne sekcije moraju biti popunjene da bi mogao dalje (Prethodni radovi su opcioni).
+  const allRequiredDone = filled === reqSections.length;
 
   // ── update helpers ──
   const set = (patch: AnyProfile) => setDraft((prev: AnyProfile) => prev ? { ...prev, ...patch } : prev);
@@ -272,14 +274,27 @@ export default function SetupEditor(props: Props) {
   }
 
   const accent = tk.accent;
-  const finishBtn = (full?: boolean) => (
-    <button onClick={props.onFinish} disabled={props.finishing} style={{
-      padding: full ? "14px 0" : "10px 20px", width: full ? "100%" : undefined,
-      borderRadius: 12, border: "none", background: `linear-gradient(135deg,${accent},${accent}cc)`,
-      color: "#fff", fontSize: 14, fontWeight: 700, cursor: props.finishing ? "wait" : "pointer",
-      fontFamily: "inherit", boxShadow: `0 6px 20px ${accent}55`,
-    }}>{props.finishing ? "Čuvam..." : "Sačuvaj i nastavi →"}</button>
-  );
+  const finishBtn = (full?: boolean) => {
+    const blocked = props.finishing || !allRequiredDone;
+    return (
+      <button onClick={props.onFinish} disabled={blocked}
+        title={!allRequiredDone ? "Popuni sve obavezne sekcije (osim „Prethodni radovi“) da nastaviš" : undefined}
+        style={{
+          padding: full ? "14px 0" : "10px 20px", width: full ? "100%" : undefined,
+          borderRadius: 12, border: "none",
+          background: blocked ? (tk.tagBg || "rgba(125,125,125,0.2)") : `linear-gradient(135deg,${accent},${accent}cc)`,
+          color: blocked ? tk.textMuted : "#fff", fontSize: 14, fontWeight: 700,
+          cursor: props.finishing ? "wait" : (allRequiredDone ? "pointer" : "not-allowed"),
+          fontFamily: "inherit", boxShadow: blocked ? "none" : `0 6px 20px ${accent}55`,
+          opacity: (blocked && !props.finishing) ? 0.85 : 1,
+        }}>{props.finishing ? "Čuvam..." : "Sačuvaj i nastavi →"}</button>
+    );
+  };
+  const finishHint = !allRequiredDone ? (
+    <div style={{ fontSize: 11, color: tk.textMuted, lineHeight: 1.5, marginTop: 10, textAlign: "center" }}>
+      Popuni sve sekcije (osim „Prethodni radovi“) da nastaviš.
+    </div>
+  ) : null;
 
   const previewBtn = (
     <button onClick={props.onPreview} style={{
@@ -343,6 +358,7 @@ export default function SetupEditor(props: Props) {
             </button>
           ))}
         </div>
+        {finishHint}
       </div>
     </aside>
   );
@@ -394,7 +410,8 @@ export default function SetupEditor(props: Props) {
 
       {/* Mobile sticky finish */}
       {isMobile && (
-        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, padding: "12px 16px", background: tk.pageBg, borderTop: `1px solid ${tk.divider}` }}>
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 30, padding: "10px 16px 12px", background: tk.pageBg, borderTop: `1px solid ${tk.divider}` }}>
+          {finishHint}
           {finishBtn(true)}
         </div>
       )}
