@@ -8,6 +8,17 @@
 import { useState } from "react";
 import { getPlaceholders } from "../../../lib/professions";
 
+const CS_GRADIENTS = [
+  "linear-gradient(135deg,#7C3AED,#3B82F6)",
+  "linear-gradient(135deg,#EC4899,#7C3AED)",
+  "linear-gradient(135deg,#3B82F6,#0B0F19)",
+  "linear-gradient(135deg,#7C3AED,#EC4899)",
+  "linear-gradient(135deg,#6366F1,#EC4899)",
+  "linear-gradient(135deg,#A855F7,#3B82F6)",
+  "linear-gradient(135deg,#EC4899,#6366F1)",
+  "linear-gradient(135deg,#3B82F6,#7C3AED)",
+];
+
 type AnyProfile = any;
 type TK = any;
 
@@ -87,6 +98,12 @@ export default function SetupEditor(props: Props) {
     const arr = [...(prev[key] || [])]; arr.splice(idx, 1);
     return { ...prev, [key]: arr };
   });
+  const setImg = (i: number, val: string) => setDraft((prev: AnyProfile) => {
+    if (!prev) return prev;
+    const imgs = [...(prev.csImages || ["", "", "", ""])];
+    imgs[i] = val;
+    return { ...prev, csImages: imgs };
+  });
 
   // ── themed styles ──
   const inp: React.CSSProperties = {
@@ -165,25 +182,74 @@ export default function SetupEditor(props: Props) {
       case "portfolio":
         return (
           <div>
-            <p style={{ margin: "0 0 12px", fontSize: 13, color: tk.textMuted, lineHeight: 1.5 }}>Dodaj do 4 slike svojih radova. Ova sekcija nije obavezna.</p>
+            <p style={{ margin: "0 0 12px", fontSize: 12, color: tk.textMuted, lineHeight: 1.5 }}>
+              Dodaj slike, videe ili dokumente (PDF/DOC) svojih radova. Nije obavezno, ali je sekcija koju klijenti najviše gledaju.
+            </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {[0, 1, 2, 3].map(i => (
-                <label key={i} style={{ aspectRatio: "4/3", borderRadius: 12, border: `1px dashed ${tk.blockBorder}`, background: d.csImages?.[i] ? "transparent" : (tk.sectionBg || "rgba(125,125,125,0.06)"), cursor: "pointer", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                  {d.csImages?.[i]
-                    ? <img src={d.csImages[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : <span style={{ fontSize: 13, color: tk.textMuted }}>{props.uploading === i ? "Otpremam..." : "+ Slika"}</span>}
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) props.uploadImage(i, f); e.currentTarget.value = ""; }} />
-                </label>
-              ))}
+              {[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
+                const file: string = d.csImages?.[i] || "";
+                const isVideo = /\.(mp4|mov|webm|avi)$/i.test(file);
+                const isDoc = /\.(pdf|doc|docx)$/i.test(file);
+                return (
+                  <div key={i} style={{ background: tk.sectionBg || "rgba(125,125,125,0.06)", borderRadius: 12, padding: 12, border: `1px solid ${tk.blockBorder}` }}>
+                    <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: tk.textMuted }}>PROJEKAT {i + 1}</p>
+                    <div style={{ borderRadius: 10, overflow: "hidden", background: CS_GRADIENTS[i % CS_GRADIENTS.length], marginBottom: 8, minHeight: 80, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {file
+                        ? (isVideo
+                            ? <video src={`${file}#t=0.1`} muted controls preload="metadata" playsInline style={{ width: "100%", objectFit: "contain", display: "block", background: "#000" }} />
+                            : isDoc
+                            ? <iframe src={/\.(doc|docx)$/i.test(file) ? `https://docs.google.com/viewer?url=${encodeURIComponent(file)}&embedded=true` : `${file}#toolbar=0&navpanes=0&view=FitH`} style={{ width: "100%", height: 150, border: "none", display: "block", background: "#fff" }} title="dokument" />
+                            : <img src={file} alt="" style={{ width: "100%", height: "auto", display: "block" }} />)
+                        : <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", padding: "28px 0" }}>Bez fajla</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                      <label style={{ padding: "6px 11px", background: tk.accentBg, color: tk.accent, borderRadius: 7, cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                        {props.uploading === i ? "..." : "Dodaj fajl"}
+                        <input type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.mp4,.mov,.webm" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) props.uploadImage(i, f); e.currentTarget.value = ""; }} />
+                      </label>
+                      {file && (
+                        <button onClick={() => setImg(i, "")} style={{ padding: "6px 9px", background: "transparent", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 6, cursor: "pointer", fontSize: 11, color: "#EF4444", fontFamily: "inherit" }}>Ukloni</button>
+                      )}
+                    </div>
+                    <input style={{ ...inp, marginBottom: 6 }} value={d.caseStudies?.[i]?.client ?? ""} onChange={e => setArr("caseStudies", i, { client: e.target.value })} placeholder="Klijent" />
+                    <input style={inp} value={d.caseStudies?.[i]?.platform ?? ""} onChange={e => setArr("caseStudies", i, { platform: e.target.value })} placeholder="Tip usluge" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
-      case "stack":
+      case "stack": {
+        const items: string[] = (d.stack ?? "") === "" ? [""] : String(d.stack).split(",");
+        const setItems = (arr: string[]) => set({ stack: arr.join(",") });
+        const phs = PH.skills || [];
         return (
-          <Field label="Veštine (odvoji zarezom)">
-            <input style={inp} value={d.stack || ""} onChange={e => set({ stack: e.target.value })} placeholder={(PH.skills || []).join(", ")} />
-          </Field>
+          <div>
+            <p style={{ margin: "0 0 12px", fontSize: 12, color: tk.textMuted, lineHeight: 1.5 }}>Dodaj svoje veštine, programe i alate — svaki u poseban bedž. Prve 2 se prikazuju istaknuto.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {items.map((sk: string, i: number) => (
+                <div key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: tk.accentBg, border: `1px solid ${tk.blockBorder}`, borderRadius: 999, padding: "4px 6px 4px 12px" }}>
+                  <input
+                    value={sk}
+                    onChange={e => setItems(items.map((x, j) => j === i ? e.target.value.replace(/,/g, "") : x))}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") { e.preventDefault(); if (sk.trim()) setItems([...items, ""]); }
+                      if (e.key === "Backspace" && !sk && items.length > 1) { e.preventDefault(); setItems(items.filter((_, j) => j !== i)); }
+                    }}
+                    placeholder={phs[i] ?? "npr. Figma"}
+                    style={{ background: "transparent", border: "none", outline: "none", color: tk.textPrimary, fontSize: 13, fontWeight: 600, fontFamily: "inherit", width: `${Math.max(sk.length, (phs[i] ?? "npr. Figma").length, 7) * 8}px`, maxWidth: 180 }}
+                  />
+                  <button onClick={() => setItems(items.length > 1 ? items.filter((_, j) => j !== i) : [""])}
+                    style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(125,125,125,0.25)", border: "none", color: tk.textMuted, fontSize: 12, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+                </div>
+              ))}
+              <button onClick={() => setItems([...items, ""])} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px dashed ${tk.accent}66`, borderRadius: 999, padding: "7px 14px", color: tk.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Dodaj bedž
+              </button>
+            </div>
+          </div>
         );
+      }
       case "experience": {
         const rows = (d.experience && d.experience.length > 0) ? d.experience : [{ company: "", role: "", dateFrom: "", dateTo: "", desc: "" }];
         return (
@@ -233,8 +299,10 @@ export default function SetupEditor(props: Props) {
       case "cta":
         return (
           <div>
-            <Field label="Naslov poziva"><input style={inp} value={d.ctaTitle || ""} onChange={e => set({ ctaTitle: e.target.value })} placeholder="Spreman da počnemo?" /></Field>
-            <Field label="Istaknuti deo"><input style={inp} value={d.ctaHighlight || ""} onChange={e => set({ ctaHighlight: e.target.value })} placeholder="Javi se i dogovaramo poziv." /></Field>
+            <Field label="Naslov"><input style={inp} value={d.ctaTitle || ""} onChange={e => set({ ctaTitle: e.target.value })} placeholder="npr. Da napravimo" /></Field>
+            <Field label="Istaknuta reč (boja teme)"><input style={inp} value={d.ctaHighlight || ""} onChange={e => set({ ctaHighlight: e.target.value })} placeholder="npr. nešto sjajno zajedno?" /></Field>
+            <Field label="Email (za kopiranje)"><input style={inp} value={d.contactEmail || ""} onChange={e => set({ contactEmail: e.target.value })} placeholder="tvoj@email.com" /></Field>
+            <Field label="Telefon (za kopiranje)"><input style={inp} value={d.contactPhone || ""} onChange={e => set({ contactPhone: e.target.value })} placeholder="+381 60 000 0000" /></Field>
           </div>
         );
       default:

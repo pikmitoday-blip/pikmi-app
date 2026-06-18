@@ -59,9 +59,15 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const [bugSent,       setBugSent]       = useState(false);
 
   // ── Setup fullscreen (popunjavanje portfolija pri registraciji → bez menija) ──
-  const [setupFullscreen, setSetupFullscreen] = useState<boolean>(() => {
+  const [setupFlag, setSetupFlag] = useState<boolean>(() => {
     try { return typeof window !== "undefined" && sessionStorage.getItem("pikmi-setup-active") === "1"; } catch { return false; }
   });
+  // Klijentska navigacija ne re-mountuje layout → re-čitaj flag na svaku promenu rute.
+  useEffect(() => {
+    try { setSetupFlag(sessionStorage.getItem("pikmi-setup-active") === "1"); } catch {}
+  }, [path]);
+  // Meni se krije samo na /moj-profil dok traje setup.
+  const setupFullscreen = setupFlag && path === "/moj-profil";
 
   // ── Trial expired ─────────────────────────────────────────────────────────
   const [trialExpired,    setTrialExpired]    = useState(false);
@@ -152,11 +158,14 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             .eq("user_id", user.id)
             .single();
 
-          // Setup mod (needsSetup) na /moj-profil → sakrij sav meni; inače očisti flag.
+          // Setup mod (needsSetup) → sinhronizuj flag iz baze (izvor istine na svežem učitavanju).
           const pdSetup = (data?.profile_data as any) || {};
           const inSetup = !!pdSetup.needsSetup;
-          if (path === "/moj-profil") setSetupFullscreen(inSetup);
-          if (!inSetup) { try { sessionStorage.removeItem("pikmi-setup-active"); } catch {} }
+          try {
+            if (inSetup) sessionStorage.setItem("pikmi-setup-active", "1");
+            else sessionStorage.removeItem("pikmi-setup-active");
+          } catch {}
+          setSetupFlag(inSetup);
 
           // Provjeri da li je free trial istekao (7 dana od registracije,
           // ili je trial odbijen zbog već iskorišćene IP adrese → trial_ends_at u prošlosti)
