@@ -136,35 +136,55 @@ const CTA_PORTFOLIO = "Završi portfolio →";
 /** 6 varijacija (Dan 1..6) — ista struktura, drugačiji ton. index 0..5 */
 export function portfolioEmail(variation: number, v: PortfolioVars): { subject: string; html: string } {
   const g = greeting(v.name);
+  // Ispod 50% ne tvrdimo da je "skoro spreman" — koristimo ohrabrujući ton za početak.
+  const low = v.percent < 50;
   const variants: Array<{ subject: string; body: string }> = [
     { // Dan 1
       subject: `Tvoj portfolio je ${v.percent}% gotov`,
-      body: p(g) + p(`Tvoj portfolio je skoro spreman — popunjeno je <strong>${v.percent}%</strong>.`) +
-        p(`Ostalo ti je još: <strong>${v.list}</strong>.`) + p(`Završi i možeš odmah da ga šalješ klijentima.`),
+      body: p(g) +
+        (low
+          ? p(`Napravio si dobar početak — popunjeno je <strong>${v.percent}%</strong>. Hajde da ga dovedemo do kraja.`)
+          : p(`Tvoj portfolio je skoro spreman — popunjeno je <strong>${v.percent}%</strong>.`)) +
+        p(`Ostalo ti je još: <strong>${v.list}</strong>.`) +
+        p(`Završi i možeš odmah da ga šalješ klijentima.`),
     },
     { // Dan 2
-      subject: `Još ${v.count} ${v.count === 1 ? "sekcija" : "sekcije/sekcija"} do gotovog portfolija`,
-      body: p(g) + p(`Fali ti samo još malo — portfolio ti je <strong>${v.percent}%</strong> gotov.`) +
-        p(`Nepopunjeno: <strong>${v.list}</strong>.`) + p(`Treba ti par minuta da završiš.`),
+      subject: low ? `Nastavi svoj portfolio (${v.percent}%)` : `Još ${v.count} ${v.count === 1 ? "sekcija" : "sekcije/sekcija"} do gotovog portfolija`,
+      body: p(g) +
+        (low
+          ? p(`Tvoj portfolio je <strong>${v.percent}%</strong> gotov — ima još da se popuni, ali ide brzo.`)
+          : p(`Fali ti samo još malo — portfolio ti je <strong>${v.percent}%</strong> gotov.`)) +
+        p(`Nepopunjeno: <strong>${v.list}</strong>.`) +
+        p(`Treba ti par minuta po sekciji.`),
     },
     { // Dan 3
       subject: `Tvoj portfolio te čeka`,
       body: p(g) + p(`Portfolio ti stoji na <strong>${v.percent}%</strong>. Šteta da ostane nedovršen.`) +
-        p(`Da završiš, ostalo je: <strong>${v.list}</strong>.`),
+        p(`Da ga završiš, ostalo je: <strong>${v.list}</strong>.`),
     },
     { // Dan 4
-      subject: `${v.percent}% — skoro pa gotovo`,
-      body: p(g) + p(`Već si odradio <strong>${v.percent}%</strong> — najteži deo je iza tebe.`) +
-        p(`Ostalo: <strong>${v.list}</strong>.`) + p(`Završi danas i portfolio je spreman.`),
+      subject: low ? `${v.percent}% — nastavi gde si stao` : `${v.percent}% — skoro pa gotovo`,
+      body: p(g) +
+        (low
+          ? p(`Za sada je popunjeno <strong>${v.percent}%</strong> — ima još, ali svaka sekcija je brza.`)
+          : p(`Već si odradio <strong>${v.percent}%</strong> — najteži deo je iza tebe.`)) +
+        p(`Ostalo: <strong>${v.list}</strong>.`) +
+        p(`Završi i portfolio je spreman.`),
     },
     { // Dan 5
       subject: `Ne daj da ti portfolio ostane nedovršen`,
-      body: p(g) + p(`Portfolio ti je <strong>${v.percent}%</strong> popunjen i čeka samo: <strong>${v.list}</strong>.`) +
+      body: p(g) +
+        (low
+          ? p(`Portfolio ti je <strong>${v.percent}%</strong> popunjen. Da bude spreman za klijente, dodaj: <strong>${v.list}</strong>.`)
+          : p(`Portfolio ti je <strong>${v.percent}%</strong> popunjen i čeka samo: <strong>${v.list}</strong>.`)) +
         p(`Par minuta i gotov je.`),
     },
     { // Dan 6
-      subject: `Poslednji korak do tvog portfolija`,
-      body: p(g) + p(`Ostalo ti je samo <strong>${v.list}</strong> da kompletiraš portfolio (<strong>${v.percent}%</strong> gotov).`) +
+      subject: low ? `Dovrši svoj portfolio (${v.percent}%)` : `Poslednji korak do tvog portfolija`,
+      body: p(g) +
+        (low
+          ? p(`Da kompletiraš portfolio (<strong>${v.percent}%</strong> gotov), dodaj još: <strong>${v.list}</strong>.`)
+          : p(`Ostalo ti je samo <strong>${v.list}</strong> da kompletiraš portfolio (<strong>${v.percent}%</strong> gotov).`)) +
         p(`Završi sada dok ti je trial još aktivan.`),
     },
   ];
